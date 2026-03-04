@@ -1,0 +1,20 @@
+{
+  "packages": [
+    "pydantic>=2.0",
+    "pytest"
+  ],
+  "shared_types": {},
+  "conventions": [
+    "Python 3.10+ with type annotations.",
+    "Standard library only.",
+    "Program reads from stdin, writes to stdout.",
+    "Must handle all input constraints from the problem statement.",
+    "Output must match expected format exactly (including whitespace and newlines)."
+  ],
+  "validators": [
+    "range(0 <= d <= 9)",
+    "range(1 <= b <= 10**9)"
+  ],
+  "tools": [],
+  "mocks": {}
+}

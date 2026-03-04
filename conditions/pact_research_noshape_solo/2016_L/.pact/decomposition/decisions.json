@@ -1,0 +1,17 @@
+[
+  {
+    "ambiguity": "",
+    "decision": "Greedy ordering strategy",
+    "rationale": "Drives that grow (b >= a) are reformatted first, sorted by a ascending (cheapest to evacuate first, gaining space). Shrinking drives (b < a) are reformatted after, sorted by b descending (losing least capacity first). This is the classic optimal greedy for this problem."
+  },
+  {
+    "ambiguity": "",
+    "decision": "Direct simulation instead of binary search",
+    "rationale": "We can compute the answer in O(n log n) by simulating with 0 extra space, tracking the minimum free space encountered, and the answer is the negation of that minimum (clamped to 0). This avoids unnecessary binary search overhead."
+  },
+  {
+    "ambiguity": "",
+    "decision": "File named solution.py",
+    "rationale": "Matches the test harness invocation command: python test_harness.py solution.py"
+  }
+]

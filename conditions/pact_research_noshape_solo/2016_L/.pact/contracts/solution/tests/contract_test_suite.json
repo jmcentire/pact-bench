@@ -1,0 +1,430 @@
+{
+  "component_id": "solution",
+  "contract_version": 1,
+  "test_cases": [
+    {
+      "id": "parse_input_valid_single_drive",
+      "description": "Parse valid input with a single drive (N=1)",
+      "function": "parse_input",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "raw_text": "1\n5 10\n"
+      },
+      "input_description": "",
+      "expected_output_description": "RawInput with n=1 and one Drive(old_capacity=5, new_capacity=10)",
+      "expected_error": "",
+      "assertions": [
+        "result.n == 1",
+        "len(result.drives) == 1",
+        "result.drives[0].old_capacity == 5",
+        "result.drives[0].new_capacity == 10"
+      ]
+    },
+    {
+      "id": "parse_input_valid_typical",
+      "description": "Parse valid input with typical N=3 drives",
+      "function": "parse_input",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "raw_text": "3\n1 2\n3 4\n5 6\n"
+      },
+      "input_description": "",
+      "expected_output_description": "RawInput with n=3 and three drives",
+      "expected_error": "",
+      "assertions": [
+        "result.n == 3",
+        "len(result.drives) == 3",
+        "result.drives[0].old_capacity == 1",
+        "result.drives[2].new_capacity == 6"
+      ]
+    },
+    {
+      "id": "parse_input_valid_boundary_capacities",
+      "description": "Parse input with boundary capacity values (1 and 10^9)",
+      "function": "parse_input",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "raw_text": "2\n1 1000000000\n1000000000 1\n"
+      },
+      "input_description": "",
+      "expected_output_description": "RawInput with n=2 and drives at capacity boundaries",
+      "expected_error": "",
+      "assertions": [
+        "result.n == 2",
+        "result.drives[0].old_capacity == 1",
+        "result.drives[0].new_capacity == 1000000000",
+        "result.drives[1].old_capacity == 1000000000",
+        "result.drives[1].new_capacity == 1"
+      ]
+    },
+    {
+      "id": "parse_input_error_empty_input",
+      "description": "Raise error when raw_text is empty",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "raw_text": ""
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "empty_input",
+      "assertions": [
+        "exception is raised for empty input"
+      ]
+    },
+    {
+      "id": "parse_input_error_whitespace_only",
+      "description": "Raise error when raw_text contains only whitespace",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "raw_text": "   \n  \n"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "empty_input",
+      "assertions": [
+        "exception is raised for whitespace-only input"
+      ]
+    },
+    {
+      "id": "parse_input_error_insufficient_tokens",
+      "description": "Raise error when tokens are fewer than 1 + 2*n",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "raw_text": "3\n1 2\n3 4\n"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "insufficient_tokens",
+      "assertions": [
+        "exception is raised for insufficient tokens"
+      ]
+    },
+    {
+      "id": "parse_input_error_non_integer_token",
+      "description": "Raise error when a token cannot be parsed as integer",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "raw_text": "2\n1 abc\n3 4\n"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "non_integer_token",
+      "assertions": [
+        "exception is raised for non-integer token"
+      ]
+    },
+    {
+      "id": "parse_input_error_n_out_of_range_zero",
+      "description": "Raise error when n is 0 (below minimum)",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "raw_text": "0\n"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "n_out_of_range",
+      "assertions": [
+        "exception is raised for n=0"
+      ]
+    },
+    {
+      "id": "parse_input_error_n_out_of_range_too_large",
+      "description": "Raise error when n exceeds 10^6",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "raw_text": "1000001\n1 2\n"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "n_out_of_range",
+      "assertions": [
+        "exception is raised for n > 10^6"
+      ]
+    },
+    {
+      "id": "parse_input_error_capacity_out_of_range_zero",
+      "description": "Raise error when a capacity value is 0",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "raw_text": "1\n0 5\n"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "capacity_out_of_range",
+      "assertions": [
+        "exception is raised for capacity=0"
+      ]
+    },
+    {
+      "id": "parse_input_error_capacity_out_of_range_too_large",
+      "description": "Raise error when a capacity value exceeds 10^9",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "raw_text": "1\n5 1000000001\n"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "capacity_out_of_range",
+      "assertions": [
+        "exception is raised for capacity > 10^9"
+      ]
+    },
+    {
+      "id": "solve_single_drive_upgrade",
+      "description": "Single drive that grows: needs old_capacity extra space",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "One drive with old=5, new=10",
+      "expected_output_description": "E = 5 (must evacuate 5 units before reformatting)",
+      "expected_error": "",
+      "assertions": [
+        "result == 5"
+      ]
+    },
+    {
+      "id": "solve_single_drive_downgrade",
+      "description": "Single drive that shrinks: needs old_capacity extra space",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "One drive with old=10, new=5",
+      "expected_output_description": "E = 10 (must evacuate 10 units before reformatting)",
+      "expected_error": "",
+      "assertions": [
+        "result == 10"
+      ]
+    },
+    {
+      "id": "solve_single_drive_same",
+      "description": "Single drive with same old and new capacity",
+      "function": "solve",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "One drive with old=7, new=7",
+      "expected_output_description": "E = 7",
+      "expected_error": "",
+      "assertions": [
+        "result == 7"
+      ]
+    },
+    {
+      "id": "solve_all_growers",
+      "description": "Multiple drives all growing, sorted by old_capacity ascending",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "Drives: (1,10), (3,20), (5,30)",
+      "expected_output_description": "E = 1 (smallest old_capacity is processed first)",
+      "expected_error": "",
+      "assertions": [
+        "result == 1"
+      ]
+    },
+    {
+      "id": "solve_all_shrinkers",
+      "description": "Multiple drives all shrinking, sorted by new_capacity descending",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "Drives: (10,3), (20,5), (30,1)",
+      "expected_output_description": "Computed via simulation of shrinkers sorted by new_capacity descending",
+      "expected_error": "",
+      "assertions": [
+        "result >= 0"
+      ]
+    },
+    {
+      "id": "solve_mixed_growers_and_shrinkers",
+      "description": "Mix of growing and shrinking drives",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "Drives: (1,100), (50,10), (5,50)",
+      "expected_output_description": "Computed via greedy ordering",
+      "expected_error": "",
+      "assertions": [
+        "result >= 0"
+      ]
+    },
+    {
+      "id": "solve_empty_drive_list_error",
+      "description": "Raise error when drives list is empty",
+      "function": "solve",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "Empty list of drives",
+      "expected_output_description": "",
+      "expected_error": "empty_drive_list",
+      "assertions": [
+        "exception is raised for empty drive list"
+      ]
+    },
+    {
+      "id": "solve_brute_force_verification",
+      "description": "For small N, verify solve result matches brute-force minimum over all permutations",
+      "function": "solve",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "Multiple small drive sets (N<=6) verified via brute force",
+      "expected_output_description": "solve result equals minimum E over all permutations",
+      "expected_error": "",
+      "assertions": [
+        "solve result matches brute-force minimum for all test sets"
+      ]
+    },
+    {
+      "id": "solve_permutation_invariance",
+      "description": "Same set of drives in different input orders produce the same result",
+      "function": "solve",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "Same drives shuffled in multiple orders",
+      "expected_output_description": "All calls return the same E",
+      "expected_error": "",
+      "assertions": [
+        "all results are identical regardless of input order"
+      ]
+    },
+    {
+      "id": "solve_result_nonnegative",
+      "description": "Result is always non-negative",
+      "function": "solve",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "Various drive configurations",
+      "expected_output_description": "E >= 0 always",
+      "expected_error": "",
+      "assertions": [
+        "result >= 0 for all test cases"
+      ]
+    },
+    {
+      "id": "solve_result_at_least_first_old_capacity",
+      "description": "E >= min(a_i) of first drive in sorted order",
+      "function": "solve",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "Various drive configurations",
+      "expected_output_description": "E >= old_capacity of the first drive processed",
+      "expected_error": "",
+      "assertions": [
+        "result >= first drive old_capacity in greedy order"
+      ]
+    },
+    {
+      "id": "main_sample_input",
+      "description": "main() reads from stdin, computes result, prints to stdout",
+      "function": "main",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin contains '3\\n1 2\\n3 4\\n5 6\\n'",
+      "expected_output_description": "Correct integer result followed by newline",
+      "expected_error": "",
+      "assertions": [
+        "stdout contains exactly one line with the integer result"
+      ]
+    },
+    {
+      "id": "main_single_drive",
+      "description": "main() with single drive input",
+      "function": "main",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin contains '1\\n5 10\\n'",
+      "expected_output_description": "Output is '5\\n'",
+      "expected_error": "",
+      "assertions": [
+        "stdout output is '5\\n'"
+      ]
+    },
+    {
+      "id": "main_output_format",
+      "description": "Output has no leading zeros and ends with newline",
+      "function": "main",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "Various valid inputs",
+      "expected_output_description": "Output matches '^[0-9]+\\n$' with no leading zeros except E=0",
+      "expected_error": "",
+      "assertions": [
+        "output format is correct"
+      ]
+    },
+    {
+      "id": "main_invalid_input_propagates_error",
+      "description": "main() propagates error from parse_input for invalid stdin",
+      "function": "main",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin contains 'abc\\n'",
+      "expected_output_description": "",
+      "expected_error": "invalid_input_format",
+      "assertions": [
+        "exception is raised for invalid input"
+      ]
+    }
+  ],
+  "test_language": "python",
+  "generated_code": "\"\"\"\nContract test suite for the swap space solution.\n\nTests are organized in three sections:\n1. parse_input tests — error conditions and valid boundary inputs\n2. solve tests — scenario categories, brute-force verification, invariants\n3. main integration tests — stdin/stdout mocking\n\"\"\"\n\nimport pytest\nimport sys\nimport io\nimport re\nimport random\nimport itertools\nfrom unittest.mock import patch, MagicMock\n\n# Import the component under test\nfrom src.solution import parse_input, solve, main\n\n# Try to import the struct types; they may be named differently\ntry:\n    from src.solution import Drive, RawInput\nexcept ImportError:\n    # If not directly importable, we'll work with whatever parse_input returns\n    Drive = None\n    RawInput = None\n\n\n# ---------------------------------------------------------------------------\n# Helper: simulation oracle\n# ---------------------------------------------------------------------------\n\ndef simulate_swap(extra: int, ordered_drives) -> bool:\n    \"\"\"\n    Given extra swap space E and a list of (old_capacity, new_capacity) tuples\n    in a specific processing order, return True if free space never goes\n    negative after evacuating each drive.\n    \"\"\"\n    free = extra\n    for old_cap, new_cap in ordered_drives:\n        free -= old_cap\n        if free < 0:\n            return False\n        free += new_cap\n    return True\n\n\ndef brute_force_min_swap(drives_tuples):\n    \"\"\"\n    Try all permutations of drives and find the minimum extra swap E.\n    Each drive is (old_capacity, new_capacity).\n    Returns the minimum E >= 0 such that some permutation succeeds.\n    \"\"\"\n    min_e = float('inf')\n    for perm in itertools.permutations(drives_tuples):\n        # Binary-search or compute analytically for this permutation\n        free = 0\n        min_free = 0\n        for old_cap, new_cap in perm:\n            free -= old_cap\n            if free < min_free:\n                min_free = free\n            free += new_cap\n        e = max(0, -min_free)\n        if e < min_e:\n            min_e = e\n    return min_e\n\n\ndef make_drive(old_cap, new_cap):\n    \"\"\"Create a Drive struct. Tries the Drive constructor, falls back to a namedtuple-like approach.\"\"\"\n    if Drive is not None:\n        return Drive(old_capacity=old_cap, new_capacity=new_cap)\n    else:\n        # Fallback: create a simple object\n        class _Drive:\n            def __init__(self, old_capacity, new_capacity):\n                self.old_capacity = old_capacity\n                self.new_capacity = new_capacity\n        return _Drive(old_capacity=old_cap, new_capacity=new_cap)\n\n\ndef make_drive_list(tuples):\n    \"\"\"Create a list of Drive structs from a list of (old, new) tuples.\"\"\"\n    return [make_drive(o, n) for o, n in tuples]\n\n\ndef greedy_order(drives_tuples):\n    \"\"\"\n    Compute the greedy ordering: growers (b >= a) sorted by a ascending,\n    then shrinkers (b < a) sorted by b descending.\n    Returns the ordered list of (old_capacity, new_capacity) tuples.\n    \"\"\"\n    growers = [(a, b) for a, b in drives_tuples if b >= a]\n    shrinkers = [(a, b) for a, b in drives_tuples if b < a]\n    growers.sort(key=lambda x: x[0])\n    shrinkers.sort(key=lambda x: x[1], reverse=True)\n    return growers + shrinkers\n\n\n# ===========================================================================\n# SECTION 1: parse_input tests\n# ===========================================================================\n\nclass TestParseInputHappyPath:\n    \"\"\"Valid input parsing tests.\"\"\"\n\n    def test_parse_input_valid_single_drive(self):\n        \"\"\"Parse valid input with a single drive (N=1).\"\"\"\n        result = parse_input(\"1\\n5 10\\n\")\n        assert result.n == 1, f\"Expected n=1, got {result.n}\"\n        assert len(result.drives) == 1, f\"Expected 1 drive, got {len(result.drives)}\"\n        assert result.drives[0].old_capacity == 5, f\"Expected old_capacity=5, got {result.drives[0].old_capacity}\"\n        assert result.drives[0].new_capacity == 10, f\"Expected new_capacity=10, got {result.drives[0].new_capacity}\"\n\n    def test_parse_input_valid_typical(self):\n        \"\"\"Parse valid input with typical N=3 drives.\"\"\"\n        result = parse_input(\"3\\n1 2\\n3 4\\n5 6\\n\")\n        assert result.n == 3, f\"Expected n=3, got {result.n}\"\n        assert len(result.drives) == 3, f\"Expected 3 drives, got {len(result.drives)}\"\n        assert result.drives[0].old_capacity == 1\n        assert result.drives[0].new_capacity == 2\n        assert result.drives[1].old_capacity == 3\n        assert result.drives[1].new_capacity == 4\n        assert result.drives[2].old_capacity == 5\n        assert result.drives[2].new_capacity == 6\n\n    def test_parse_input_valid_boundary_capacities(self):\n        \"\"\"Parse input with boundary capacity values (1 and 10^9).\"\"\"\n        result = parse_input(\"2\\n1 1000000000\\n1000000000 1\\n\")\n        assert result.n == 2\n        assert result.drives[0].old_capacity == 1\n        assert result.drives[0].new_capacity == 1000000000\n        assert result.drives[1].old_capacity == 1000000000\n        assert result.drives[1].new_capacity == 1\n\n    def test_parse_input_n_equals_one_is_min(self):\n        \"\"\"Parse input with N=1 (minimum valid N).\"\"\"\n        result = parse_input(\"1\\n1 1\\n\")\n        assert result.n == 1\n        assert len(result.drives) == 1\n        assert result.drives[0].old_capacity == 1\n        assert result.drives[0].new_capacity == 1\n\n    def test_parse_input_whitespace_variations(self):\n        \"\"\"Parse input with extra whitespace between tokens (should still work).\"\"\"\n        result = parse_input(\"2  \\n  1   2  \\n  3   4  \\n\")\n        assert result.n == 2\n        assert len(result.drives) == 2\n\n    def test_parse_input_postcondition_n_equals_drives_length(self):\n        \"\"\"Postcondition: RawInput.n equals the number of drives.\"\"\"\n        for n in [1, 2, 5]:\n            lines = [str(n)]\n            for i in range(n):\n                lines.append(f\"{i + 1} {i + 10}\")\n            raw_text = \"\\n\".join(lines) + \"\\n\"\n            result = parse_input(raw_text)\n            assert result.n == len(result.drives), (\n                f\"n={result.n} but len(drives)={len(result.drives)}\"\n            )\n\n    def test_parse_input_all_capacities_in_range(self):\n        \"\"\"Postcondition: All capacities are in [1, 10^9].\"\"\"\n        result = parse_input(\"3\\n1 1000000000\\n500 999999999\\n1000000000 1\\n\")\n        for drive in result.drives:\n            assert 1 <= drive.old_capacity <= 10**9, f\"old_capacity {drive.old_capacity} out of range\"\n            assert 1 <= drive.new_capacity <= 10**9, f\"new_capacity {drive.new_capacity} out of range\"\n\n\nclass TestParseInputErrors:\n    \"\"\"Error condition tests for parse_input.\"\"\"\n\n    def test_parse_input_error_empty_input(self):\n        \"\"\"Raise error when raw_text is empty.\"\"\"\n        with pytest.raises(Exception) as exc_info:\n            parse_input(\"\")\n        # The error type/message should indicate empty input\n\n    def test_parse_input_error_whitespace_only(self):\n        \"\"\"Raise error when raw_text contains only whitespace.\"\"\"\n        with pytest.raises(Exception) as exc_info:\n            parse_input(\"   \\n  \\n\")\n\n    def test_parse_input_error_insufficient_tokens(self):\n        \"\"\"Raise error when tokens are fewer than 1 + 2*n.\"\"\"\n        with pytest.raises(Exception) as exc_info:\n            parse_input(\"3\\n1 2\\n3 4\\n\")\n        # Should indicate insufficient tokens (expected 7 tokens, got 5)\n\n    def test_parse_input_error_insufficient_tokens_only_n(self):\n        \"\"\"Raise error when only n is provided with no drive data.\"\"\"\n        with pytest.raises(Exception) as exc_info:\n            parse_input(\"5\\n\")\n\n    def test_parse_input_error_non_integer_token(self):\n        \"\"\"Raise error when a token cannot be parsed as integer.\"\"\"\n        with pytest.raises(Exception) as exc_info:\n            parse_input(\"2\\n1 abc\\n3 4\\n\")\n\n    def test_parse_input_error_non_integer_n(self):\n        \"\"\"Raise error when n itself is not an integer.\"\"\"\n        with pytest.raises(Exception) as exc_info:\n            parse_input(\"xyz\\n1 2\\n\")\n\n    def test_parse_input_error_n_out_of_range_zero(self):\n        \"\"\"Raise error when n is 0 (below minimum of 1).\"\"\"\n        with pytest.raises(Exception) as exc_info:\n            parse_input(\"0\\n\")\n\n    def test_parse_input_error_n_out_of_range_negative(self):\n        \"\"\"Raise error when n is negative.\"\"\"\n        with pytest.raises(Exception) as exc_info:\n            parse_input(\"-1\\n1 2\\n\")\n\n    def test_parse_input_error_n_out_of_range_too_large(self):\n        \"\"\"Raise error when n exceeds 10^6.\"\"\"\n        with pytest.raises(Exception) as exc_info:\n            parse_input(\"1000001\\n1 2\\n\")\n\n    def test_parse_input_error_capacity_zero(self):\n        \"\"\"Raise error when old_capacity is 0.\"\"\"\n        with pytest.raises(Exception) as exc_info:\n            parse_input(\"1\\n0 5\\n\")\n\n    def test_parse_input_error_capacity_too_large(self):\n        \"\"\"Raise error when new_capacity exceeds 10^9.\"\"\"\n        with pytest.raises(Exception) as exc_info:\n            parse_input(\"1\\n5 1000000001\\n\")\n\n    def test_parse_input_error_negative_capacity(self):\n        \"\"\"Raise error when a capacity is negative.\"\"\"\n        with pytest.raises(Exception) as exc_info:\n            parse_input(\"1\\n-1 5\\n\")\n\n\n# ===========================================================================\n# SECTION 2: solve tests\n# ===========================================================================\n\nclass TestSolveHappyPath:\n    \"\"\"Happy path tests for solve.\"\"\"\n\n    def test_solve_single_drive_upgrade(self):\n        \"\"\"Single drive that grows: E = old_capacity.\"\"\"\n        drives = make_drive_list([(5, 10)])\n        result = solve(drives)\n        assert result == 5, f\"Expected 5, got {result}\"\n\n    def test_solve_single_drive_downgrade(self):\n        \"\"\"Single drive that shrinks: E = old_capacity.\"\"\"\n        drives = make_drive_list([(10, 5)])\n        result = solve(drives)\n        assert result == 10, f\"Expected 10, got {result}\"\n\n    def test_solve_single_drive_same_capacity(self):\n        \"\"\"Single drive with same old and new: E = old_capacity.\"\"\"\n        drives = make_drive_list([(7, 7)])\n        result = solve(drives)\n        assert result == 7, f\"Expected 7, got {result}\"\n\n    def test_solve_all_growers(self):\n        \"\"\"Multiple drives all growing. Smallest old_capacity first.\"\"\"\n        # Drives: (1,10), (3,20), (5,30)\n        # Growers sorted by old_capacity asc: (1,10), (3,20), (5,30)\n        # Simulation: free=0, free-=1=-1, min=-1, free+=10=9\n        #             free-=3=6, min=-1, free+=20=26\n        #             free-=5=21, min=-1, free+=30=51\n        # E = max(0, -(-1)) = 1\n        drives = make_drive_list([(1, 10), (3, 20), (5, 30)])\n        result = solve(drives)\n        assert result == 1, f\"Expected 1, got {result}\"\n\n    def test_solve_all_shrinkers(self):\n        \"\"\"Multiple drives all shrinking, sorted by new_capacity descending.\"\"\"\n        # Drives: (10,3), (20,5), (30,1)\n        # Shrinkers sorted by b desc: (20,5), (10,3), (30,1)\n        # Simulation: free=0, free-=20=-20, min=-20, free+=5=-15\n        #             free-=10=-25, min=-25, free+=3=-22\n        #             free-=30=-52, min=-52, free+=1=-51\n        # E = max(0, 52) = 52\n        drives = make_drive_list([(10, 3), (20, 5), (30, 1)])\n        result = solve(drives)\n        assert result >= 0, f\"Expected non-negative, got {result}\"\n        # Verify by simulation\n        ordered = greedy_order([(10, 3), (20, 5), (30, 1)])\n        assert simulate_swap(result, ordered), (\n            f\"E={result} does not suffice for greedy order\"\n        )\n\n    def test_solve_mixed_growers_and_shrinkers(self):\n        \"\"\"Mix of growing and shrinking drives.\"\"\"\n        # (1,100) is a grower, (50,10) is a shrinker, (5,50) is a grower\n        drives = make_drive_list([(1, 100), (50, 10), (5, 50)])\n        result = solve(drives)\n        assert result >= 0\n        # Verify the result via simulation in greedy order\n        ordered = greedy_order([(1, 100), (50, 10), (5, 50)])\n        assert simulate_swap(result, ordered), (\n            f\"E={result} does not suffice for greedy order {ordered}\"\n        )\n\n    def test_solve_two_drives_one_grower_one_shrinker(self):\n        \"\"\"Two drives: one grows, one shrinks.\"\"\"\n        # (3, 10) grower, (10, 2) shrinker\n        # Greedy: grower first (3,10), then shrinker (10,2)\n        # free=0, -3=-3, min=-3, +10=7, -10=-3, min=-3, +2=-1\n        # E = 3\n        drives = make_drive_list([(3, 10), (10, 2)])\n        result = solve(drives)\n        assert result == 3, f\"Expected 3, got {result}\"\n\n\nclass TestSolveEdgeCases:\n    \"\"\"Edge case tests for solve.\"\"\"\n\n    def test_solve_single_drive_min_capacity(self):\n        \"\"\"Single drive with minimum capacities (1, 1).\"\"\"\n        drives = make_drive_list([(1, 1)])\n        result = solve(drives)\n        assert result == 1, f\"Expected 1, got {result}\"\n\n    def test_solve_single_drive_large_capacity(self):\n        \"\"\"Single drive with large capacities.\"\"\"\n        drives = make_drive_list([(1000000000, 1000000000)])\n        result = solve(drives)\n        assert result == 1000000000\n\n    def test_solve_all_same_drives(self):\n        \"\"\"All drives identical.\"\"\"\n        drives = make_drive_list([(5, 5), (5, 5), (5, 5)])\n        result = solve(drives)\n        assert result == 5, f\"Expected 5, got {result}\"\n\n    def test_solve_grower_then_shrinker_net_zero(self):\n        \"\"\"A grower and shrinker that net to zero total change.\"\"\"\n        drives = make_drive_list([(2, 8), (8, 2)])\n        result = solve(drives)\n        # Greedy: grower (2,8) first, then shrinker (8,2)\n        # free=0, -2=-2, min=-2, +8=6, -8=-2, min=-2, +2=0\n        # E = 2\n        assert result == 2, f\"Expected 2, got {result}\"\n\n\nclass TestSolveErrorCases:\n    \"\"\"Error case tests for solve.\"\"\"\n\n    def test_solve_empty_drive_list(self):\n        \"\"\"Raise error when drives list is empty.\"\"\"\n        with pytest.raises(Exception) as exc_info:\n            solve([])\n\n\nclass TestSolveInvariants:\n    \"\"\"Invariant and property-based tests for solve.\"\"\"\n\n    def test_solve_result_always_nonnegative(self):\n        \"\"\"Invariant: E >= 0 for all valid inputs.\"\"\"\n        test_cases = [\n            [(1, 1)],\n            [(10, 1)],\n            [(1, 10)],\n            [(5, 3), (3, 5)],\n            [(100, 1), (1, 100), (50, 50)],\n        ]\n        for tc in test_cases:\n            drives = make_drive_list(tc)\n            result = solve(drives)\n            assert result >= 0, f\"E={result} < 0 for drives {tc}\"\n\n    def test_solve_result_sufficient_for_greedy_order(self):\n        \"\"\"Invariant: E suffices for the greedy ordering simulation.\"\"\"\n        test_cases = [\n            [(5, 10)],\n            [(10, 5)],\n            [(1, 100), (50, 10), (5, 50)],\n            [(10, 3), (20, 5), (30, 1)],\n            [(1, 2), (3, 4), (5, 6)],\n            [(6, 1), (4, 2), (2, 5)],\n        ]\n        for tc in test_cases:\n            drives = make_drive_list(tc)\n            result = solve(drives)\n            ordered = greedy_order(tc)\n            assert simulate_swap(result, ordered), (\n                f\"E={result} does not suffice for greedy order on drives {tc}\"\n            )\n\n    def test_solve_result_at_least_first_old_capacity_in_greedy_order(self):\n        \"\"\"Invariant: E >= old_capacity of the first drive in greedy order.\"\"\"\n        test_cases = [\n            [(5, 10)],\n            [(10, 5)],\n            [(1, 100), (50, 10), (5, 50)],\n            [(3, 1), (7, 2), (10, 8)],\n        ]\n        for tc in test_cases:\n            drives = make_drive_list(tc)\n            result = solve(drives)\n            ordered = greedy_order(tc)\n            first_old = ordered[0][0]\n            assert result >= first_old, (\n                f\"E={result} < first_old={first_old} for drives {tc}\"\n            )\n\n    def test_solve_brute_force_verification_small_cases(self):\n        \"\"\"For small N, verify solve result matches brute-force minimum over all permutations.\"\"\"\n        random.seed(42)\n        test_cases = [\n            [(1, 2), (3, 1)],\n            [(5, 10), (10, 5), (3, 3)],\n            [(2, 8), (8, 2), (4, 6)],\n            [(1, 1), (2, 2), (3, 3)],\n            [(10, 1), (1, 10)],\n            [(3, 7), (7, 3), (5, 5), (2, 9)],\n        ]\n        # Also add some random small cases\n        for _ in range(5):\n            n = random.randint(2, 5)\n            tc = [(random.randint(1, 20), random.randint(1, 20)) for _ in range(n)]\n            test_cases.append(tc)\n\n        for tc in test_cases:\n            drives = make_drive_list(tc)\n            result = solve(drives)\n            bf_result = brute_force_min_swap(tc)\n            assert result == bf_result, (\n                f\"solve={result} != brute_force={bf_result} for drives {tc}\"\n            )\n\n    def test_solve_permutation_invariance(self):\n        \"\"\"Same set of drives in different input orders produce the same result.\"\"\"\n        random.seed(123)\n        base_drives = [(3, 10), (10, 2), (5, 5), (1, 8), (7, 3)]\n        drives_base = make_drive_list(base_drives)\n        base_result = solve(drives_base)\n\n        for _ in range(10):\n            shuffled = base_drives[:]\n            random.shuffle(shuffled)\n            drives_shuffled = make_drive_list(shuffled)\n            result = solve(drives_shuffled)\n            assert result == base_result, (\n                f\"Permutation invariance violated: {result} != {base_result} \"\n                f\"for order {shuffled}\"\n            )\n\n    def test_solve_brute_force_random_cases(self):\n        \"\"\"Additional random small cases verified via brute force.\"\"\"\n        random.seed(999)\n        for _ in range(20):\n            n = random.randint(1, 6)\n            tc = [(random.randint(1, 15), random.randint(1, 15)) for _ in range(n)]\n            drives = make_drive_list(tc)\n            result = solve(drives)\n            bf_result = brute_force_min_swap(tc)\n            assert result == bf_result, (\n                f\"solve={result} != brute_force={bf_result} for drives {tc}\"\n            )\n\n    def test_solve_e_minus_one_does_not_suffice(self):\n        \"\"\"Verify that E-1 does NOT suffice (proving minimality) for several cases.\"\"\"\n        test_cases = [\n            [(5, 10)],\n            [(10, 5)],\n            [(1, 100), (50, 10), (5, 50)],\n            [(3, 10), (10, 2)],\n        ]\n        for tc in test_cases:\n            drives = make_drive_list(tc)\n            result = solve(drives)\n            if result > 0:\n                # E-1 should NOT suffice for ANY ordering\n                ordered = greedy_order(tc)\n                assert not simulate_swap(result - 1, ordered), (\n                    f\"E-1={result - 1} suffices for greedy order on drives {tc}, \"\n                    f\"so E={result} is not minimal\"\n                )\n\n\n# ===========================================================================\n# SECTION 3: main integration tests\n# ===========================================================================\n\nclass TestMainIntegration:\n    \"\"\"Integration tests for main() using stdin/stdout mocking.\"\"\"\n\n    def test_main_single_drive(self):\n        \"\"\"main() with single drive input produces correct output.\"\"\"\n        stdin_data = \"1\\n5 10\\n\"\n        expected_output = \"5\\n\"\n        with patch('sys.stdin', io.StringIO(stdin_data)):\n            with patch('sys.stdout', new_callable=io.StringIO) as mock_stdout:\n                main()\n                output = mock_stdout.getvalue()\n        assert output == expected_output, (\n            f\"Expected '{expected_output}', got '{output}'\"\n        )\n\n    def test_main_three_drives(self):\n        \"\"\"main() with three growing drives.\"\"\"\n        stdin_data = \"3\\n1 2\\n3 4\\n5 6\\n\"\n        with patch('sys.stdin', io.StringIO(stdin_data)):\n            with patch('sys.stdout', new_callable=io.StringIO) as mock_stdout:\n                main()\n                output = mock_stdout.getvalue()\n        # Parse the output\n        output_stripped = output.strip()\n        assert output_stripped.isdigit() or (output_stripped == \"0\"), (\n            f\"Output should be a non-negative integer, got '{output_stripped}'\"\n        )\n        result = int(output_stripped)\n        assert result >= 0\n        # Verify with solve directly\n        drives = make_drive_list([(1, 2), (3, 4), (5, 6)])\n        expected = solve(drives)\n        assert result == expected, f\"Expected {expected}, got {result}\"\n\n    def test_main_output_format_single_line_with_newline(self):\n        \"\"\"Output is exactly one line containing an integer followed by newline.\"\"\"\n        stdin_data = \"1\\n5 10\\n\"\n        with patch('sys.stdin', io.StringIO(stdin_data)):\n            with patch('sys.stdout', new_callable=io.StringIO) as mock_stdout:\n                main()\n                output = mock_stdout.getvalue()\n        # Should match pattern: digits followed by newline, nothing else\n        assert re.fullmatch(r'[0-9]+\\n', output), (\n            f\"Output format mismatch: '{repr(output)}'\"\n        )\n\n    def test_main_output_no_leading_zeros(self):\n        \"\"\"Output has no leading zeros (except for E=0 itself).\"\"\"\n        stdin_data = \"2\\n1 1000000000\\n1 1000000000\\n\"\n        with patch('sys.stdin', io.StringIO(stdin_data)):\n            with patch('sys.stdout', new_callable=io.StringIO) as mock_stdout:\n                main()\n                output = mock_stdout.getvalue()\n        output_stripped = output.strip()\n        if output_stripped != \"0\":\n            assert not output_stripped.startswith(\"0\"), (\n                f\"Output has leading zeros: '{output_stripped}'\"\n            )\n\n    def test_main_mixed_drives_sample(self):\n        \"\"\"main() with a mixed set of growers and shrinkers.\"\"\"\n        # Drives: (1,100), (50,10), (5,50)\n        stdin_data = \"3\\n1 100\\n50 10\\n5 50\\n\"\n        with patch('sys.stdin', io.StringIO(stdin_data)):\n            with patch('sys.stdout', new_callable=io.StringIO) as mock_stdout:\n                main()\n                output = mock_stdout.getvalue()\n        result = int(output.strip())\n        drives = make_drive_list([(1, 100), (50, 10), (5, 50)])\n        expected = solve(drives)\n        assert result == expected, f\"Expected {expected}, got {result}\"\n\n    def test_main_invalid_input_propagates_error(self):\n        \"\"\"main() propagates error from parse_input for invalid stdin.\"\"\"\n        stdin_data = \"abc\\n\"\n        with patch('sys.stdin', io.StringIO(stdin_data)):\n            with pytest.raises(Exception):\n                main()\n\n    def test_main_empty_input_propagates_error(self):\n        \"\"\"main() propagates error for empty stdin.\"\"\"\n        stdin_data = \"\"\n        with patch('sys.stdin', io.StringIO(stdin_data)):\n            with pytest.raises(Exception):\n                main()\n\n    def test_main_all_shrinkers(self):\n        \"\"\"main() with all shrinking drives produces correct result.\"\"\"\n        stdin_data = \"3\\n10 3\\n20 5\\n30 1\\n\"\n        with patch('sys.stdin', io.StringIO(stdin_data)):\n            with patch('sys.stdout', new_callable=io.StringIO) as mock_stdout:\n                main()\n                output = mock_stdout.getvalue()\n        result = int(output.strip())\n        drives = make_drive_list([(10, 3), (20, 5), (30, 1)])\n        expected = solve(drives)\n        assert result == expected, f\"Expected {expected}, got {result}\"\n\n    def test_main_result_matches_solve(self):\n        \"\"\"main() output matches solve() for several inputs.\"\"\"\n        test_inputs = [\n            (\"1\\n1 1\\n\", [(1, 1)]),\n            (\"2\\n3 10\\n10 2\\n\", [(3, 10), (10, 2)]),\n            (\"4\\n5 5\\n10 1\\n1 10\\n3 7\\n\", [(5, 5), (10, 1), (1, 10), (3, 7)]),\n        ]\n        for stdin_data, drive_tuples in test_inputs:\n            with patch('sys.stdin', io.StringIO(stdin_data)):\n                with patch('sys.stdout', new_callable=io.StringIO) as mock_stdout:\n                    main()\n                    output = mock_stdout.getvalue()\n            result = int(output.strip())\n            drives = make_drive_list(drive_tuples)\n            expected = solve(drives)\n            assert result == expected, (\n                f\"For input '{stdin_data.strip()}': expected {expected}, got {result}\"\n            )\n"
+}

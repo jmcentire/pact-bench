@@ -1,0 +1,297 @@
+{
+  "project_id": "2016_L",
+  "title": "Design: 2016_L",
+  "summary": "",
+  "decomposition_tree": {
+    "root_id": "swap_space_solver",
+    "nodes": {
+      "swap_space_solver": {
+        "component_id": "swap_space_solver",
+        "name": "Swap Space Solver",
+        "description": "Implement a solution for the Swap Space problem. The program reads n drives with old capacity a and new capacity b, and must determine the minimum extra storage needed to reformat all drives.\n\nAlgorithm approach:\n1. Separate drives into two groups: 'gainers' where b >= a (reformatting gains or maintains capacity) and 'losers' where b < a (reformatting loses capacity).\n2. Sort gainers by old capacity 'a' ascending — reformat the cheapest ones first to free up space quickly.\n3. Sort losers by new capacity 'b' descending — reformat the ones that lose the least new capacity first (to preserve as much free space as possible for remaining losers).\n4. Process gainers first, then losers. This greedy ordering is optimal.\n5. Binary search on the extra capacity S (0 to sum of all a values). For a given S, simulate: start with available = S, process drives in the sorted order. For each drive, check available >= a (can move data off), then available += b - a (net change after reformatting). If available never goes negative, S is feasible.\n6. Actually, the simpler direct approach: with the greedy order fixed, the minimum extra space is determined by the maximum deficit during the simulation. Start with available = 0, process in order, track running_available += (b - a) for each drive, but before processing each drive we need available >= a. So: track cumulative free space, and the answer is the minimum S such that S + cumulative_free_before_drive_i >= a_i for all i. This can be computed in O(n log n) without binary search.\n\nMore precisely: process drives in sorted order. Maintain 'free_space' starting at 0. For each drive, if free_space < a_i, we need (a_i - free_space) more extra space — but we only buy extra once at the start. So: maintain free = S (the extra), for each drive in order: free -= a_i (move data off), free += b_i (reformat gives new capacity). We need free >= 0 at all times. So minimum S = max over all prefixes of (sum of a_i - sum of b_i) for the prefix, clamped to >= 0. That is: S = max(0, max over k of (sum_{i=1}^{k} a_i - sum_{i=1}^{k} b_i + a_{k} ... )). Actually need to be more careful: before processing drive i, we need free >= a_i. After processing, free += b_i. So free after i drives = S - a_1 + b_1 - a_2 + b_2 - ... The minimum free at any point is right after subtracting a_i but before adding b_i. So track running = S, for each i: running -= a_i (must be >= 0), running += b_i. Minimum S = max over all i of (a_i - prefix_sum_{i-1}(b - a)), where prefix_sum is cumulative (b_j - a_j) for j < i. Compute in one pass.\n\nImplementation:\n- Read input using sys.stdin for speed.\n- Separate into gainers (b >= a, sorted by a ascending) and losers (b < a, sorted by b descending).\n- Concatenate sorted gainers then sorted losers.\n- Simulate with running free space, track the minimum extra needed.\n- Output the result.\n\nFile: solution.py",
+        "depth": 0,
+        "parent_id": "",
+        "children": [],
+        "contract": {
+          "component_id": "swap_space_solver",
+          "name": "Swap Space Solver",
+          "description": "Implement a solution for the Swap Space problem. The program reads n drives with old capacity a and new capacity b from stdin, and determines the minimum extra storage needed to reformat all drives. Uses a greedy ordering strategy: gainers (b >= a) sorted by a ascending, then losers (b < a) sorted by b descending. Computes the answer via direct single-pass simulation in O(n log n) time (dominated by sorting). Reads from stdin, writes to stdout. Python 3.10+ standard library only (sys).",
+          "version": 1,
+          "types": [
+            {
+              "name": "Drive",
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "a",
+                  "type_ref": "int",
+                  "required": true,
+                  "default": "",
+                  "description": "Old capacity of the drive (before reformatting). Non-negative integer.",
+                  "validators": [
+                    {
+                      "kind": "range",
+                      "expression": "a >= 0",
+                      "error_message": "Old capacity must be non-negative."
+                    }
+                  ]
+                },
+                {
+                  "name": "b",
+                  "type_ref": "int",
+                  "required": true,
+                  "default": "",
+                  "description": "New capacity of the drive (after reformatting). Non-negative integer.",
+                  "validators": [
+                    {
+                      "kind": "range",
+                      "expression": "b >= 0",
+                      "error_message": "New capacity must be non-negative."
+                    }
+                  ]
+                }
+              ],
+              "item_type": "",
+              "variants": [],
+              "inner_types": [],
+              "description": "A single drive with its old capacity and new capacity after reformatting."
+            },
+            {
+              "name": "DriveList",
+              "kind": "list",
+              "fields": [],
+              "item_type": "Drive",
+              "variants": [],
+              "inner_types": [],
+              "description": "A list of Drive tuples represented as list[tuple[int, int]]. Each element is a (a, b) pair."
+            },
+            {
+              "name": "ExtraSpace",
+              "kind": "primitive",
+              "fields": [],
+              "item_type": "",
+              "variants": [],
+              "inner_types": [],
+              "description": "The minimum extra storage space required, represented as a non-negative int."
+            }
+          ],
+          "functions": [
+            {
+              "name": "parse_input",
+              "description": "Reads all input from sys.stdin at once using sys.stdin.read().split() for performance. Parses the first token as n (number of drives), then reads n pairs of integers (a_i, b_i). Returns a list of (a, b) tuples. The length of the returned list equals n. Does not return n separately since len(drives) suffices.",
+              "inputs": [],
+              "output_type": "DriveList",
+              "error_cases": [
+                {
+                  "name": "empty_stdin",
+                  "condition": "sys.stdin is empty or contains no tokens.",
+                  "error_type": "ValueError",
+                  "error_data": {
+                    "message": "No input available on stdin."
+                  }
+                },
+                {
+                  "name": "malformed_n",
+                  "condition": "The first token cannot be parsed as a non-negative integer.",
+                  "error_type": "ValueError",
+                  "error_data": {
+                    "message": "First token is not a valid non-negative integer for n."
+                  }
+                },
+                {
+                  "name": "insufficient_tokens",
+                  "condition": "Fewer than 2*n additional tokens are available after reading n.",
+                  "error_type": "ValueError",
+                  "error_data": {
+                    "message": "Input contains fewer drive entries than specified by n."
+                  }
+                },
+                {
+                  "name": "non_integer_token",
+                  "condition": "A token in the drive data cannot be parsed as a non-negative integer.",
+                  "error_type": "ValueError",
+                  "error_data": {
+                    "message": "Drive capacity token is not a valid non-negative integer."
+                  }
+                }
+              ],
+              "preconditions": [
+                "sys.stdin contains well-formed input: first line is integer n >= 0, followed by n lines each containing two space-separated non-negative integers a and b.",
+                "All integer values fit within Python's arbitrary-precision int (no overflow concern).",
+                "0 <= n <= 1000000."
+              ],
+              "postconditions": [
+                "Returned list has exactly n elements, where n is the first integer read from stdin.",
+                "Each element (a, b) faithfully represents one input line with a >= 0 and b >= 0.",
+                "Input is fully consumed from stdin after this call."
+              ],
+              "idempotent": false,
+              "side_effects": [
+                "Reads from sys.stdin (consumed entirely)."
+              ],
+              "structured_side_effects": [
+                {
+                  "kind": "reads_file",
+                  "target": "sys.stdin",
+                  "description": "Reads entire stdin content at once via sys.stdin.read() for fast I/O."
+                }
+              ],
+              "performance_budget": {
+                "p95_latency_ms": 500,
+                "max_memory_mb": 256,
+                "complexity": "O(n)"
+              }
+            },
+            {
+              "name": "solve",
+              "description": "Pure function. Computes the minimum extra storage space S needed to reformat all drives. Algorithm: (1) Partition drives into gainers (b >= a) and losers (b < a). (2) Sort gainers by a ascending (reformat cheapest first to free space quickly). (3) Sort losers by b descending (reformat those losing least new capacity first to preserve free space). (4) Concatenate: gainers first, then losers. (5) Single-pass simulation: maintain prefix_net = running sum of (b_k - a_k) for processed drives. Before processing drive i, the free space is S + prefix_net_{i-1}. We need S + prefix_net_{i-1} >= a_i, i.e., S >= a_i - prefix_net_{i-1}. So S = max(0, max over all i of (a_i - prefix_net_{i-1})). Computed in O(n) after O(n log n) sorting.",
+              "inputs": [
+                {
+                  "name": "drives",
+                  "type_ref": "DriveList",
+                  "required": true,
+                  "default": "",
+                  "description": "List of (a, b) tuples where a is old capacity and b is new capacity. May be empty.",
+                  "validators": [
+                    {
+                      "kind": "custom",
+                      "expression": "all(a >= 0 and b >= 0 for a, b in drives)",
+                      "error_message": "All drive capacities must be non-negative integers."
+                    }
+                  ]
+                }
+              ],
+              "output_type": "ExtraSpace",
+              "error_cases": [
+                {
+                  "name": "negative_capacity",
+                  "condition": "Any drive has a < 0 or b < 0.",
+                  "error_type": "ValueError",
+                  "error_data": {
+                    "message": "Drive capacities must be non-negative."
+                  }
+                }
+              ],
+              "preconditions": [
+                "drives is a list of (a, b) tuples with a >= 0 and b >= 0 for all entries.",
+                "len(drives) <= 1000000."
+              ],
+              "postconditions": [
+                "Returned value S is a non-negative integer (S >= 0).",
+                "S is the minimum extra storage such that all drives can be reformatted in the greedy order without available space going negative.",
+                "If drives is empty, S == 0.",
+                "If all drives have a == 0, S == 0 (no space needed to move zero data).",
+                "For a single drive (a, b), S == a (must have enough to hold all data from that one drive).",
+                "S <= sum of all a values in drives (upper bound: enough to hold all data simultaneously)."
+              ],
+              "idempotent": true,
+              "side_effects": [],
+              "structured_side_effects": [
+                {
+                  "kind": "none",
+                  "target": "",
+                  "description": "Pure function with no side effects."
+                }
+              ],
+              "performance_budget": {
+                "p95_latency_ms": 2000,
+                "max_memory_mb": 256,
+                "complexity": "O(n log n)"
+              }
+            },
+            {
+              "name": "main",
+              "description": "Entry point. Calls parse_input() to read drive data from stdin, passes the result to solve() to compute the minimum extra space, then prints the integer result to stdout followed by a newline. This is the function invoked when the script is run directly.",
+              "inputs": [],
+              "output_type": "None",
+              "error_cases": [
+                {
+                  "name": "input_error",
+                  "condition": "parse_input() raises ValueError due to malformed input.",
+                  "error_type": "ValueError",
+                  "error_data": {
+                    "message": "Input parsing failed; see parse_input error cases."
+                  }
+                },
+                {
+                  "name": "io_error",
+                  "condition": "Reading stdin or writing stdout fails due to I/O error.",
+                  "error_type": "IOError",
+                  "error_data": {
+                    "message": "I/O operation on stdin or stdout failed."
+                  }
+                }
+              ],
+              "preconditions": [
+                "sys.stdin contains valid input as specified by the problem statement.",
+                "stdout is writable."
+              ],
+              "postconditions": [
+                "Exactly one line is written to stdout containing the minimum extra space as a non-negative integer.",
+                "Output is followed by a newline character.",
+                "No other output is written to stdout or stderr during normal execution."
+              ],
+              "idempotent": false,
+              "side_effects": [
+                "Reads from sys.stdin via parse_input().",
+                "Writes result to sys.stdout via print()."
+              ],
+              "structured_side_effects": [
+                {
+                  "kind": "reads_file",
+                  "target": "sys.stdin",
+                  "description": "Delegates to parse_input() which reads entire stdin."
+                },
+                {
+                  "kind": "writes_file",
+                  "target": "sys.stdout",
+                  "description": "Prints the integer result followed by a newline to stdout."
+                }
+              ],
+              "performance_budget": {
+                "p95_latency_ms": 3000,
+                "max_memory_mb": 256,
+                "complexity": "O(n log n)"
+              }
+            }
+          ],
+          "dependencies": [],
+          "dependency_contracts": {},
+          "invariants": [
+            "The program uses only Python 3.10+ standard library (sys module for I/O).",
+            "No external packages or dependencies are imported.",
+            "The greedy processing order is always: gainers (b >= a) sorted by a ascending, then losers (b < a) sorted by b descending.",
+            "The solve function is pure: given the same input list, it always returns the same result.",
+            "The output is always a single non-negative integer on one line.",
+            "For any valid input, the algorithm terminates in O(n log n) time and O(n) auxiliary space.",
+            "The minimum extra space S satisfies: simulating the reformat in greedy order starting with free_space = S, free_space never drops below 0.",
+            "S is minimal: for any S' < S, the simulation would produce a negative free_space at some step."
+          ],
+          "requires": []
+        },
+        "implementation_status": "contracted",
+        "test_results": null
+      }
+    }
+  },
+  "engineering_decisions": [
+    {
+      "ambiguity": "",
+      "decision": "Greedy ordering strategy",
+      "rationale": "Drives where b >= a (gainers) are processed first, sorted by ascending a, since they require minimal initial space and yield net positive free space. Drives where b < a (losers) are processed second, sorted by descending b, to preserve maximum free space for subsequent losers. This is the known optimal greedy for this classic problem."
+    },
+    {
+      "ambiguity": "",
+      "decision": "Direct computation instead of binary search",
+      "rationale": "Given the fixed greedy ordering, the minimum extra space can be computed in a single O(n) pass by tracking the running free space and finding the maximum deficit. This avoids the extra log factor from binary search and is simpler to implement."
+    },
+    {
+      "ambiguity": "",
+      "decision": "Use sys.stdin for fast I/O",
+      "rationale": "With n up to 10^6, using sys.stdin.read() and splitting is significantly faster than line-by-line input() calls in Python."
+    }
+  ],
+  "failure_history": [],
+  "lessons_learned": [],
+  "version": 1
+}

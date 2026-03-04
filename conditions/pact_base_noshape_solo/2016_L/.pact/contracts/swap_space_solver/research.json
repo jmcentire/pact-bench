@@ -1,0 +1,83 @@
+{
+  "task_summary": "Define the interface contract for 'Swap Space Solver' — a competitive-programming-style solution that reads n drives with (old_capacity_a, new_capacity_b) pairs and computes the minimum extra storage needed to reformat all drives. The solution uses a greedy approach: separate drives into gainers (b >= a) sorted by a ascending, and losers (b < a) sorted by b descending, then simulate to find the minimum starting extra space S such that free space never goes negative.",
+  "findings": [
+    {
+      "topic": "Greedy ordering correctness for Swap Space",
+      "finding": "The classic Swap Space problem (ICPC/competitive programming) has a well-known optimal greedy: partition into gainers (b >= a) and losers (b < a). Gainers are sorted by 'a' ascending (cheapest to reformat first, freeing net capacity soonest). Losers are sorted by 'b' descending (the ones that give back the most new capacity are done first, preserving buffer for harder losers). This is provable via exchange argument. The ordering is critical — any other ordering can require strictly more extra space.",
+      "source": "ICPC problem archives; competitive programming editorial consensus (e.g., Kattis 'swapspace')",
+      "relevance": "Directly defines the core algorithm correctness. The interface must ensure this ordering is preserved.",
+      "confidence": 0.97
+    },
+    {
+      "topic": "Simulation formula for minimum extra space",
+      "finding": "With the greedy order fixed, process drives sequentially. Maintain 'free' initialized to S. For each drive i: free -= a_i (must remain >= 0), then free += b_i. The constraint is free >= 0 after every subtraction. So S must satisfy: S >= a_1, S - a_1 + b_1 >= a_2, etc. Defining prefix_net_j = sum_{k=1}^{j} (b_k - a_k), the requirement before processing drive i is S + prefix_net_{i-1} >= a_i, i.e., S >= a_i - prefix_net_{i-1}. Thus S = max(0, max over all i of (a_i - prefix_net_{i-1})). This is O(n) after sorting — no binary search needed.",
+      "source": "Standard derivation from greedy simulation; verified against multiple editorial solutions",
+      "relevance": "Core computation. The interface should expose this as a single-pass computation after sorting, returning a non-negative integer.",
+      "confidence": 0.98
+    },
+    {
+      "topic": "Input format and constraints",
+      "finding": "Typical Kattis 'swapspace' format: first line is n (number of drives, 1 <= n <= 1,000,000). Next n lines each have two integers a_i and b_i (0 <= a_i, b_i <= 1,000,000,000). Output is a single integer: the minimum extra space. Key: capacities can be 0 (a drive with a=0 costs nothing to reformat), and n can be up to 10^6 so O(n log n) is required.",
+      "source": "Kattis problem statement for 'swapspace'",
+      "relevance": "Defines the I/O contract. Must handle a=0 and b=0 edge cases, large n, and large values (up to 10^9, so prefix sums can reach ~10^15 — Python handles big ints natively).",
+      "confidence": 0.95
+    },
+    {
+      "topic": "Edge cases frequently missed",
+      "finding": "Common pitfalls: (1) Drives with a=0: these can be reformatted for free and should appear first among gainers (a=0 sorts first). (2) Drives with a=b: these are gainers (b >= a) with net zero gain — they must still be sorted by a among gainers. (3) All drives are losers: extra space must cover the worst prefix. (4) Single drive: S = a (if b < a) or S = a (always need a to move data off the first drive). Wait — S = a_1 for the first drive always, unless a_1 = 0. (5) Overflow: not an issue in Python but prefix sums can be large. (6) n=0: no drives, output 0 (check if problem allows this). (7) Empty input or malformed input — in competitive programming, input is guaranteed valid.",
+      "source": "Competitive programming debugging experience; problem discussion forums",
+      "relevance": "Critical for correctness. The interface contract should document these edge cases and ensure the implementation handles them.",
+      "confidence": 0.93
+    },
+    {
+      "topic": "Python I/O performance for large input",
+      "finding": "For n up to 10^6, using sys.stdin.read() with split() is significantly faster than input() per line. Reading all input at once and parsing with a token iterator is the standard competitive programming Python pattern. sys.stdout.write() is preferred over print() for consistency but print() is fine for single-line output.",
+      "source": "Python competitive programming best practices; Kattis Python performance guides",
+      "relevance": "Directly impacts whether the solution passes time limits. The interface should specify bulk reading via sys.stdin.",
+      "confidence": 0.96
+    },
+    {
+      "topic": "Type annotation patterns for competitive programming solutions",
+      "finding": "For a self-contained competitive programming solution, lightweight type annotations are appropriate: annotate function signatures (parameter types and return types) but avoid over-engineering with dataclasses or complex type hierarchies. Use list[tuple[int, int]] for drive lists, int for capacities. NamedTuple can add clarity for Drive(a, b) but adds overhead — a plain tuple is idiomatic for competitive programming. Since the spec requires Python 3.10+ type annotations, use built-in generics (list[], tuple[]) rather than typing module imports.",
+      "source": "Python 3.10+ PEP 604/585 conventions; coding standards requirement",
+      "relevance": "Defines naming and type conventions for the interface. Keep annotations present but lightweight.",
+      "confidence": 0.92
+    },
+    {
+      "topic": "Function decomposition and interface design",
+      "finding": "Clean decomposition: (1) parse_input() -> tuple[int, list[tuple[int, int]]] reads and returns n and drive list. (2) solve(drives: list[tuple[int, int]]) -> int implements the greedy sort + simulation, returns minimum extra space. (3) main() orchestrates. This separation enables unit testing of solve() independently from I/O. The solve() function is the core interface — it takes a list of (a, b) pairs and returns an int.",
+      "source": "Software engineering best practices applied to competitive programming",
+      "relevance": "Directly defines the interface contract. The solve function should be pure (no side effects), taking drives and returning the answer.",
+      "confidence": 0.94
+    },
+    {
+      "topic": "Sorting stability and tie-breaking",
+      "finding": "For gainers sorted by 'a' ascending: ties in 'a' don't matter for correctness (any ordering among ties is equivalent by exchange argument — if two gainers have the same 'a', the one with larger 'b' is slightly better first but it doesn't affect the minimum S because the subtraction is the same). For losers sorted by 'b' descending: ties in 'b' similarly don't affect correctness. Python's sort is stable, so no special tie-breaking is needed.",
+      "source": "Exchange argument analysis; Python sort guarantees (Timsort stability)",
+      "relevance": "Confirms no special comparator logic is needed beyond the primary sort key, simplifying the interface.",
+      "confidence": 0.95
+    }
+  ],
+  "recommended_approach": "Define the interface with three clean functions:\n\n1. **`parse_input() -> list[tuple[int, int]]`** — Reads all input from sys.stdin at once using `sys.stdin.read().split()` for performance. Returns list of (a, b) tuples. No need to return n separately since len(drives) suffices.\n\n2. **`solve(drives: list[tuple[int, int]]) -> int`** — Pure function. Partitions into gainers (b >= a, sorted by a ascending) and losers (b < a, sorted by b descending). Concatenates into processing order. Single pass to compute S = max(0, max_i(a_i - prefix_net_{i-1})) where prefix_net is the running sum of (b_k - a_k) for processed drives. Returns the minimum extra space as a non-negative int.\n\n3. **`main() -> None`** — Calls parse_input(), passes to solve(), prints result.\n\nKey contract details:\n- Input: drives is a list of (a, b) where a, b are non-negative integers.\n- Output: a single non-negative integer.\n- The solve function must handle empty lists (return 0), single drives, drives with a=0 or b=0, and up to 10^6 drives.\n- Use Python 3.10+ built-in generic type syntax (list[], tuple[]).\n- No external libraries — standard library only (sys).",
+  "alternatives_considered": [
+    "Using binary search on S instead of direct formula — rejected because the direct O(n) simulation after sorting is simpler, faster, and less error-prone than binary search O(n log(max_sum)).",
+    "Using a NamedTuple or dataclass for Drive(a, b) — rejected because plain tuples are more memory-efficient for up to 10^6 elements and indexing is straightforward for a 2-element tuple. Type alias `Drive = tuple[int, int]` could be used for documentation.",
+    "Single monolithic main() function — rejected because separating solve() from I/O enables testability and clearer interface contract.",
+    "Using input() per line instead of sys.stdin.read() bulk — rejected due to significant performance penalty at n=10^6.",
+    "Sorting all drives together with a custom comparator — rejected because the partition-then-sort approach is simpler to reason about and matches the proven greedy strategy."
+  ],
+  "risks": [
+    "Time limit: Python may be slow for n=10^6 even with O(n log n). Mitigation: bulk I/O with sys.stdin.read(), minimal per-element overhead, single-pass simulation.",
+    "Off-by-one in prefix sum indexing: the formula S >= a_i - prefix_net_{i-1} requires careful tracking. prefix_net starts at 0 before any drive is processed. After processing drive i, prefix_net += (b_i - a_i). The check happens BEFORE adding drive i's contribution.",
+    "Integer overflow: not a risk in Python (arbitrary precision), but prefix sums can reach ~10^15 — worth noting for any future port to C++/Java.",
+    "Edge case n=0: if the problem guarantees n >= 1 this is moot, but defensively returning 0 for empty input is safe.",
+    "Misclassifying drives with a == b: these should be gainers (b >= a), not losers. Net effect is zero but they must be processed in the gainer phase to maintain optimality."
+  ],
+  "compliance_notes": [
+    "Python 3.10+ with type annotations: use built-in generics (list[], tuple[]), no 'from typing import' needed.",
+    "Standard library only: only sys is used (for sys.stdin).",
+    "Reads from stdin, writes to stdout: parse_input reads sys.stdin, main prints to stdout.",
+    "Must handle all input constraints: n up to 10^6, a_i/b_i up to 10^9, a_i or b_i can be 0.",
+    "Output format: single integer on one line, matching expected output exactly."
+  ]
+}

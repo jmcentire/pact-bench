@@ -1,0 +1,597 @@
+{
+  "project_id": "2020_M",
+  "title": "Design: 2020_M",
+  "summary": "",
+  "decomposition_tree": {
+    "root_id": "trailing_digits_solver",
+    "nodes": {
+      "trailing_digits_solver": {
+        "component_id": "trailing_digits_solver",
+        "name": "Trailing Digits Solver",
+        "description": "A single Python program that reads b, d, a from stdin and outputs the maximum number of consecutive trailing digits d achievable in a bundle price k*b where k*b <= a.\n\nAlgorithm:\n1. Parse input: b (int), d (int), a (very large int, up to 10^10000).\n2. For increasing n (number of trailing digits) starting from 1 up to len(str(a))+1:\n   - Compute the target residue r = d * (10^n - 1) / 9 (the repdigit ddd...d with n digits). For d=0, r=0.\n   - We need to find the smallest positive k such that k*b ≡ r (mod 10^n).\n   - This requires solving a linear congruence: k ≡ r / b (mod 10^n). Use modular inverse if gcd(b, 10^n) divides r; otherwise no solution exists for this n.\n   - If a solution k exists, compute the minimum positive k, then compute k*b and check if k*b <= a.\n   - If k*b <= a, record n as achievable. Otherwise, stop (since larger n will only require larger prices).\n3. Output the maximum n found (0 if none).\n\nKey implementation details:\n- Use Python's arbitrary-precision integers to handle a up to 10^10000.\n- For the linear congruence k*b ≡ r (mod 10^n): let g = gcd(b, 10^n). If g does not divide r, no solution. Otherwise divide through by g: k * (b/g) ≡ (r/g) (mod 10^n/g). Find modular inverse of (b/g) mod (10^n/g) using pow(b//g, -1, mod) (Python 3.8+). The minimum positive k is the solution mod (10^n/g).\n- The property is monotonic: if n trailing digits are achievable, then n-1 are too (same k works mod 10^(n-1)). So we can iterate upward and stop at the first failure, or use binary search.\n- However, care is needed: it's possible that for some n the congruence has no solution but for n+1 it does? Actually no — if k*b has n+1 trailing d's, it certainly has n trailing d's. So the set of achievable n values is {0, 1, ..., max_n}. We can iterate upward and stop when we fail.\n- Edge case: if d=0, the repdigit is 0, so we need k*b ≡ 0 (mod 10^n), i.e., 10^n | k*b.\n- Output a single integer followed by newline.",
+        "depth": 0,
+        "parent_id": "",
+        "children": [],
+        "contract": {
+          "component_id": "trailing_digits_solver",
+          "name": "Trailing Digits Solver",
+          "description": "A single Python program that reads b, d, a from stdin and outputs the maximum number of consecutive trailing digits d achievable in a bundle price k*b where k*b <= a. Uses iterative linear congruence solving with GCD and modular inverse (pow(b//g, -1, mod)) to find the minimum positive multiple of b with n trailing digits equal to d, iterating n upward from 1 and terminating at the first n where no solution exists or the minimum multiple exceeds a. Handles arbitrary-precision integers (a up to 10^10000) using Python's native bigints. Standard library only, Python 3.10+.",
+          "version": 1,
+          "types": [
+            {
+              "name": "int",
+              "kind": "primitive",
+              "fields": [],
+              "item_type": "",
+              "variants": [],
+              "inner_types": [],
+              "description": "Python arbitrary-precision integer. Used for b, d, a, k, repdigit values, modular arithmetic operands, and results. No upper bound on magnitude."
+            },
+            {
+              "name": "bool",
+              "kind": "primitive",
+              "fields": [],
+              "item_type": "",
+              "variants": [],
+              "inner_types": [],
+              "description": "Python boolean, used for conditional checks."
+            },
+            {
+              "name": "str",
+              "kind": "primitive",
+              "fields": [],
+              "item_type": "",
+              "variants": [],
+              "inner_types": [],
+              "description": "Python string, used for raw stdin input lines."
+            },
+            {
+              "name": "None",
+              "kind": "primitive",
+              "fields": [],
+              "item_type": "",
+              "variants": [],
+              "inner_types": [],
+              "description": "Python None, used as a sentinel for 'no solution exists'."
+            },
+            {
+              "name": "OptionalInt",
+              "kind": "optional",
+              "fields": [],
+              "item_type": "int",
+              "variants": [],
+              "inner_types": [],
+              "description": "Either an int or None. Represents an optional integer result — None means no valid multiple exists for the given parameters."
+            },
+            {
+              "name": "ProblemInput",
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "b",
+                  "type_ref": "int",
+                  "required": true,
+                  "default": "",
+                  "description": "The base bundle price. Must be >= 1.",
+                  "validators": [
+                    {
+                      "kind": "range",
+                      "expression": "b >= 1",
+                      "error_message": "b must be a positive integer (>= 1)"
+                    }
+                  ]
+                },
+                {
+                  "name": "d",
+                  "type_ref": "int",
+                  "required": true,
+                  "default": "",
+                  "description": "The target trailing digit. Must be in {0, 1, 2, ..., 9}.",
+                  "validators": [
+                    {
+                      "kind": "range",
+                      "expression": "0 <= d <= 9",
+                      "error_message": "d must be a single decimal digit (0-9)"
+                    }
+                  ]
+                },
+                {
+                  "name": "a",
+                  "type_ref": "int",
+                  "required": true,
+                  "default": "",
+                  "description": "The maximum allowable bundle price k*b. Must be >= 1. Can be astronomically large (up to 10^10000).",
+                  "validators": [
+                    {
+                      "kind": "range",
+                      "expression": "a >= 1",
+                      "error_message": "a must be a positive integer (>= 1)"
+                    }
+                  ]
+                }
+              ],
+              "item_type": "",
+              "variants": [],
+              "inner_types": [],
+              "description": "The parsed and validated input triple for the trailing digits problem."
+            },
+            {
+              "name": "CongruenceParams",
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "n",
+                  "type_ref": "int",
+                  "required": true,
+                  "default": "",
+                  "description": "The current number of trailing digits being tested. n >= 1.",
+                  "validators": [
+                    {
+                      "kind": "range",
+                      "expression": "n >= 1",
+                      "error_message": "n must be at least 1"
+                    }
+                  ]
+                },
+                {
+                  "name": "modulus",
+                  "type_ref": "int",
+                  "required": true,
+                  "default": "",
+                  "description": "10^n — the modular base for the congruence. Always a positive power of 10.",
+                  "validators": [
+                    {
+                      "kind": "range",
+                      "expression": "modulus >= 10",
+                      "error_message": "modulus must be 10^n with n >= 1"
+                    }
+                  ]
+                },
+                {
+                  "name": "repdigit",
+                  "type_ref": "int",
+                  "required": true,
+                  "default": "",
+                  "description": "The target residue r = d * (10^n - 1) / 9 for d != 0, or 0 for d = 0. This is the n-digit repdigit ddd...d.",
+                  "validators": [
+                    {
+                      "kind": "range",
+                      "expression": "repdigit >= 0",
+                      "error_message": "repdigit must be non-negative"
+                    }
+                  ]
+                },
+                {
+                  "name": "gcd_b_mod",
+                  "type_ref": "int",
+                  "required": true,
+                  "default": "",
+                  "description": "gcd(b, modulus). Used to determine solvability and reduce the congruence.",
+                  "validators": [
+                    {
+                      "kind": "range",
+                      "expression": "gcd_b_mod >= 1",
+                      "error_message": "GCD must be at least 1"
+                    }
+                  ]
+                }
+              ],
+              "item_type": "",
+              "variants": [],
+              "inner_types": [],
+              "description": "Internal parameters for the linear congruence k*b ≡ r (mod m) at a given iteration n. Not exposed externally but documents the algorithm's state."
+            }
+          ],
+          "functions": [
+            {
+              "name": "main",
+              "description": "Entry point. Reads b, d, a from stdin (whitespace-separated), calls solve(), prints the result to stdout followed by a newline. Handles the sys.set_int_max_str_digits(0) guard for Python 3.11+ to allow conversion of very large integer strings. This is the only function with I/O side effects.",
+              "inputs": [],
+              "output_type": "None",
+              "error_cases": [
+                {
+                  "name": "stdin_empty",
+                  "condition": "stdin is empty or does not contain three parseable integer tokens",
+                  "error_type": "ValueError",
+                  "error_data": {
+                    "message": "Expected three whitespace-separated integers on stdin"
+                  }
+                },
+                {
+                  "name": "invalid_integer_token",
+                  "condition": "A token on stdin cannot be parsed as an integer",
+                  "error_type": "ValueError",
+                  "error_data": {
+                    "message": "Non-integer token encountered in input"
+                  }
+                }
+              ],
+              "preconditions": [
+                "stdin contains exactly three whitespace-separated non-negative integer tokens",
+                "The integers satisfy: b >= 1, 0 <= d <= 9, a >= 1",
+                "Python 3.10+ runtime is available"
+              ],
+              "postconditions": [
+                "Exactly one line is written to stdout containing the integer result of solve(b, d, a)",
+                "The output line is terminated by a newline character",
+                "No other output is written to stdout"
+              ],
+              "idempotent": false,
+              "side_effects": [
+                "Reads from stdin",
+                "Writes to stdout"
+              ],
+              "structured_side_effects": [
+                {
+                  "kind": "reads_file",
+                  "target": "stdin",
+                  "description": "Reads the problem input (b, d, a) from standard input"
+                },
+                {
+                  "kind": "writes_file",
+                  "target": "stdout",
+                  "description": "Writes the single integer answer followed by a newline to standard output"
+                },
+                {
+                  "kind": "mutates_state",
+                  "target": "sys.set_int_max_str_digits",
+                  "description": "Optionally disables the string-to-int conversion length limit on Python 3.11+ by calling sys.set_int_max_str_digits(0) if the attribute exists"
+                }
+              ],
+              "performance_budget": null
+            },
+            {
+              "name": "parse_input",
+              "description": "Reads all of stdin, splits on whitespace, and parses exactly three integer tokens into a ProblemInput struct. Calls sys.set_int_max_str_digits(0) if available (Python 3.11+ guard) before parsing to support a values up to 10^10000.",
+              "inputs": [
+                {
+                  "name": "raw_input",
+                  "type_ref": "str",
+                  "required": true,
+                  "default": "",
+                  "description": "The complete raw content of stdin as a single string.",
+                  "validators": [
+                    {
+                      "kind": "custom",
+                      "expression": "len(raw_input.split()) == 3",
+                      "error_message": "Input must contain exactly three whitespace-separated tokens"
+                    }
+                  ]
+                }
+              ],
+              "output_type": "ProblemInput",
+              "error_cases": [
+                {
+                  "name": "wrong_token_count",
+                  "condition": "Number of whitespace-separated tokens is not exactly 3",
+                  "error_type": "ValueError",
+                  "error_data": {
+                    "message": "Expected exactly 3 tokens, got {actual_count}"
+                  }
+                },
+                {
+                  "name": "non_integer_token",
+                  "condition": "Any of the three tokens cannot be converted to int",
+                  "error_type": "ValueError",
+                  "error_data": {
+                    "message": "Token '{token}' is not a valid integer"
+                  }
+                },
+                {
+                  "name": "b_out_of_range",
+                  "condition": "Parsed b < 1",
+                  "error_type": "ValueError",
+                  "error_data": {
+                    "message": "b must be >= 1, got {b}"
+                  }
+                },
+                {
+                  "name": "d_out_of_range",
+                  "condition": "Parsed d < 0 or d > 9",
+                  "error_type": "ValueError",
+                  "error_data": {
+                    "message": "d must be in [0, 9], got {d}"
+                  }
+                },
+                {
+                  "name": "a_out_of_range",
+                  "condition": "Parsed a < 1",
+                  "error_type": "ValueError",
+                  "error_data": {
+                    "message": "a must be >= 1, got {a}"
+                  }
+                }
+              ],
+              "preconditions": [
+                "raw_input contains exactly three whitespace-separated tokens",
+                "All three tokens are valid decimal integer representations",
+                "sys.set_int_max_str_digits(0) has been called if needed (Python 3.11+)"
+              ],
+              "postconditions": [
+                "Returned ProblemInput has b >= 1, 0 <= d <= 9, a >= 1",
+                "The values exactly correspond to the parsed tokens in order (b, d, a)"
+              ],
+              "idempotent": true,
+              "side_effects": [],
+              "structured_side_effects": [
+                {
+                  "kind": "none",
+                  "target": "",
+                  "description": "Pure function — no side effects"
+                }
+              ],
+              "performance_budget": null
+            },
+            {
+              "name": "solve",
+              "description": "Core algorithm. Given b, d, a, returns the maximum number of consecutive trailing digits equal to d achievable in any positive multiple k*b where k*b <= a. Iterates n from 1 upward, calling min_multiple_with_n_trailing(b, d, n) for each n. Terminates and returns n-1 at the first n where no solution exists or the minimum qualifying multiple exceeds a. Returns 0 if no multiple of b in [b, a] ends in digit d. Uses incremental computation of 10^n (multiply by 10 each iteration) and repdigit (repdigit = repdigit * 10 + d each iteration) for efficiency.",
+              "inputs": [
+                {
+                  "name": "b",
+                  "type_ref": "int",
+                  "required": true,
+                  "default": "",
+                  "description": "The base bundle price. Positive integer >= 1.",
+                  "validators": [
+                    {
+                      "kind": "range",
+                      "expression": "b >= 1",
+                      "error_message": "b must be >= 1"
+                    }
+                  ]
+                },
+                {
+                  "name": "d",
+                  "type_ref": "int",
+                  "required": true,
+                  "default": "",
+                  "description": "The target trailing digit, in {0, 1, ..., 9}.",
+                  "validators": [
+                    {
+                      "kind": "range",
+                      "expression": "0 <= d <= 9",
+                      "error_message": "d must be in [0, 9]"
+                    }
+                  ]
+                },
+                {
+                  "name": "a",
+                  "type_ref": "int",
+                  "required": true,
+                  "default": "",
+                  "description": "The maximum allowable price. Positive integer >= 1. Can be up to 10^10000.",
+                  "validators": [
+                    {
+                      "kind": "range",
+                      "expression": "a >= 1",
+                      "error_message": "a must be >= 1"
+                    }
+                  ]
+                }
+              ],
+              "output_type": "int",
+              "error_cases": [
+                {
+                  "name": "b_zero_or_negative",
+                  "condition": "b < 1",
+                  "error_type": "ValueError",
+                  "error_data": {
+                    "message": "b must be a positive integer"
+                  }
+                },
+                {
+                  "name": "d_not_digit",
+                  "condition": "d < 0 or d > 9",
+                  "error_type": "ValueError",
+                  "error_data": {
+                    "message": "d must be a single digit 0-9"
+                  }
+                },
+                {
+                  "name": "a_zero_or_negative",
+                  "condition": "a < 1",
+                  "error_type": "ValueError",
+                  "error_data": {
+                    "message": "a must be a positive integer"
+                  }
+                }
+              ],
+              "preconditions": [
+                "b >= 1",
+                "0 <= d <= 9",
+                "a >= 1"
+              ],
+              "postconditions": [
+                "result >= 0",
+                "For all n in 1..result: there exists a positive integer k such that k*b <= a and the last n digits of k*b are all equal to d",
+                "Either result == max_possible_n (repdigit with result+1 digits > a) OR no positive k exists such that k*b <= a and k*b has (result+1) consecutive trailing digits d",
+                "If result == 0, then no positive multiple of b in [1, a] ends in digit d"
+              ],
+              "idempotent": true,
+              "side_effects": [],
+              "structured_side_effects": [
+                {
+                  "kind": "none",
+                  "target": "",
+                  "description": "Pure function — no side effects. All computation uses Python's arbitrary-precision integers."
+                }
+              ],
+              "performance_budget": {
+                "p95_latency_ms": null,
+                "max_memory_mb": 256,
+                "complexity": "O(N * M(N)) where N = number of digits of a (up to 10000) and M(N) is the cost of bigint arithmetic on N-digit numbers (GCD, modular inverse). In practice O(N^2) or O(N^2 log N) depending on Python's bigint implementation."
+              }
+            },
+            {
+              "name": "min_multiple_with_n_trailing",
+              "description": "Returns the smallest positive multiple of b (i.e., k*b with k >= 1) whose last n decimal digits are all equal to d, or None if no such multiple exists. Solves the linear congruence k*b ≡ r (mod 10^n) where r is the n-digit repdigit ddd...d (or 0 if d=0). Steps: (1) Compute g = gcd(b, 10^n). (2) If g does not divide r, return None (no solution). (3) Divide through: solve k * (b/g) ≡ (r/g) (mod 10^n/g). (4) Compute modular inverse of (b/g) mod (10^n/g) via pow(b//g, -1, 10**n//g). (5) k = ((r//g) * inverse) mod (10^n//g). (6) If k == 0, set k = 10^n // g (smallest positive solution). (7) Return k * b. Accepts precomputed modulus and repdigit for efficiency in the iterative caller.",
+              "inputs": [
+                {
+                  "name": "b",
+                  "type_ref": "int",
+                  "required": true,
+                  "default": "",
+                  "description": "The base bundle price. Positive integer >= 1.",
+                  "validators": [
+                    {
+                      "kind": "range",
+                      "expression": "b >= 1",
+                      "error_message": "b must be >= 1"
+                    }
+                  ]
+                },
+                {
+                  "name": "d",
+                  "type_ref": "int",
+                  "required": true,
+                  "default": "",
+                  "description": "The target trailing digit, in {0, 1, ..., 9}.",
+                  "validators": [
+                    {
+                      "kind": "range",
+                      "expression": "0 <= d <= 9",
+                      "error_message": "d must be in [0, 9]"
+                    }
+                  ]
+                },
+                {
+                  "name": "n",
+                  "type_ref": "int",
+                  "required": true,
+                  "default": "",
+                  "description": "The number of consecutive trailing digits required. Must be >= 1.",
+                  "validators": [
+                    {
+                      "kind": "range",
+                      "expression": "n >= 1",
+                      "error_message": "n must be >= 1"
+                    }
+                  ]
+                },
+                {
+                  "name": "modulus",
+                  "type_ref": "int",
+                  "required": true,
+                  "default": "",
+                  "description": "Precomputed value of 10^n. Must equal 10**n exactly. Passed in to avoid redundant recomputation in the iterative loop.",
+                  "validators": [
+                    {
+                      "kind": "custom",
+                      "expression": "modulus == 10**n",
+                      "error_message": "modulus must equal 10^n"
+                    }
+                  ]
+                },
+                {
+                  "name": "repdigit",
+                  "type_ref": "int",
+                  "required": true,
+                  "default": "",
+                  "description": "Precomputed n-digit repdigit: d * (10^n - 1) // 9 for d != 0, or 0 for d == 0. Must exactly equal the n-digit number consisting entirely of digit d. Passed in to avoid redundant recomputation.",
+                  "validators": [
+                    {
+                      "kind": "custom",
+                      "expression": "(d == 0 and repdigit == 0) or (d != 0 and repdigit == d * (modulus - 1) // 9)",
+                      "error_message": "repdigit must be the n-digit repdigit of d"
+                    }
+                  ]
+                }
+              ],
+              "output_type": "OptionalInt",
+              "error_cases": [
+                {
+                  "name": "modular_inverse_does_not_exist",
+                  "condition": "gcd(b // gcd(b, modulus), modulus // gcd(b, modulus)) != 1 — should not occur since modulus is a power of 10 and after dividing by gcd the reduced modulus and reduced b are coprime",
+                  "error_type": "ValueError",
+                  "error_data": {
+                    "message": "Internal error: modular inverse does not exist after GCD reduction. This indicates a bug."
+                  }
+                },
+                {
+                  "name": "congruence_unsolvable",
+                  "condition": "gcd(b, modulus) does not divide repdigit — this is a normal case, not an error; function returns None",
+                  "error_type": "None",
+                  "error_data": {
+                    "message": "No solution exists; function returns None (not an exception)"
+                  }
+                }
+              ],
+              "preconditions": [
+                "b >= 1",
+                "0 <= d <= 9",
+                "n >= 1",
+                "modulus == 10**n",
+                "(d == 0 and repdigit == 0) or (d != 0 and repdigit == d * (modulus - 1) // 9)"
+              ],
+              "postconditions": [
+                "If result is not None: result > 0",
+                "If result is not None: result % b == 0 (result is a multiple of b)",
+                "If result is not None: result % modulus == repdigit (last n digits are all d)",
+                "If result is not None: result is the SMALLEST positive multiple of b satisfying the trailing-digit property",
+                "If result is None: no positive integer k exists such that (k * b) % modulus == repdigit"
+              ],
+              "idempotent": true,
+              "side_effects": [],
+              "structured_side_effects": [
+                {
+                  "kind": "none",
+                  "target": "",
+                  "description": "Pure function — no side effects. Uses math.gcd and pow(base, -1, mod) from Python builtins/stdlib."
+                }
+              ],
+              "performance_budget": {
+                "p95_latency_ms": null,
+                "max_memory_mb": 128,
+                "complexity": "O(M(N)) where N is the number of digits in modulus (= n) and M(N) is the cost of a single bigint GCD or modular exponentiation on N-digit numbers"
+              }
+            }
+          ],
+          "dependencies": [],
+          "dependency_contracts": {},
+          "invariants": [
+            "All arithmetic uses Python's arbitrary-precision integers; no floating-point operations are performed anywhere in the algorithm",
+            "The achievable set of trailing-digit counts is contiguous: if n trailing digits d are achievable (∃ k: k*b ≤ a and k*b has n trailing d's), then for all m in [1, n], m trailing digits d are also achievable (same k works mod 10^m). Therefore the answer is the maximum of a contiguous range {0} ∪ {1, ..., max_n}",
+            "Iteration terminates: the loop in solve() runs at most len(str(a)) + 1 iterations because a repdigit with more digits than a has would exceed a. In practice it terminates much earlier for most inputs",
+            "For each n, the minimum qualifying multiple is unique: the linear congruence k*b ≡ r (mod 10^n) has either 0 or exactly gcd(b, 10^n) solutions mod 10^n, and the minimum positive k*b is deterministic",
+            "k is always positive (≥ 1): if the congruence solver yields k = 0, it is replaced with k = 10^n // gcd(b, 10^n) to ensure the multiple is positive",
+            "No external dependencies are used; only Python standard library (math.gcd, sys, pow builtin) is required",
+            "Output is exactly one line containing a non-negative integer followed by a newline character"
+          ],
+          "requires": [
+            "Python 3.10+ runtime with arbitrary-precision integers",
+            "Standard library only (math, sys)",
+            "stdin provides whitespace-separated integers b d a",
+            "stdout receives a single integer followed by newline"
+          ]
+        },
+        "implementation_status": "contracted",
+        "test_results": null
+      }
+    }
+  },
+  "engineering_decisions": [
+    {
+      "ambiguity": "",
+      "decision": "Use iterative search from n=1 upward rather than binary search",
+      "rationale": "The achievable trailing digit counts form a contiguous range {0,1,...,max_n} due to monotonicity. Iterating upward and stopping at first failure is simpler and equally efficient since max n is bounded by ~10000 digits of a."
+    },
+    {
+      "ambiguity": "",
+      "decision": "Use Python's built-in pow(base, -1, mod) for modular inverse",
+      "rationale": "Available in Python 3.8+ (we target 3.10+), avoids implementing extended GCD manually, and handles arbitrary precision natively."
+    },
+    {
+      "ambiguity": "",
+      "decision": "Handle d=0 as a special case of the general congruence (r=0)",
+      "rationale": "When d=0 the repdigit value is 0, so the congruence becomes k*b ≡ 0 mod 10^n. The general algorithm handles this but it's worth noting as a conceptual edge case."
+    },
+    {
+      "ambiguity": "",
+      "decision": "Output 0 if no multiple of b has trailing digit d",
+      "rationale": "Per the assumptions from the interview, when no valid k exists for even n=1, the answer is 0."
+    }
+  ],
+  "failure_history": [],
+  "lessons_learned": [],
+  "version": 1
+}

@@ -1,0 +1,812 @@
+{
+  "component_id": "solution",
+  "name": "Forever Young Solution",
+  "description": "Implement a single Python script (solution.py) that reads two integers y and ℓ from stdin, and finds the largest base b such that y written in base b contains only decimal digits (0-9) and, when reinterpreted as a base-10 number, is at least ℓ. Uses a case-split by number of digits strategy: d=1 special case, d=2 enumeration, d=3 quadratic solving, d≥4 brute-force iteration. Base 10 is always valid as a fallback guarantee. Single module, Python 3.10+, standard library only, stdin/stdout I/O.",
+  "version": 1,
+  "types": [
+    {
+      "name": "DigitList",
+      "kind": "list",
+      "fields": [],
+      "item_type": "int",
+      "variants": [],
+      "inner_types": [],
+      "description": "A list of integer digits representing a number in some base, ordered most-significant digit first. Each element is a non-negative integer representing one digit position."
+    },
+    {
+      "name": "SearchResult",
+      "kind": "struct",
+      "fields": [
+        {
+          "name": "max_base",
+          "type_ref": "int",
+          "required": true,
+          "default": "",
+          "description": "The largest valid base found. -1 if no valid base found in the searched range.",
+          "validators": []
+        },
+        {
+          "name": "found",
+          "type_ref": "bool",
+          "required": true,
+          "default": "",
+          "description": "Whether at least one valid base was found in the searched range.",
+          "validators": []
+        }
+      ],
+      "item_type": "",
+      "variants": [],
+      "inner_types": [],
+      "description": "Result of searching for valid bases across a particular digit-count case or across all cases."
+    },
+    {
+      "name": "CandidateBase",
+      "kind": "struct",
+      "fields": [
+        {
+          "name": "base",
+          "type_ref": "int",
+          "required": true,
+          "default": "",
+          "description": "The candidate base value, must be >= 2.",
+          "validators": [
+            {
+              "kind": "range",
+              "expression": "base >= 2",
+              "error_message": "Base must be at least 2."
+            }
+          ]
+        },
+        {
+          "name": "digits",
+          "type_ref": "DigitList",
+          "required": true,
+          "default": "",
+          "description": "The digits of y in this base, most-significant first.",
+          "validators": []
+        },
+        {
+          "name": "decimal_value",
+          "type_ref": "int",
+          "required": true,
+          "default": "",
+          "description": "The value obtained by reinterpreting digits as a base-10 number.",
+          "validators": [
+            {
+              "kind": "range",
+              "expression": "decimal_value >= 0",
+              "error_message": "Decimal reinterpretation must be non-negative."
+            }
+          ]
+        },
+        {
+          "name": "valid",
+          "type_ref": "bool",
+          "required": true,
+          "default": "",
+          "description": "True if all digits are <= 9 and decimal_value >= ell.",
+          "validators": []
+        }
+      ],
+      "item_type": "",
+      "variants": [],
+      "inner_types": [],
+      "description": "A candidate base along with its digit decomposition and decimal reinterpretation, used during search."
+    }
+  ],
+  "functions": [
+    {
+      "name": "to_base",
+      "description": "Convert a non-negative integer y to its representation in base b, returning digits as a list of integers ordered most-significant digit first. For y=0, returns [0].",
+      "inputs": [
+        {
+          "name": "y",
+          "type_ref": "int",
+          "required": true,
+          "default": "",
+          "description": "The non-negative integer to convert.",
+          "validators": [
+            {
+              "kind": "range",
+              "expression": "y >= 0",
+              "error_message": "y must be non-negative."
+            }
+          ]
+        },
+        {
+          "name": "b",
+          "type_ref": "int",
+          "required": true,
+          "default": "",
+          "description": "The target base for conversion.",
+          "validators": [
+            {
+              "kind": "range",
+              "expression": "b >= 2",
+              "error_message": "Base must be at least 2."
+            }
+          ]
+        }
+      ],
+      "output_type": "DigitList",
+      "error_cases": [
+        {
+          "name": "negative_y",
+          "condition": "y < 0",
+          "error_type": "ValueError",
+          "error_data": {
+            "message": "y must be non-negative"
+          }
+        },
+        {
+          "name": "base_too_small",
+          "condition": "b < 2",
+          "error_type": "ValueError",
+          "error_data": {
+            "message": "Base must be at least 2"
+          }
+        }
+      ],
+      "preconditions": [
+        "y >= 0",
+        "b >= 2"
+      ],
+      "postconditions": [
+        "len(result) >= 1",
+        "result[0] > 0 or (len(result) == 1 and result[0] == 0)",
+        "sum(result[i] * b**(len(result)-1-i) for i in range(len(result))) == y",
+        "all(0 <= d < b for d in result)"
+      ],
+      "idempotent": true,
+      "side_effects": [],
+      "structured_side_effects": [
+        {
+          "kind": "none",
+          "target": "",
+          "description": ""
+        }
+      ],
+      "performance_budget": {
+        "p95_latency_ms": 1,
+        "max_memory_mb": null,
+        "complexity": "O(log_b(y))"
+      }
+    },
+    {
+      "name": "all_digits_valid",
+      "description": "Check whether all digits in the given list are valid decimal digits, i.e., each digit is in the range [0, 9].",
+      "inputs": [
+        {
+          "name": "digits",
+          "type_ref": "DigitList",
+          "required": true,
+          "default": "",
+          "description": "List of integer digits to validate.",
+          "validators": []
+        }
+      ],
+      "output_type": "bool",
+      "error_cases": [],
+      "preconditions": [
+        "all(d >= 0 for d in digits)"
+      ],
+      "postconditions": [
+        "result == all(0 <= d <= 9 for d in digits)"
+      ],
+      "idempotent": true,
+      "side_effects": [],
+      "structured_side_effects": [
+        {
+          "kind": "none",
+          "target": "",
+          "description": ""
+        }
+      ],
+      "performance_budget": {
+        "p95_latency_ms": 1,
+        "max_memory_mb": null,
+        "complexity": "O(len(digits))"
+      }
+    },
+    {
+      "name": "reinterpret_decimal",
+      "description": "Reinterpret a list of digits as a base-10 number. E.g., [1, 2, 3] becomes 123. Each digit must be in [0, 9] for the result to be meaningful, but this function does not enforce that constraint.",
+      "inputs": [
+        {
+          "name": "digits",
+          "type_ref": "DigitList",
+          "required": true,
+          "default": "",
+          "description": "List of digits to reinterpret as a base-10 number, most-significant first.",
+          "validators": []
+        }
+      ],
+      "output_type": "int",
+      "error_cases": [
+        {
+          "name": "empty_digits",
+          "condition": "len(digits) == 0",
+          "error_type": "ValueError",
+          "error_data": {
+            "message": "Digit list must not be empty"
+          }
+        }
+      ],
+      "preconditions": [
+        "len(digits) >= 1"
+      ],
+      "postconditions": [
+        "result == sum(digits[i] * 10**(len(digits)-1-i) for i in range(len(digits)))",
+        "result >= 0"
+      ],
+      "idempotent": true,
+      "side_effects": [],
+      "structured_side_effects": [
+        {
+          "kind": "none",
+          "target": "",
+          "description": ""
+        }
+      ],
+      "performance_budget": {
+        "p95_latency_ms": 1,
+        "max_memory_mb": null,
+        "complexity": "O(len(digits))"
+      }
+    },
+    {
+      "name": "check_base",
+      "description": "For a given y and base b, convert y to base b, verify all digits are <= 9, reinterpret as base 10, and check that the reinterpreted value is >= ell. Returns True if and only if all conditions are satisfied.",
+      "inputs": [
+        {
+          "name": "y",
+          "type_ref": "int",
+          "required": true,
+          "default": "",
+          "description": "The number to convert.",
+          "validators": [
+            {
+              "kind": "range",
+              "expression": "y >= 0",
+              "error_message": "y must be non-negative."
+            }
+          ]
+        },
+        {
+          "name": "b",
+          "type_ref": "int",
+          "required": true,
+          "default": "",
+          "description": "The base to test.",
+          "validators": [
+            {
+              "kind": "range",
+              "expression": "b >= 2",
+              "error_message": "Base must be at least 2."
+            }
+          ]
+        },
+        {
+          "name": "ell",
+          "type_ref": "int",
+          "required": true,
+          "default": "",
+          "description": "The minimum acceptable decimal reinterpretation value (the ℓ threshold).",
+          "validators": [
+            {
+              "kind": "range",
+              "expression": "ell >= 1",
+              "error_message": "ell must be at least 1."
+            }
+          ]
+        }
+      ],
+      "output_type": "bool",
+      "error_cases": [
+        {
+          "name": "invalid_y",
+          "condition": "y < 0",
+          "error_type": "ValueError",
+          "error_data": {
+            "message": "y must be non-negative"
+          }
+        },
+        {
+          "name": "invalid_base",
+          "condition": "b < 2",
+          "error_type": "ValueError",
+          "error_data": {
+            "message": "Base must be at least 2"
+          }
+        },
+        {
+          "name": "invalid_ell",
+          "condition": "ell < 1",
+          "error_type": "ValueError",
+          "error_data": {
+            "message": "ell must be at least 1"
+          }
+        }
+      ],
+      "preconditions": [
+        "y >= 0",
+        "b >= 2",
+        "ell >= 1"
+      ],
+      "postconditions": [
+        "result == (all_digits_valid(to_base(y, b)) and reinterpret_decimal(to_base(y, b)) >= ell)"
+      ],
+      "idempotent": true,
+      "side_effects": [],
+      "structured_side_effects": [
+        {
+          "kind": "none",
+          "target": "",
+          "description": ""
+        }
+      ],
+      "performance_budget": {
+        "p95_latency_ms": 1,
+        "max_memory_mb": null,
+        "complexity": "O(log_b(y))"
+      }
+    },
+    {
+      "name": "int_nth_root",
+      "description": "Compute the integer n-th root of x, i.e., the largest integer r such that r^n <= x. Uses math.isqrt for n=2 and Newton's method with integer arithmetic for general n. Handles edge cases for x=0 and x=1.",
+      "inputs": [
+        {
+          "name": "x",
+          "type_ref": "int",
+          "required": true,
+          "default": "",
+          "description": "The non-negative integer to take the root of.",
+          "validators": [
+            {
+              "kind": "range",
+              "expression": "x >= 0",
+              "error_message": "x must be non-negative."
+            }
+          ]
+        },
+        {
+          "name": "n",
+          "type_ref": "int",
+          "required": true,
+          "default": "",
+          "description": "The degree of the root. Must be >= 1.",
+          "validators": [
+            {
+              "kind": "range",
+              "expression": "n >= 1",
+              "error_message": "Root degree must be at least 1."
+            }
+          ]
+        }
+      ],
+      "output_type": "int",
+      "error_cases": [
+        {
+          "name": "negative_x",
+          "condition": "x < 0",
+          "error_type": "ValueError",
+          "error_data": {
+            "message": "x must be non-negative"
+          }
+        },
+        {
+          "name": "zero_degree",
+          "condition": "n < 1",
+          "error_type": "ValueError",
+          "error_data": {
+            "message": "Root degree must be at least 1"
+          }
+        }
+      ],
+      "preconditions": [
+        "x >= 0",
+        "n >= 1"
+      ],
+      "postconditions": [
+        "result >= 0",
+        "result ** n <= x",
+        "(result + 1) ** n > x"
+      ],
+      "idempotent": true,
+      "side_effects": [],
+      "structured_side_effects": [
+        {
+          "kind": "none",
+          "target": "",
+          "description": ""
+        }
+      ],
+      "performance_budget": {
+        "p95_latency_ms": 1,
+        "max_memory_mb": null,
+        "complexity": "O(log(x) * log(log(x)))"
+      }
+    },
+    {
+      "name": "search_d1",
+      "description": "Handle the d=1 special case. If y is a single digit (0 <= y <= 9) and y >= ell, then any base b > y is valid. In this case the answer is unbounded — return a very large sentinel value (e.g., y+1 or per problem constraints). If y > 9 or y < ell, no single-digit representation satisfies both conditions.",
+      "inputs": [
+        {
+          "name": "y",
+          "type_ref": "int",
+          "required": true,
+          "default": "",
+          "description": "The number to check for single-digit representation.",
+          "validators": [
+            {
+              "kind": "range",
+              "expression": "y >= 0",
+              "error_message": "y must be non-negative."
+            }
+          ]
+        },
+        {
+          "name": "ell",
+          "type_ref": "int",
+          "required": true,
+          "default": "",
+          "description": "The minimum acceptable decimal reinterpretation threshold.",
+          "validators": [
+            {
+              "kind": "range",
+              "expression": "ell >= 1",
+              "error_message": "ell must be at least 1."
+            }
+          ]
+        }
+      ],
+      "output_type": "SearchResult",
+      "error_cases": [],
+      "preconditions": [
+        "y >= 0",
+        "ell >= 1"
+      ],
+      "postconditions": [
+        "If y <= 9 and y >= ell then result.found == True and result.max_base is a large sentinel (e.g., 10**18 + 1)",
+        "If y > 9 or y < ell then result.found == False and result.max_base == -1"
+      ],
+      "idempotent": true,
+      "side_effects": [],
+      "structured_side_effects": [
+        {
+          "kind": "none",
+          "target": "",
+          "description": ""
+        }
+      ],
+      "performance_budget": {
+        "p95_latency_ms": 1,
+        "max_memory_mb": null,
+        "complexity": "O(1)"
+      }
+    },
+    {
+      "name": "search_d2",
+      "description": "Search for the largest base b producing a 2-digit representation of y where both digits are in [0,9] and the 2-digit decimal reinterpretation is >= ell. Enumerates all (a, c) pairs with a in [1,9] and c in [0,9], computes b = (y - c) / a, and verifies: b is a positive integer >= 2, b > max(a, c) (ensures exactly 2 digits), b <= y (ensures representation is not 1 digit), and 10*a + c >= ell.",
+      "inputs": [
+        {
+          "name": "y",
+          "type_ref": "int",
+          "required": true,
+          "default": "",
+          "description": "The number to represent in base b as exactly 2 digits.",
+          "validators": [
+            {
+              "kind": "range",
+              "expression": "y >= 0",
+              "error_message": "y must be non-negative."
+            }
+          ]
+        },
+        {
+          "name": "ell",
+          "type_ref": "int",
+          "required": true,
+          "default": "",
+          "description": "The minimum acceptable decimal reinterpretation threshold.",
+          "validators": [
+            {
+              "kind": "range",
+              "expression": "ell >= 1",
+              "error_message": "ell must be at least 1."
+            }
+          ]
+        }
+      ],
+      "output_type": "SearchResult",
+      "error_cases": [],
+      "preconditions": [
+        "y >= 0",
+        "ell >= 1"
+      ],
+      "postconditions": [
+        "If result.found, then result.max_base >= 2",
+        "If result.found, then to_base(y, result.max_base) has length 2",
+        "If result.found, then check_base(y, result.max_base, ell) == True",
+        "If result.found, then no valid base b > result.max_base produces a 2-digit representation satisfying the constraints"
+      ],
+      "idempotent": true,
+      "side_effects": [],
+      "structured_side_effects": [
+        {
+          "kind": "none",
+          "target": "",
+          "description": ""
+        }
+      ],
+      "performance_budget": {
+        "p95_latency_ms": 1,
+        "max_memory_mb": null,
+        "complexity": "O(90)"
+      }
+    },
+    {
+      "name": "search_d3",
+      "description": "Search for the largest base b producing a 3-digit representation of y where all digits are in [0,9] and the 3-digit decimal reinterpretation is >= ell. Enumerates all (a, c, e) triples with a in [1,9] and c,e in [0,9]. For each triple, solves a*b^2 + c*b + e = y using the quadratic formula with integer square root (discriminant = c^2 - 4*a*(e - y), b = (-c + isqrt(disc)) / (2*a)). Verifies b is a positive integer >= 2, produces exactly 3 digits, and 100*a + 10*c + e >= ell.",
+      "inputs": [
+        {
+          "name": "y",
+          "type_ref": "int",
+          "required": true,
+          "default": "",
+          "description": "The number to represent in base b as exactly 3 digits.",
+          "validators": [
+            {
+              "kind": "range",
+              "expression": "y >= 0",
+              "error_message": "y must be non-negative."
+            }
+          ]
+        },
+        {
+          "name": "ell",
+          "type_ref": "int",
+          "required": true,
+          "default": "",
+          "description": "The minimum acceptable decimal reinterpretation threshold.",
+          "validators": [
+            {
+              "kind": "range",
+              "expression": "ell >= 1",
+              "error_message": "ell must be at least 1."
+            }
+          ]
+        }
+      ],
+      "output_type": "SearchResult",
+      "error_cases": [],
+      "preconditions": [
+        "y >= 0",
+        "ell >= 1"
+      ],
+      "postconditions": [
+        "If result.found, then result.max_base >= 2",
+        "If result.found, then to_base(y, result.max_base) has length 3",
+        "If result.found, then check_base(y, result.max_base, ell) == True",
+        "If result.found, then no valid base b > result.max_base produces a 3-digit representation satisfying the constraints"
+      ],
+      "idempotent": true,
+      "side_effects": [],
+      "structured_side_effects": [
+        {
+          "kind": "none",
+          "target": "",
+          "description": ""
+        }
+      ],
+      "performance_budget": {
+        "p95_latency_ms": 1,
+        "max_memory_mb": null,
+        "complexity": "O(900)"
+      }
+    },
+    {
+      "name": "search_d_ge_4",
+      "description": "Search for the largest base b producing a d-digit representation (d >= 4) of y where all digits are in [0,9] and the decimal reinterpretation is >= ell. Iterates d from 4 up to ~60 (until the base range becomes empty). For each d, iterates bases b from 2 to floor(y^(1/(d-1))). For each (d, b) pair, calls check_base. Tracks the maximum valid base found.",
+      "inputs": [
+        {
+          "name": "y",
+          "type_ref": "int",
+          "required": true,
+          "default": "",
+          "description": "The number to represent.",
+          "validators": [
+            {
+              "kind": "range",
+              "expression": "y >= 0",
+              "error_message": "y must be non-negative."
+            }
+          ]
+        },
+        {
+          "name": "ell",
+          "type_ref": "int",
+          "required": true,
+          "default": "",
+          "description": "The minimum acceptable decimal reinterpretation threshold.",
+          "validators": [
+            {
+              "kind": "range",
+              "expression": "ell >= 1",
+              "error_message": "ell must be at least 1."
+            }
+          ]
+        }
+      ],
+      "output_type": "SearchResult",
+      "error_cases": [],
+      "preconditions": [
+        "y >= 0",
+        "ell >= 1"
+      ],
+      "postconditions": [
+        "If result.found, then result.max_base >= 2",
+        "If result.found, then len(to_base(y, result.max_base)) >= 4",
+        "If result.found, then check_base(y, result.max_base, ell) == True"
+      ],
+      "idempotent": true,
+      "side_effects": [],
+      "structured_side_effects": [
+        {
+          "kind": "none",
+          "target": "",
+          "description": ""
+        }
+      ],
+      "performance_budget": {
+        "p95_latency_ms": 2000,
+        "max_memory_mb": null,
+        "complexity": "O(y^(1/3) * log(y))"
+      }
+    },
+    {
+      "name": "solve",
+      "description": "Main solver function. Given y and ell, finds the largest base b >= 2 such that y written in base b has all digits <= 9 and the base-10 reinterpretation of those digits is >= ell. Runs all digit-count search cases (d=1, d=2, d=3, d>=4), collects results, and returns the overall maximum valid base. Base 10 is always a valid fallback since y in base 10 is y itself, and the problem guarantees y >= ell.",
+      "inputs": [
+        {
+          "name": "y",
+          "type_ref": "int",
+          "required": true,
+          "default": "",
+          "description": "The year value. Must satisfy 1 <= y <= 10^18.",
+          "validators": [
+            {
+              "kind": "range",
+              "expression": "1 <= y <= 10**18",
+              "error_message": "y must be between 1 and 10^18 inclusive."
+            }
+          ]
+        },
+        {
+          "name": "ell",
+          "type_ref": "int",
+          "required": true,
+          "default": "",
+          "description": "The lower bound threshold. Must satisfy 1 <= ell <= y.",
+          "validators": [
+            {
+              "kind": "range",
+              "expression": "1 <= ell <= y",
+              "error_message": "ell must be between 1 and y inclusive."
+            }
+          ]
+        }
+      ],
+      "output_type": "int",
+      "error_cases": [
+        {
+          "name": "y_out_of_range",
+          "condition": "y < 1 or y > 10**18",
+          "error_type": "ValueError",
+          "error_data": {
+            "message": "y must be between 1 and 10^18 inclusive"
+          }
+        },
+        {
+          "name": "ell_out_of_range",
+          "condition": "ell < 1 or ell > y",
+          "error_type": "ValueError",
+          "error_data": {
+            "message": "ell must be between 1 and y inclusive"
+          }
+        }
+      ],
+      "preconditions": [
+        "1 <= y <= 10**18",
+        "1 <= ell <= y"
+      ],
+      "postconditions": [
+        "result >= 2",
+        "result >= 10 (base 10 is always valid as fallback)",
+        "check_base(y, result, ell) == True",
+        "For all b > result: check_base(y, b, ell) == False (unless result is sentinel for unbounded case)"
+      ],
+      "idempotent": true,
+      "side_effects": [],
+      "structured_side_effects": [
+        {
+          "kind": "none",
+          "target": "",
+          "description": ""
+        }
+      ],
+      "performance_budget": {
+        "p95_latency_ms": 3000,
+        "max_memory_mb": null,
+        "complexity": "O(y^(1/3) * log(y))"
+      }
+    },
+    {
+      "name": "main",
+      "description": "Entry point. Reads two space-separated integers y and ell from stdin, calls solve(y, ell), and writes the result to stdout followed by a newline. Handles exactly one test case per invocation.",
+      "inputs": [],
+      "output_type": "None",
+      "error_cases": [
+        {
+          "name": "malformed_input",
+          "condition": "stdin does not contain two valid space-separated integers",
+          "error_type": "ValueError",
+          "error_data": {
+            "message": "Expected two space-separated integers on stdin"
+          }
+        },
+        {
+          "name": "eof",
+          "condition": "stdin is empty or EOF reached before reading input",
+          "error_type": "EOFError",
+          "error_data": {
+            "message": "No input available on stdin"
+          }
+        }
+      ],
+      "preconditions": [
+        "stdin contains exactly one line with two space-separated integers y and ell",
+        "1 <= ell <= y <= 10^18"
+      ],
+      "postconditions": [
+        "stdout contains exactly one line with the integer result followed by a newline",
+        "The output integer is the largest valid base b >= 2 satisfying the problem constraints"
+      ],
+      "idempotent": true,
+      "side_effects": [
+        "Reads from stdin",
+        "Writes to stdout"
+      ],
+      "structured_side_effects": [
+        {
+          "kind": "reads_file",
+          "target": "stdin",
+          "description": "Reads two space-separated integers y and ell from standard input."
+        },
+        {
+          "kind": "writes_file",
+          "target": "stdout",
+          "description": "Writes the largest valid base as a single integer followed by a newline to standard output."
+        }
+      ],
+      "performance_budget": null
+    }
+  ],
+  "dependencies": [],
+  "dependency_contracts": {},
+  "invariants": [
+    "Base 10 is always a valid base: for any y with 1 <= y <= 10^18, all digits of y in base 10 are in [0,9] and the reinterpretation equals y itself, so check_base(y, 10, ell) == True whenever ell <= y.",
+    "The result of solve(y, ell) is always >= 10 due to the base-10 fallback guarantee.",
+    "For d=2: y = a*b + c where a is the leading digit and c is the trailing digit, both in [0,9].",
+    "For d=3: y = a*b^2 + c*b + e where a in [1,9], c in [0,9], e in [0,9].",
+    "For d>=4: the maximum base to check is floor(y^(1/(d-1))), which is at most floor(y^(1/3)) ≈ 10^6 for y <= 10^18.",
+    "to_base(y, b) always produces digits d_i where 0 <= d_i < b, and the leading digit d_0 > 0 for y > 0.",
+    "The digit count d of y in base b satisfies b^(d-1) <= y < b^d.",
+    "No external dependencies are used; only Python 3.10+ standard library (math.isqrt).",
+    "The total number of candidate bases checked across all digit counts is bounded by approximately 10^6 + 990, ensuring the solution runs well under the time limit."
+  ],
+  "requires": [
+    "python>=3.10",
+    "standard_library_only"
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "task_summary": "Define the interface contract for 'Trailing Digits Solver' — a single Python 3.10+ program that reads b, d, a from stdin and outputs the maximum number of consecutive trailing digits d achievable in any multiple k*b ≤ a. The solution must handle a up to 10^10000 (big integers), use only the standard library, and follow a modular arithmetic approach with extended GCD / modular inverse.",
+  "findings": [
+    {
+      "topic": "Modular inverse with non-coprime modulus",
+      "finding": "When solving k*b ≡ T_n (mod M) where M = 10^n, b and M may not be coprime. The standard approach is: let g = gcd(b, M). A solution exists iff g | T_n. If so, reduce to (b/g)*k ≡ T_n/g (mod M/g), where b/g and M/g are now coprime, and use modular inverse via pow(b//g, -1, M//g) (available in Python 3.8+). The smallest positive k is then k0 = (T_n//g * inv) % (M//g), with k0 = M//g if k0 == 0 (to ensure k ≥ 1).",
+      "source": "Number theory / competitive programming standard technique",
+      "relevance": "Core algorithm correctness — this is the central computation in each iteration",
+      "confidence": 0.97
+    },
+    {
+      "topic": "Python built-in pow(base, -1, mod) for modular inverse",
+      "finding": "Python 3.8+ supports pow(b, -1, m) which computes the modular inverse of b modulo m when gcd(b, m) = 1. This is the idiomatic and efficient way to compute modular inverses in pure Python without implementing extended GCD manually. Raises ValueError if inverse doesn't exist.",
+      "source": "Python 3.8+ documentation, PEP 3136 / CPython implementation",
+      "relevance": "Directly usable for the modular inverse step after GCD reduction, simplifying code and avoiding manual extended-GCD implementation",
+      "confidence": 0.99
+    },
+    {
+      "topic": "Big integer performance in Python for ~10000-digit numbers",
+      "finding": "Python natively handles arbitrary precision integers. Operations like multiplication, modulo, gcd, and pow with three arguments on numbers up to ~10000 digits are efficient (sub-second). The main concern is avoiding unnecessary repeated computation of 10^n; instead, maintain M = 10^n incrementally by multiplying by 10 each iteration. Similarly, T_n can be built incrementally: T_{n+1} = T_n + d * 10^n (or for d=0, T_n is always 0).",
+      "source": "Python performance best practices for competitive programming",
+      "relevance": "With up to ~10000 iterations on ~10000-digit numbers, incremental computation avoids quadratic blowup from recomputing powers each iteration",
+      "confidence": 0.95
+    },
+    {
+      "topic": "Smallest positive k and budget check",
+      "finding": "After finding k0 (the smallest non-negative solution mod M//g), we need the smallest POSITIVE k: if k0 == 0, set k0 = M//g. Then the smallest multiple of b meeting the congruence is k0*b. The budget check is k0*b ≤ a. If k0*b > a, then n is not achievable. Since a can be enormous, all arithmetic stays in Python big integers naturally.",
+      "source": "Standard linear congruence solution technique",
+      "relevance": "Correctness of the feasibility check — getting k=0 wrong would be a subtle bug",
+      "confidence": 0.97
+    },
+    {
+      "topic": "Edge case: d=0 trailing zeros",
+      "finding": "When d=0, T_n = 0 for all n. The congruence becomes k*b ≡ 0 (mod 10^n), meaning k*b must be divisible by 10^n. Let g = gcd(b, 10^n). Then we need (10^n / g) | k, so the smallest k is 10^n / g, and the check is (10^n / g) * b ≤ a. This is a natural special case of the general algorithm — no separate code branch needed if T_n=0 is handled correctly in the general formula.",
+      "source": "Problem analysis",
+      "relevance": "d=0 is a frequently missed edge case in trailing-digit problems",
+      "confidence": 0.95
+    },
+    {
+      "topic": "Edge case: n=0 baseline and output semantics",
+      "finding": "Every positive integer trivially has 0 trailing copies of any digit (vacuously). The meaningful question starts at n=1. If no multiple k*b ≤ a has even one trailing digit d, the answer is 0. The algorithm should start checking from n=1 and track the maximum achievable n, defaulting to 0.",
+      "source": "Problem statement analysis",
+      "relevance": "Correct initialization of the answer variable",
+      "confidence": 0.95
+    },
+    {
+      "topic": "Early termination condition",
+      "finding": "Once the smallest valid k*b for n trailing digits exceeds a, all subsequent n values will also fail (since the smallest solution for n+1 trailing digits is at least as large). However, this monotonicity is NOT strictly guaranteed — it's possible that n fails but n+1 succeeds because the GCD structure changes. A safe approach: terminate when 10^n > a (since then even 1*b can't produce an n-digit suffix within budget if b < 10^n... actually not quite). The safest bound: n can be at most len(str(a)) + len(str(b)) or so, since k*b ≤ a means the result has at most len(str(a)) digits. So n ≤ len(str(a)) is a hard upper bound.",
+      "source": "Algorithmic analysis of the problem bounds",
+      "relevance": "Critical for ensuring the loop terminates efficiently and correctly — non-monotonicity of feasibility is a common pitfall",
+      "confidence": 0.88
+    },
+    {
+      "topic": "Non-monotonicity of feasibility across n values",
+      "finding": "It IS possible that n=k fails but n=k+1 succeeds. Example: b=4, d=2. For n=1: need 4k ≡ 2 (mod 10), gcd(4,10)=2, 2|2 ✓, solve 2k ≡ 1 (mod 5), k=3, so 12 ends in 2. For n=2: need 4k ≡ 22 (mod 100), gcd(4,100)=4, 4|22? No → n=2 fails. For n=3: need 4k ≡ 222 (mod 1000), gcd(4,1000)=4, 4|222? No → fails too. So in this case it doesn't recover. However, the general principle demands we cannot simply stop at first failure. A careful analysis: if gcd(b, 10^n) does not divide T_n, check whether gcd(b, 10^(n+1)) might divide T_{n+1}. Since gcd(b,10^n) divides gcd(b,10^(n+1)), and T_{n+1} = T_n + d*10^n, the divisibility can potentially be restored. Safe strategy: continue iterating past failures until 10^n > a (since min k*b ≥ 10^n when T_n requires n digits and the product must have those digits).",
+      "source": "Mathematical analysis of GCD structure with powers of 10",
+      "relevance": "Directly impacts correctness — stopping at first failure would be a bug",
+      "confidence": 0.92
+    },
+    {
+      "topic": "Input parsing: single line with three space-separated values",
+      "finding": "Input format is 'b d a' on one line. Use input().split() and convert to int. Since a can be up to 10^10000, Python's native int handles this. No special parsing needed. Type annotations: b: int, d: int, a: int.",
+      "source": "Problem statement and Python conventions",
+      "relevance": "Interface contract for I/O",
+      "confidence": 0.99
+    },
+    {
+      "topic": "Naming conventions and type annotations for competitive math code",
+      "finding": "For a single-module competitive-style solver, use clear variable names: b (bundle price), d (target digit), a (budget). Internal variables: M (modulus = 10^n), T (target trailing value), g (gcd), k0 (smallest valid k). Annotate the main function signature. Use math.gcd from standard library. Keep the module flat with a main() function and if __name__ == '__main__' guard.",
+      "source": "Python coding standards, PEP 8, project requirements",
+      "relevance": "Matches project coding standards requirement for type annotations and clean structure",
+      "confidence": 0.95
+    },
+    {
+      "topic": "Termination bound tightening",
+      "finding": "The maximum achievable n is bounded by the number of digits in a, since k*b ≤ a means k*b has at most len(str(a)) digits, so it can have at most len(str(a)) trailing digits. More precisely, if b ≥ 1 and k ≥ 1, then k*b ≥ b, so the number of trailing d's is at most the number of digits in a. We can set max_n = len(str(a)) and iterate n from 1 to max_n. This gives a clean, safe upper bound.",
+      "source": "Problem constraint analysis",
+      "relevance": "Ensures deterministic loop bound and prevents infinite loops",
+      "confidence": 0.97
+    }
+  ],
+  "recommended_approach": "Implement as a single Python 3.10+ module with a main() -> None function. The interface contract:\n\n**Input contract**: Read one line from stdin containing three space-separated integers b, d, a (1 ≤ b ≤ 10^9, 0 ≤ d ≤ 9, 1 ≤ a ≤ 10^10000).\n\n**Output contract**: Print a single integer to stdout — the maximum n such that there exists a positive integer k where k*b ≤ a and the last n digits of k*b are all d. Print 0 if no such k exists for n=1.\n\n**Core algorithm loop** (n from 1 to len(str(a))):\n1. Maintain M = 10^n and T_n incrementally (M *= 10; T += d * prev_power_of_10).\n2. Compute g = gcd(b, M). If T_n % g != 0, skip (no solution for this n).\n3. Reduce: b' = b // g, M' = M // g, T' = T_n // g.\n4. Compute k0 = (T' * pow(b', -1, M')) % M'. If k0 == 0, set k0 = M'.\n5. If k0 * b ≤ a, update answer = n.\n6. After loop, print answer.\n\n**Key type annotations**: main() -> None, all intermediate variables are int. Use math.gcd.\n\n**Error handling**: Minimal — trust input conforms to constraints per competitive programming convention, but the code naturally handles edge cases (d=0, b=1, a=b, etc.) through the general algorithm.\n\n**Structure**: Single file, ~30-40 lines. `if __name__ == '__main__': main()` guard. No classes needed.",
+  "alternatives_considered": [
+    "Implement extended GCD manually instead of using pow(b, -1, mod): Rejected because Python 3.8+ built-in pow with negative exponent is cleaner, faster, and less error-prone. The project targets Python 3.10+.",
+    "Binary search on n instead of linear scan: Rejected because feasibility is not monotonic — n=k can fail while n=k+1 succeeds. Linear scan with a hard upper bound is safer and still efficient (at most ~10000 iterations).",
+    "Precompute all GCD values gcd(b, 10^n) incrementally: Considered and recommended — gcd(b, 10^n) stabilizes once 10^n contains all factors of 2 and 5 present in b. Can track this for a minor optimization, but not strictly necessary given Python's fast big-int GCD.",
+    "Stop at first failure of the congruence solvability check: Rejected — non-monotonicity means this could miss valid larger n values. Must continue to the upper bound.",
+    "Use sys.stdin for input instead of input(): Either works; input() is simpler for single-line reads and sufficient here."
+  ],
+  "risks": [
+    "Non-monotonicity of feasibility: If the loop stops at first failure instead of continuing to max_n, valid answers will be missed. Must iterate through all n up to the bound.",
+    "k=0 edge case: When k0 computes to 0 (meaning T_n ≡ 0 and the congruence is trivially satisfied by k=0), we must use k0 = M//g instead since k must be positive (k≥1). Missing this produces wrong answers.",
+    "d=0 special behavior: T_n is always 0 when d=0. The general algorithm handles this, but verify that k0 computation doesn't degenerate (it becomes k0 = M//g, checking if (M//g)*b ≤ a, which is correct).",
+    "Performance with ~10000-digit numbers: Each iteration does a gcd, a modular inverse, and a multiplication on numbers up to ~10000 digits. Python handles this, but ~10000 iterations × big-int ops could be slow. Benchmark to confirm it stays under time limits (~5-10 seconds typical).",
+    "Off-by-one in max_n bound: len(str(a)) is correct since k*b ≤ a means k*b has at most that many digits. Using len(str(a))-1 would be wrong."
+  ],
+  "compliance_notes": [
+    "Python 3.10+ with type annotations: main() -> None, use int type throughout. No external dependencies.",
+    "Standard library only: math.gcd is the only import needed. pow(b, -1, mod) is a builtin.",
+    "Reads from stdin via input(), writes to stdout via print(). Single line in, single line out.",
+    "Must handle all input constraints: b up to 10^9, d in 0-9, a up to 10^10000 (native Python int handles this).",
+    "Output format: single integer followed by newline (print() default behavior).",
+    "Must pass test harness: `python test_harness.py solution.py`"
+  ]
+}

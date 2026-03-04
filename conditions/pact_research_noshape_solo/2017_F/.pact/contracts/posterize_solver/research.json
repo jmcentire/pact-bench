@@ -1,0 +1,84 @@
+{
+  "task_summary": "Define the interface contract for 'Posterize Solver' — a single-module Python 3.10+ solution that reads d distinct red values with pixel counts and parameter k from stdin, then computes the minimum sum of squared errors when choosing at most k representative integer values from [0,255] using contiguous-group DP.",
+  "findings": [
+    {
+      "topic": "DP partitioning pattern for 1D clustering",
+      "finding": "The standard approach for optimal 1D k-clustering with squared error is a DP over contiguous partitions: dp[g][i] = min over m of dp[g-1][m] + cost(m, i). This works because optimal assignment to nearest representative in sorted order always yields contiguous clusters. The cost function for a single cluster uses the weighted mean, and since the representative must be an integer, both floor and ceil of the weighted mean must be checked. The cost can be computed in O(1) using prefix sums of p, p*r, and p*r^2 via the identity: SSE(c) = sum(p*(r-c)^2) = sum(p*r^2) - 2c*sum(p*r) + c^2*sum(p).",
+      "source": "Competitive programming literature (USACO, Codeforces editorial patterns)",
+      "relevance": "Directly defines the core algorithm and cost computation contract",
+      "confidence": 0.98
+    },
+    {
+      "topic": "Type annotation patterns for competitive programming solvers",
+      "finding": "For single-module competitive programming solutions in Python 3.10+, best practice is to use built-in generic types (list[int], tuple[int, int]) rather than typing module imports. Functions should have full return type annotations. A main() -> None entry point is preferred with a __name__ guard. Internal helper functions should be typed even if small. For prefix-sum arrays, list[int] is the idiomatic type.",
+      "source": "Python 3.10+ PEP 585 built-in generics, competitive programming style guides",
+      "relevance": "Defines naming and type annotation conventions for the interface",
+      "confidence": 0.95
+    },
+    {
+      "topic": "Prefix sum design for O(1) cost queries",
+      "finding": "Three prefix sum arrays are needed: S0[i] = sum of p[0..i-1] (count), S1[i] = sum of p*r[0..i-1] (weighted sum), S2[i] = sum of p*r^2[0..i-1] (weighted sum of squares). For a range [i, j] inclusive of sorted distinct values, the sums are S0[j+1]-S0[i], S1[j+1]-S1[i], S2[j+1]-S2[i]. The optimal integer representative c is floor or ceil of S1_range/S0_range, and cost = S2_range - 2*c*S1_range + c*c*S0_range. The candidate c must also be clamped to [0, 255].",
+      "source": "Standard algorithmic technique for range-query cost functions",
+      "relevance": "Core data structure contract for O(1) cost computation",
+      "confidence": 0.97
+    },
+    {
+      "topic": "Edge cases in posterize/quantization problems",
+      "finding": "Key edge cases: (1) k >= d — answer is 0, each distinct value is its own representative. (2) d = 1 — trivial single cluster. (3) Weighted mean is exactly an integer — floor and ceil give the same value, no issue. (4) Weighted mean lands outside [0, 255] — shouldn't happen since input values are in [0,255], but clamping is defensive. (5) k = 1 — entire range in one cluster. (6) Very large pixel counts — Python ints handle arbitrary precision, no overflow. (7) Input values already sorted by r — problem states this or solution must sort.",
+      "source": "Competitive programming problem archives, USACO Posterize problem analysis",
+      "relevance": "Directly relevant to correctness of the interface contract and error handling",
+      "confidence": 0.95
+    },
+    {
+      "topic": "Input parsing conventions for competitive programming in Python",
+      "finding": "Use sys.stdin for faster input. Common pattern: read all input at once with sys.stdin.read().split(), then consume tokens with an index or iterator. This avoids issues with trailing whitespace or mixed line formats. For this problem: first line is d and k (or separate lines depending on format), then d lines of (r, p). Output is a single integer followed by newline via print().",
+      "source": "Python competitive programming best practices",
+      "relevance": "Defines the I/O interface contract",
+      "confidence": 0.93
+    },
+    {
+      "topic": "DP table dimensioning and memory",
+      "finding": "With d ≤ 256 and k ≤ d ≤ 256, a 2D DP table of size k × (d+1) fits easily in memory. However, since dp[g] only depends on dp[g-1], space can be optimized to two 1D arrays (previous and current rows). For clarity in a competition setting, the full 2D table is acceptable. Indices should be carefully defined: dp[g][i] = min SSE for first i distinct values using exactly g groups. Base: dp[1][i] = cost(0, i-1). Transition iterates g from 2 to k.",
+      "source": "Standard DP optimization patterns",
+      "relevance": "Defines the DP state contract and memory layout",
+      "confidence": 0.96
+    },
+    {
+      "topic": "Floor division pitfall in Python for weighted mean",
+      "finding": "Python's // operator performs floor division (rounds toward negative infinity), which matches the needed floor() for non-negative values. For the weighted mean of values in [0,255] with positive counts, the mean is always in [0,255] and non-negative, so Python's // is safe. The ceil can be computed as floor + 1 (when the mean is not exact) or via -(-a // b). Both candidates must be evaluated and the one with smaller cost chosen.",
+      "source": "Python language specification, common competitive programming bugs",
+      "relevance": "Critical correctness detail for the cost function implementation",
+      "confidence": 0.97
+    },
+    {
+      "topic": "Serialization and output format",
+      "finding": "The output is a single integer on a single line. Python's print() adds a trailing newline by default, which matches expected competitive programming output format. No special formatting needed — just print(answer).",
+      "source": "Standard competitive programming output conventions",
+      "relevance": "Defines the output contract",
+      "confidence": 0.99
+    }
+  ],
+  "recommended_approach": "Implement a single-module Python 3.10+ solution with these clearly separated concerns:\n\n1. **Input parsing function** (`parse_input() -> tuple[int, int, list[tuple[int, int]]]`): Read all tokens from stdin, extract d, k, and the sorted list of (r, p) pairs.\n\n2. **Prefix sum builder** (`build_prefix_sums(values: list[tuple[int, int]]) -> tuple[list[int], list[int], list[int]]`): Compute S0, S1, S2 prefix sum arrays of length d+1.\n\n3. **Cost function** (`cost(i: int, j: int, s0: list[int], s1: list[int], s2: list[int]) -> int`): Return the minimum weighted SSE for covering distinct values at indices i..j (inclusive) with one integer representative. Compute weighted mean, evaluate floor and ceil, return the smaller cost. Clamp candidate to [0, 255].\n\n4. **DP solver** (`solve(d: int, k: int, s0: list[int], s1: list[int], s2: list[int]) -> int`): Fill dp[g][i] table. Handle k >= d early (return 0). Return dp[min(k,d)][d].\n\n5. **Main entry** (`main() -> None`): Orchestrate parse → prefix sums → solve → print.\n\nAll functions fully type-annotated. No external dependencies. Single print() call for output.",
+  "alternatives_considered": [
+    "Knuth's optimization for the DP (reducing O(k*d^2) to O(k*d*log(d))) — unnecessary since d ≤ 256 makes the naive O(k*d^2) approach fast enough (~16M operations at worst).",
+    "SMAWK algorithm or divide-and-conquer optimization for concave/convex cost functions — overkill for this problem size.",
+    "Brute-force over all C(256, k) subsets of representatives — exponentially infeasible for large k.",
+    "Using numpy or scipy for vectorized computation — violates standard-library-only constraint.",
+    "Rolling 1D DP array instead of full 2D table — minor memory optimization, not needed for d ≤ 256, and 2D is clearer for correctness."
+  ],
+  "risks": [
+    "Off-by-one errors in prefix sum indexing (0-based vs 1-based) — mitigate by clearly documenting that cost(i, j) covers indices i through j inclusive, and prefix sums use the convention S[0]=0, S[i] = sum of first i elements.",
+    "Forgetting to check both floor and ceil of weighted mean — choosing only round() or only floor() can give suboptimal results for specific distributions.",
+    "Incorrect DP base case or transition bounds — dp[1][0] = 0 (zero values, zero cost) must be set, and split point m must range from g-1 to i-1 (at least one value per group).",
+    "Input format mismatch — need to verify whether d and k are on the same line or separate lines; the parsing should be token-based to be robust.",
+    "Edge case k >= d not handled — should short-circuit to 0 since each value gets its own representative with zero error."
+  ],
+  "compliance_notes": [
+    "Python 3.10+ with type annotations using built-in generics (list, tuple) per PEP 585 — no typing module imports needed.",
+    "Standard library only — sys.stdin for input, no third-party packages.",
+    "Reads from stdin, writes to stdout via print().",
+    "Output is a single integer followed by newline (print() default behavior).",
+    "All integer arithmetic — no floating point used in final cost computation; weighted mean floor/ceil computed via integer division.",
+    "Handles all constraints: 1 ≤ k ≤ d ≤ 256, 0 ≤ r ≤ 255, p ≥ 1."
+  ]
+}

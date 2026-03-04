@@ -1,0 +1,689 @@
+{
+  "component_id": "posterize_solver",
+  "contract_version": 1,
+  "test_cases": [
+    {
+      "id": "parse_input_happy_basic",
+      "description": "Parse a well-formed input with 3 distinct values and k=2",
+      "function": "parse_input",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin: '3 2\\n10 100\\n20 200\\n30 300\\n'",
+      "expected_output_description": "d=3, k=2, values=[(10,100),(20,200),(30,300)]",
+      "expected_error": "",
+      "assertions": [
+        "result.d == 3 or result[0] == 3",
+        "result.k == 2 or result[1] == 2",
+        "len(result.values if hasattr(result, 'values') else result[2]) == 3"
+      ]
+    },
+    {
+      "id": "parse_input_happy_single",
+      "description": "Parse input with a single distinct value d=1 k=1",
+      "function": "parse_input",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin: '1 1\\n128 50\\n'",
+      "expected_output_description": "d=1, k=1, values=[(128,50)]",
+      "expected_error": "",
+      "assertions": [
+        "d == 1",
+        "k == 1",
+        "values == [(128, 50)]"
+      ]
+    },
+    {
+      "id": "parse_input_happy_max_r",
+      "description": "Parse input with boundary r values 0 and 255",
+      "function": "parse_input",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin: '2 1\\n0 10\\n255 20\\n'",
+      "expected_output_description": "d=2, k=1, values=[(0,10),(255,20)]",
+      "expected_error": "",
+      "assertions": [
+        "values[0][0] == 0 or values[0].r == 0",
+        "values[1][0] == 255 or values[1].r == 255"
+      ]
+    },
+    {
+      "id": "parse_input_error_empty",
+      "description": "Error when stdin is empty",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin is empty string",
+      "expected_output_description": "",
+      "expected_error": "empty_input",
+      "assertions": [
+        "exception is raised"
+      ]
+    },
+    {
+      "id": "parse_input_error_malformed",
+      "description": "Error when tokens cannot be parsed as integers",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin: 'abc def\\n'",
+      "expected_output_description": "",
+      "expected_error": "malformed_tokens",
+      "assertions": [
+        "exception is raised"
+      ]
+    },
+    {
+      "id": "parse_input_error_constraint_d_zero",
+      "description": "Error when d < 1",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin: '0 0\\n'",
+      "expected_output_description": "",
+      "expected_error": "constraint_violation",
+      "assertions": [
+        "exception is raised"
+      ]
+    },
+    {
+      "id": "parse_input_error_constraint_k_gt_d",
+      "description": "Error when k > d",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin: '2 3\\n10 1\\n20 1\\n'",
+      "expected_output_description": "",
+      "expected_error": "constraint_violation",
+      "assertions": [
+        "exception is raised"
+      ]
+    },
+    {
+      "id": "parse_input_error_constraint_r_out_of_range",
+      "description": "Error when r value exceeds 255",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin: '1 1\\n256 10\\n'",
+      "expected_output_description": "",
+      "expected_error": "constraint_violation",
+      "assertions": [
+        "exception is raised"
+      ]
+    },
+    {
+      "id": "parse_input_error_constraint_p_zero",
+      "description": "Error when p value is less than 1",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin: '1 1\\n10 0\\n'",
+      "expected_output_description": "",
+      "expected_error": "constraint_violation",
+      "assertions": [
+        "exception is raised"
+      ]
+    },
+    {
+      "id": "build_prefix_sums_happy_basic",
+      "description": "Build prefix sums for 3 values and verify all arrays",
+      "function": "build_prefix_sums",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "values = [(10, 2), (20, 3), (30, 5)]",
+      "expected_output_description": "s0=[0,2,5,10], s1=[0,20,80,230], s2=[0,200,1400,5900]",
+      "expected_error": "",
+      "assertions": [
+        "s0 == [0, 2, 5, 10]",
+        "s1 == [0, 20, 80, 230]",
+        "s2 == [0, 200, 1400, 5900]"
+      ]
+    },
+    {
+      "id": "build_prefix_sums_happy_single",
+      "description": "Build prefix sums for a single value",
+      "function": "build_prefix_sums",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "values = [(100, 7)]",
+      "expected_output_description": "s0=[0,7], s1=[0,700], s2=[0,70000]",
+      "expected_error": "",
+      "assertions": [
+        "s0 == [0, 7]",
+        "s1 == [0, 700]",
+        "s2 == [0, 70000]"
+      ]
+    },
+    {
+      "id": "build_prefix_sums_happy_zero_r",
+      "description": "Build prefix sums when r=0",
+      "function": "build_prefix_sums",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "values = [(0, 5), (255, 3)]",
+      "expected_output_description": "s0=[0,5,8], s1=[0,0,765], s2=[0,0,195075]",
+      "expected_error": "",
+      "assertions": [
+        "s0 == [0, 5, 8]",
+        "s1 == [0, 0, 765]",
+        "s2 == [0, 0, 195075]"
+      ]
+    },
+    {
+      "id": "build_prefix_sums_length_invariant",
+      "description": "Prefix sum arrays have length d+1",
+      "function": "build_prefix_sums",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "values = [(1,1),(2,2),(3,3),(4,4)]",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "len(s0) == 5",
+        "len(s1) == 5",
+        "len(s2) == 5"
+      ]
+    },
+    {
+      "id": "build_prefix_sums_starts_zero",
+      "description": "All prefix sum arrays start with 0",
+      "function": "build_prefix_sums",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "values = [(50, 10), (100, 20)]",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "s0[0] == 0",
+        "s1[0] == 0",
+        "s2[0] == 0"
+      ]
+    },
+    {
+      "id": "build_prefix_sums_non_negative",
+      "description": "All prefix sum elements are non-negative",
+      "function": "build_prefix_sums",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "values = [(0, 1), (128, 5), (255, 3)]",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "all(x >= 0 for x in s0)",
+        "all(x >= 0 for x in s1)",
+        "all(x >= 0 for x in s2)"
+      ]
+    },
+    {
+      "id": "build_prefix_sums_error_empty",
+      "description": "Error when values list is empty",
+      "function": "build_prefix_sums",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "values = []",
+      "expected_output_description": "",
+      "expected_error": "empty_values",
+      "assertions": [
+        "exception is raised"
+      ]
+    },
+    {
+      "id": "cost_happy_single_element",
+      "description": "Cost of a single-element group equals 0 (representative = that value)",
+      "function": "cost",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "values=[(10,5)], i=0, j=0",
+      "expected_output_description": "0",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "cost_happy_two_elements",
+      "description": "Cost of two-element group with hand-computed SSE",
+      "function": "cost",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "values=[(0,1),(10,1)], i=0, j=1. Mean=5.0, floor=5, ceil=5. SSE=1*(0-5)^2+1*(10-5)^2=50",
+      "expected_output_description": "50",
+      "expected_error": "",
+      "assertions": [
+        "result == 50"
+      ]
+    },
+    {
+      "id": "cost_happy_asymmetric_weights",
+      "description": "Cost with asymmetric weights where mean is not integer",
+      "function": "cost",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "values=[(0,1),(10,3)], i=0, j=1. Weighted mean=30/4=7.5. floor=7: 1*49+3*9=76. ceil=8: 1*64+3*4=76. Both 76.",
+      "expected_output_description": "76",
+      "expected_error": "",
+      "assertions": [
+        "result == 76"
+      ]
+    },
+    {
+      "id": "cost_happy_full_range",
+      "description": "Cost over full range of 3 values",
+      "function": "cost",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "values=[(0,1),(100,1),(200,1)], i=0, j=2. Mean=100. SSE=1*10000+0+1*10000=20000",
+      "expected_output_description": "20000",
+      "expected_error": "",
+      "assertions": [
+        "result == 20000"
+      ]
+    },
+    {
+      "id": "cost_zero_when_all_same",
+      "description": "Cost is 0 when all values in group are the same",
+      "function": "cost",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "values=[(42,10)], i=0, j=0",
+      "expected_output_description": "0",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "cost_clamp_to_255",
+      "description": "Cost correctly clamps representative to [0,255] when mean would suggest 255",
+      "function": "cost",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "values=[(254,1),(255,1)], i=0, j=1. Mean=254.5, floor=254, ceil=255. floor cost: 1*0+1*1=1, ceil cost: 1*1+1*0=1. Min=1",
+      "expected_output_description": "1",
+      "expected_error": "",
+      "assertions": [
+        "result == 1"
+      ]
+    },
+    {
+      "id": "cost_partial_range",
+      "description": "Cost computed on a subrange of a larger prefix sum array",
+      "function": "cost",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "values=[(0,1),(10,1),(20,1),(30,1)], i=1, j=2. Group is values 10,20. Mean=15. floor=15, ceil=15 (exact). SSE=1*25+1*25=50",
+      "expected_output_description": "50",
+      "expected_error": "",
+      "assertions": [
+        "result == 50"
+      ]
+    },
+    {
+      "id": "cost_error_invalid_index_i_gt_j",
+      "description": "Error when i > j",
+      "function": "cost",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "i=2, j=1 with valid prefix sums of length 4",
+      "expected_output_description": "",
+      "expected_error": "invalid_index_range",
+      "assertions": [
+        "exception is raised"
+      ]
+    },
+    {
+      "id": "cost_error_invalid_index_negative",
+      "description": "Error when i < 0",
+      "function": "cost",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "i=-1, j=0 with valid prefix sums",
+      "expected_output_description": "",
+      "expected_error": "invalid_index_range",
+      "assertions": [
+        "exception is raised"
+      ]
+    },
+    {
+      "id": "cost_error_invalid_index_j_too_large",
+      "description": "Error when j+1 >= len(s0)",
+      "function": "cost",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "i=0, j=2 with prefix sums of length 3 (d=2)",
+      "expected_output_description": "",
+      "expected_error": "invalid_index_range",
+      "assertions": [
+        "exception is raised"
+      ]
+    },
+    {
+      "id": "cost_nonneg_invariant",
+      "description": "Cost is always non-negative",
+      "function": "cost",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "Multiple subranges tested",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "result >= 0"
+      ]
+    },
+    {
+      "id": "solve_happy_k_equals_d",
+      "description": "When k >= d, answer is 0",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "d=3, k=3, values=[(10,1),(20,1),(30,1)]",
+      "expected_output_description": "0",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "solve_happy_k_gt_d",
+      "description": "When k > d, answer is still 0",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "d=2, k=5, values=[(10,1),(20,1)]",
+      "expected_output_description": "0",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "solve_happy_k1",
+      "description": "k=1 means single representative for all values",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "d=2, k=1, values=[(0,1),(10,1)]. Single group cost=50",
+      "expected_output_description": "50",
+      "expected_error": "",
+      "assertions": [
+        "result == 50"
+      ]
+    },
+    {
+      "id": "solve_happy_k2_splits",
+      "description": "k=2 allows splitting into two groups reducing cost",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "d=3, k=2, values=[(0,1),(1,1),(100,1)]. Best split: {0,1} cost ~0-1 and {100} cost 0",
+      "expected_output_description": "result < cost_of_single_group",
+      "expected_error": "",
+      "assertions": [
+        "result >= 0",
+        "result <= 1"
+      ]
+    },
+    {
+      "id": "solve_happy_single_value",
+      "description": "d=1 k=1, single value always has cost 0",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "d=1, k=1, values=[(128,1000)]",
+      "expected_output_description": "0",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "solve_monotonicity",
+      "description": "Increasing k should not increase the total SSE",
+      "function": "solve",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "d=4, values=[(0,1),(50,1),(200,1),(255,1)], test k=1,2,3,4",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "cost_k1 >= cost_k2 >= cost_k3 >= cost_k4",
+        "cost_k4 == 0"
+      ]
+    },
+    {
+      "id": "solve_nonneg_invariant",
+      "description": "Solve always returns a non-negative integer",
+      "function": "solve",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "Various inputs",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "result >= 0",
+        "isinstance(result, int)"
+      ]
+    },
+    {
+      "id": "solve_error_prefix_length_mismatch",
+      "description": "Error when prefix sum length doesn't match d+1",
+      "function": "solve",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "d=3, k=2, but s0 has length 3 instead of 4",
+      "expected_output_description": "",
+      "expected_error": "prefix_length_mismatch",
+      "assertions": [
+        "exception is raised"
+      ]
+    },
+    {
+      "id": "solve_error_invalid_d",
+      "description": "Error when d < 1",
+      "function": "solve",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "d=0, k=1, valid prefix sums",
+      "expected_output_description": "",
+      "expected_error": "invalid_d",
+      "assertions": [
+        "exception is raised"
+      ]
+    },
+    {
+      "id": "solve_error_invalid_k",
+      "description": "Error when k < 1",
+      "function": "solve",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "d=3, k=0, valid prefix sums",
+      "expected_output_description": "",
+      "expected_error": "invalid_k",
+      "assertions": [
+        "exception is raised"
+      ]
+    },
+    {
+      "id": "main_happy_basic",
+      "description": "End-to-end test: main reads stdin, computes, prints result",
+      "function": "main",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin: '3 2\\n10 100\\n20 200\\n30 300\\n'",
+      "expected_output_description": "A single integer line printed to stdout",
+      "expected_error": "",
+      "assertions": [
+        "stdout contains exactly one line",
+        "line is a non-negative integer"
+      ]
+    },
+    {
+      "id": "main_happy_trivial",
+      "description": "End-to-end: single value yields 0",
+      "function": "main",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin: '1 1\\n42 100\\n'",
+      "expected_output_description": "0",
+      "expected_error": "",
+      "assertions": [
+        "stdout.strip() == '0'"
+      ]
+    },
+    {
+      "id": "main_happy_k_equals_d",
+      "description": "End-to-end: k=d yields 0",
+      "function": "main",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin: '2 2\\n0 1\\n255 1\\n'",
+      "expected_output_description": "0",
+      "expected_error": "",
+      "assertions": [
+        "stdout.strip() == '0'"
+      ]
+    },
+    {
+      "id": "main_happy_two_values_k1",
+      "description": "End-to-end: 2 values with k=1, verify exact SSE",
+      "function": "main",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin: '2 1\\n0 1\\n10 1\\n'. Mean=5, SSE=50",
+      "expected_output_description": "50",
+      "expected_error": "",
+      "assertions": [
+        "stdout.strip() == '50'"
+      ]
+    },
+    {
+      "id": "main_error_empty_stdin",
+      "description": "Main propagates error on empty stdin",
+      "function": "main",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin is empty",
+      "expected_output_description": "",
+      "expected_error": "input_error",
+      "assertions": [
+        "exception is raised"
+      ]
+    },
+    {
+      "id": "invariant_integer_arithmetic",
+      "description": "All cost computations use integer arithmetic, no floats in results",
+      "function": "cost",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "values=[(1,3),(4,7)], i=0, j=1",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "isinstance(result, int)"
+      ]
+    },
+    {
+      "id": "invariant_contiguous_partition",
+      "description": "Solve with known optimal partition matches expected cost",
+      "function": "solve",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "d=4, k=2, values=[(0,1),(1,1),(100,1),(101,1)]. Optimal: {0,1},{100,101}. Cost={0,1}->rep 0 or 1, cost~1; {100,101}->rep 100 or 101, cost~1. Total~1",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "result <= 2"
+      ]
+    }
+  ],
+  "test_language": "python",
+  "generated_code": "\"\"\"\nContract tests for posterize_solver module.\n\nTests verify the contract for: parse_input, build_prefix_sums, cost, solve, main.\nAll dependencies are mocked; tests verify behavior at boundaries.\n\"\"\"\n\nimport io\nimport sys\nimport pytest\nfrom unittest.mock import patch\n\n# Import the component under test\nfrom src.posterize_solver import (\n    parse_input,\n    build_prefix_sums,\n    cost,\n    solve,\n    main,\n)\n\n\n# ============================================================\n# Helper: build prefix sums from a list of (r, p) tuples\n# Used by tests to set up known prefix sum arrays\n# ============================================================\n\ndef _make_prefix_sums(values):\n    \"\"\"Manually compute prefix sums for test setup (not using the SUT).\"\"\"\n    d = len(values)\n    s0 = [0] * (d + 1)\n    s1 = [0] * (d + 1)\n    s2 = [0] * (d + 1)\n    for i, (r, p) in enumerate(values):\n        s0[i + 1] = s0[i] + p\n        s1[i + 1] = s1[i] + p * r\n        s2[i + 1] = s2[i] + p * r * r\n    return s0, s1, s2\n\n\ndef _extract_parse_result(result):\n    \"\"\"Extract d, k, values from parse_input result regardless of struct vs tuple.\"\"\"\n    if hasattr(result, 'd'):\n        d = result.d\n        k = result.k\n        values = result.values\n    else:\n        d, k, values = result[0], result[1], result[2]\n    # Normalize values to list of tuples\n    if values and hasattr(values[0], 'r'):\n        values = [(v.r, v.p) for v in values]\n    else:\n        values = [(v[0], v[1]) for v in values]\n    return d, k, values\n\n\ndef _extract_prefix_sums(result):\n    \"\"\"Extract s0, s1, s2 from build_prefix_sums result.\"\"\"\n    if hasattr(result, 's0'):\n        return list(result.s0), list(result.s1), list(result.s2)\n    else:\n        return list(result[0]), list(result[1]), list(result[2])\n\n\ndef _make_values_arg(tuples):\n    \"\"\"\n    Create the values argument for build_prefix_sums.\n    Tries to match whatever type the module expects (tuples or structs).\n    We pass plain tuples; if the module uses namedtuples or similar, \n    tuples should still work since contract says RedPixelPair is a struct.\n    \"\"\"\n    return tuples\n\n\n# ============================================================\n# Tests for parse_input()\n# ============================================================\n\nclass TestParseInput:\n    \"\"\"Tests for parse_input function.\"\"\"\n\n    def test_parse_input_happy_basic(self):\n        \"\"\"Parse a well-formed input with 3 distinct values and k=2.\"\"\"\n        stdin_data = \"3 2\\n10 100\\n20 200\\n30 300\\n\"\n        with patch('sys.stdin', io.StringIO(stdin_data)):\n            result = parse_input()\n        d, k, values = _extract_parse_result(result)\n        assert d == 3, f\"Expected d=3, got {d}\"\n        assert k == 2, f\"Expected k=2, got {k}\"\n        assert len(values) == 3, f\"Expected 3 values, got {len(values)}\"\n        assert values == [(10, 100), (20, 200), (30, 300)], f\"Unexpected values: {values}\"\n\n    def test_parse_input_happy_single(self):\n        \"\"\"Parse input with a single distinct value d=1 k=1.\"\"\"\n        stdin_data = \"1 1\\n128 50\\n\"\n        with patch('sys.stdin', io.StringIO(stdin_data)):\n            result = parse_input()\n        d, k, values = _extract_parse_result(result)\n        assert d == 1, f\"Expected d=1, got {d}\"\n        assert k == 1, f\"Expected k=1, got {k}\"\n        assert values == [(128, 50)], f\"Unexpected values: {values}\"\n\n    def test_parse_input_boundary_r_values(self):\n        \"\"\"Parse input with boundary r values 0 and 255.\"\"\"\n        stdin_data = \"2 1\\n0 10\\n255 20\\n\"\n        with patch('sys.stdin', io.StringIO(stdin_data)):\n            result = parse_input()\n        d, k, values = _extract_parse_result(result)\n        assert values[0][0] == 0, f\"Expected first r=0, got {values[0][0]}\"\n        assert values[1][0] == 255, f\"Expected second r=255, got {values[1][0]}\"\n\n    def test_parse_input_postcondition_sorted(self):\n        \"\"\"Returned values are sorted in strictly increasing order of r.\"\"\"\n        stdin_data = \"4 2\\n5 1\\n10 2\\n20 3\\n100 4\\n\"\n        with patch('sys.stdin', io.StringIO(stdin_data)):\n            result = parse_input()\n        d, k, values = _extract_parse_result(result)\n        for i in range(len(values) - 1):\n            assert values[i][0] < values[i + 1][0], \\\n                f\"Values not strictly increasing at index {i}: {values[i][0]} >= {values[i+1][0]}\"\n\n    def test_parse_input_postcondition_d_equals_len(self):\n        \"\"\"Returned d equals the number of elements in returned values list.\"\"\"\n        stdin_data = \"3 2\\n1 10\\n2 20\\n3 30\\n\"\n        with patch('sys.stdin', io.StringIO(stdin_data)):\n            result = parse_input()\n        d, k, values = _extract_parse_result(result)\n        assert d == len(values), f\"d={d} but len(values)={len(values)}\"\n\n    def test_parse_input_error_empty_stdin(self):\n        \"\"\"Error when stdin is empty.\"\"\"\n        with patch('sys.stdin', io.StringIO(\"\")):\n            with pytest.raises(Exception):\n                parse_input()\n\n    def test_parse_input_error_malformed_tokens(self):\n        \"\"\"Error when tokens cannot be parsed as integers.\"\"\"\n        with patch('sys.stdin', io.StringIO(\"abc def\\n\")):\n            with pytest.raises(Exception):\n                parse_input()\n\n    def test_parse_input_error_constraint_d_zero(self):\n        \"\"\"Error when d < 1.\"\"\"\n        with patch('sys.stdin', io.StringIO(\"0 0\\n\")):\n            with pytest.raises(Exception):\n                parse_input()\n\n    def test_parse_input_error_constraint_k_gt_d(self):\n        \"\"\"Error when k > d.\"\"\"\n        with patch('sys.stdin', io.StringIO(\"2 3\\n10 1\\n20 1\\n\")):\n            with pytest.raises(Exception):\n                parse_input()\n\n    def test_parse_input_error_constraint_r_out_of_range(self):\n        \"\"\"Error when r value exceeds 255.\"\"\"\n        with patch('sys.stdin', io.StringIO(\"1 1\\n256 10\\n\")):\n            with pytest.raises(Exception):\n                parse_input()\n\n    def test_parse_input_error_constraint_p_zero(self):\n        \"\"\"Error when p value is less than 1.\"\"\"\n        with patch('sys.stdin', io.StringIO(\"1 1\\n10 0\\n\")):\n            with pytest.raises(Exception):\n                parse_input()\n\n\n# ============================================================\n# Tests for build_prefix_sums()\n# ============================================================\n\nclass TestBuildPrefixSums:\n    \"\"\"Tests for build_prefix_sums function.\"\"\"\n\n    def test_build_prefix_sums_happy_basic(self):\n        \"\"\"Build prefix sums for 3 values and verify all arrays.\"\"\"\n        values = _make_values_arg([(10, 2), (20, 3), (30, 5)])\n        result = build_prefix_sums(values)\n        s0, s1, s2 = _extract_prefix_sums(result)\n        assert s0 == [0, 2, 5, 10], f\"s0 mismatch: {s0}\"\n        assert s1 == [0, 20, 80, 230], f\"s1 mismatch: {s1}\"\n        assert s2 == [0, 200, 1400, 5900], f\"s2 mismatch: {s2}\"\n\n    def test_build_prefix_sums_happy_single(self):\n        \"\"\"Build prefix sums for a single value.\"\"\"\n        values = _make_values_arg([(100, 7)])\n        result = build_prefix_sums(values)\n        s0, s1, s2 = _extract_prefix_sums(result)\n        assert s0 == [0, 7], f\"s0 mismatch: {s0}\"\n        assert s1 == [0, 700], f\"s1 mismatch: {s1}\"\n        assert s2 == [0, 70000], f\"s2 mismatch: {s2}\"\n\n    def test_build_prefix_sums_zero_r(self):\n        \"\"\"Build prefix sums when r=0.\"\"\"\n        values = _make_values_arg([(0, 5), (255, 3)])\n        result = build_prefix_sums(values)\n        s0, s1, s2 = _extract_prefix_sums(result)\n        assert s0 == [0, 5, 8], f\"s0 mismatch: {s0}\"\n        assert s1 == [0, 0, 765], f\"s1 mismatch: {s1}\"\n        assert s2 == [0, 0, 195075], f\"s2 mismatch: {s2}\"\n\n    def test_build_prefix_sums_length_invariant(self):\n        \"\"\"Prefix sum arrays have length d+1.\"\"\"\n        values = _make_values_arg([(1, 1), (2, 2), (3, 3), (4, 4)])\n        result = build_prefix_sums(values)\n        s0, s1, s2 = _extract_prefix_sums(result)\n        assert len(s0) == 5, f\"Expected len(s0)=5, got {len(s0)}\"\n        assert len(s1) == 5, f\"Expected len(s1)=5, got {len(s1)}\"\n        assert len(s2) == 5, f\"Expected len(s2)=5, got {len(s2)}\"\n\n    def test_build_prefix_sums_starts_zero(self):\n        \"\"\"All prefix sum arrays start with 0.\"\"\"\n        values = _make_values_arg([(50, 10), (100, 20)])\n        result = build_prefix_sums(values)\n        s0, s1, s2 = _extract_prefix_sums(result)\n        assert s0[0] == 0, f\"s0[0] should be 0, got {s0[0]}\"\n        assert s1[0] == 0, f\"s1[0] should be 0, got {s1[0]}\"\n        assert s2[0] == 0, f\"s2[0] should be 0, got {s2[0]}\"\n\n    def test_build_prefix_sums_non_negative(self):\n        \"\"\"All prefix sum elements are non-negative integers.\"\"\"\n        values = _make_values_arg([(0, 1), (128, 5), (255, 3)])\n        result = build_prefix_sums(values)\n        s0, s1, s2 = _extract_prefix_sums(result)\n        assert all(x >= 0 for x in s0), f\"s0 has negative elements: {s0}\"\n        assert all(x >= 0 for x in s1), f\"s1 has negative elements: {s1}\"\n        assert all(x >= 0 for x in s2), f\"s2 has negative elements: {s2}\"\n\n    def test_build_prefix_sums_non_decreasing(self):\n        \"\"\"s0 should be non-decreasing since all p >= 1.\"\"\"\n        values = _make_values_arg([(10, 3), (20, 1), (30, 7)])\n        result = build_prefix_sums(values)\n        s0, s1, s2 = _extract_prefix_sums(result)\n        for i in range(1, len(s0)):\n            assert s0[i] >= s0[i - 1], f\"s0 not non-decreasing at index {i}\"\n\n    def test_build_prefix_sums_error_empty(self):\n        \"\"\"Error when values list is empty.\"\"\"\n        with pytest.raises(Exception):\n            build_prefix_sums([])\n\n\n# ============================================================\n# Tests for cost()\n# ============================================================\n\nclass TestCost:\n    \"\"\"Tests for cost function.\"\"\"\n\n    def test_cost_single_element(self):\n        \"\"\"Cost of a single-element group equals 0.\"\"\"\n        s0, s1, s2 = _make_prefix_sums([(10, 5)])\n        result = cost(0, 0, s0, s1, s2)\n        assert result == 0, f\"Single element cost should be 0, got {result}\"\n\n    def test_cost_two_equal_weights(self):\n        \"\"\"Cost of two-element group: values 0 and 10 with equal weights. Mean=5, SSE=50.\"\"\"\n        s0, s1, s2 = _make_prefix_sums([(0, 1), (10, 1)])\n        result = cost(0, 1, s0, s1, s2)\n        assert result == 50, f\"Expected cost 50, got {result}\"\n\n    def test_cost_asymmetric_weights(self):\n        \"\"\"Cost with asymmetric weights: (0,1),(10,3). Mean=7.5. floor=7: 49+27=76. ceil=8: 64+12=76.\"\"\"\n        s0, s1, s2 = _make_prefix_sums([(0, 1), (10, 3)])\n        result = cost(0, 1, s0, s1, s2)\n        assert result == 76, f\"Expected cost 76, got {result}\"\n\n    def test_cost_full_range_three_values(self):\n        \"\"\"Cost over 3 values: (0,1),(100,1),(200,1). Mean=100. SSE=20000.\"\"\"\n        s0, s1, s2 = _make_prefix_sums([(0, 1), (100, 1), (200, 1)])\n        result = cost(0, 2, s0, s1, s2)\n        assert result == 20000, f\"Expected cost 20000, got {result}\"\n\n    def test_cost_partial_range(self):\n        \"\"\"Cost on a subrange: values (0,1),(10,1),(20,1),(30,1), group [1..2]=(10,20). Mean=15, SSE=50.\"\"\"\n        s0, s1, s2 = _make_prefix_sums([(0, 1), (10, 1), (20, 1), (30, 1)])\n        result = cost(1, 2, s0, s1, s2)\n        assert result == 50, f\"Expected cost 50, got {result}\"\n\n    def test_cost_adjacent_values(self):\n        \"\"\"Cost of (254,1),(255,1). Mean=254.5. floor=254: 0+1=1. ceil=255: 1+0=1.\"\"\"\n        s0, s1, s2 = _make_prefix_sums([(254, 1), (255, 1)])\n        result = cost(0, 1, s0, s1, s2)\n        assert result == 1, f\"Expected cost 1, got {result}\"\n\n    def test_cost_nonnegative(self):\n        \"\"\"Cost is always non-negative.\"\"\"\n        s0, s1, s2 = _make_prefix_sums([(5, 3), (50, 7), (200, 2)])\n        for i in range(3):\n            for j in range(i, 3):\n                result = cost(i, j, s0, s1, s2)\n                assert result >= 0, f\"cost({i},{j}) returned negative: {result}\"\n\n    def test_cost_is_integer(self):\n        \"\"\"Cost returns a Python integer, not float.\"\"\"\n        s0, s1, s2 = _make_prefix_sums([(1, 3), (4, 7)])\n        result = cost(0, 1, s0, s1, s2)\n        assert isinstance(result, int), f\"Expected int, got {type(result)}\"\n\n    def test_cost_zero_iff_same_values(self):\n        \"\"\"Cost is 0 if and only if all r values in group are the same.\"\"\"\n        # Single value => cost 0\n        s0, s1, s2 = _make_prefix_sums([(42, 10)])\n        assert cost(0, 0, s0, s1, s2) == 0\n\n        # Two different values => cost > 0\n        s0, s1, s2 = _make_prefix_sums([(42, 10), (43, 10)])\n        assert cost(0, 1, s0, s1, s2) > 0\n\n    def test_cost_weighted_mean_floor_ceil_difference(self):\n        \"\"\"Test where floor and ceil of mean give different SSE; verify minimum is returned.\"\"\"\n        # values: (0,1), (3,2). Total weight=3, weighted sum=6, mean=2.0 (exact integer).\n        # SSE with v=2: 1*(0-2)^2 + 2*(3-2)^2 = 4 + 2 = 6\n        s0, s1, s2 = _make_prefix_sums([(0, 1), (3, 2)])\n        result = cost(0, 1, s0, s1, s2)\n        assert result == 6, f\"Expected cost 6, got {result}\"\n\n    def test_cost_error_i_greater_than_j(self):\n        \"\"\"Error when i > j.\"\"\"\n        s0, s1, s2 = _make_prefix_sums([(10, 1), (20, 1), (30, 1)])\n        with pytest.raises(Exception):\n            cost(2, 1, s0, s1, s2)\n\n    def test_cost_error_negative_i(self):\n        \"\"\"Error when i < 0.\"\"\"\n        s0, s1, s2 = _make_prefix_sums([(10, 1), (20, 1)])\n        with pytest.raises(Exception):\n            cost(-1, 0, s0, s1, s2)\n\n    def test_cost_error_j_too_large(self):\n        \"\"\"Error when j+1 >= len(s0), i.e., j exceeds valid range.\"\"\"\n        s0, s1, s2 = _make_prefix_sums([(10, 1), (20, 1)])\n        # s0 has length 3, so j must be < 2. j=2 means j+1=3 >= 3.\n        with pytest.raises(Exception):\n            cost(0, 2, s0, s1, s2)\n\n\n# ============================================================\n# Tests for solve()\n# ============================================================\n\nclass TestSolve:\n    \"\"\"Tests for solve function.\"\"\"\n\n    def test_solve_k_equals_d(self):\n        \"\"\"When k == d, answer is 0.\"\"\"\n        values = [(10, 1), (20, 1), (30, 1)]\n        s0, s1, s2 = _make_prefix_sums(values)\n        result = solve(3, 3, s0, s1, s2)\n        assert result == 0, f\"Expected 0 when k==d, got {result}\"\n\n    def test_solve_k_greater_than_d(self):\n        \"\"\"When k > d, answer is still 0.\"\"\"\n        values = [(10, 1), (20, 1)]\n        s0, s1, s2 = _make_prefix_sums(values)\n        result = solve(2, 5, s0, s1, s2)\n        assert result == 0, f\"Expected 0 when k>d, got {result}\"\n\n    def test_solve_k1_two_values(self):\n        \"\"\"k=1 means single representative. (0,1),(10,1) => cost 50.\"\"\"\n        values = [(0, 1), (10, 1)]\n        s0, s1, s2 = _make_prefix_sums(values)\n        result = solve(2, 1, s0, s1, s2)\n        assert result == 50, f\"Expected 50, got {result}\"\n\n    def test_solve_single_value(self):\n        \"\"\"d=1 k=1 always yields 0.\"\"\"\n        values = [(128, 1000)]\n        s0, s1, s2 = _make_prefix_sums(values)\n        result = solve(1, 1, s0, s1, s2)\n        assert result == 0, f\"Expected 0 for single value, got {result}\"\n\n    def test_solve_k2_splits_reduce_cost(self):\n        \"\"\"k=2 can split (0,1),(1,1),(100,1) into {0,1} and {100}, reducing cost.\"\"\"\n        values = [(0, 1), (1, 1), (100, 1)]\n        s0, s1, s2 = _make_prefix_sums(values)\n        result_k1 = solve(3, 1, s0, s1, s2)\n        result_k2 = solve(3, 2, s0, s1, s2)\n        assert result_k2 <= result_k1, \\\n            f\"k=2 cost ({result_k2}) should be <= k=1 cost ({result_k1})\"\n        # {0,1} has cost: mean~0.5, floor=0: 0+1=1, ceil=1: 1+0=1 => 1. {100}: 0. Total <= 1\n        assert result_k2 <= 1, f\"Expected cost <= 1 for k=2, got {result_k2}\"\n\n    def test_solve_monotonicity_in_k(self):\n        \"\"\"Increasing k should not increase the total SSE.\"\"\"\n        values = [(0, 1), (50, 1), (200, 1), (255, 1)]\n        s0, s1, s2 = _make_prefix_sums(values)\n        costs = [solve(4, k, s0, s1, s2) for k in range(1, 5)]\n        for i in range(len(costs) - 1):\n            assert costs[i] >= costs[i + 1], \\\n                f\"Cost should be non-increasing in k: cost[k={i+1}]={costs[i]} < cost[k={i+2}]={costs[i+1]}\"\n        assert costs[-1] == 0, f\"cost at k=d should be 0, got {costs[-1]}\"\n\n    def test_solve_nonnegative_integer(self):\n        \"\"\"Solve always returns a non-negative integer.\"\"\"\n        values = [(10, 5), (100, 3), (200, 7)]\n        s0, s1, s2 = _make_prefix_sums(values)\n        result = solve(3, 2, s0, s1, s2)\n        assert isinstance(result, int), f\"Expected int, got {type(result)}\"\n        assert result >= 0, f\"Expected non-negative, got {result}\"\n\n    def test_solve_contiguous_partition_known(self):\n        \"\"\"Known optimal: (0,1),(1,1),(100,1),(101,1) with k=2. Best: {0,1}+{100,101}. Cost<=2.\"\"\"\n        values = [(0, 1), (1, 1), (100, 1), (101, 1)]\n        s0, s1, s2 = _make_prefix_sums(values)\n        result = solve(4, 2, s0, s1, s2)\n        # {0,1}: mean=0.5 => floor=0 cost=0+1=1 or ceil=1 cost=1+0=1 => 1\n        # {100,101}: mean=100.5 => floor=100 cost=0+1=1 or ceil=101 cost=1+0=1 => 1\n        # Total = 2\n        assert result <= 2, f\"Expected cost <= 2, got {result}\"\n\n    def test_solve_error_prefix_length_mismatch(self):\n        \"\"\"Error when prefix sum length doesn't match d+1.\"\"\"\n        s0 = [0, 1, 2]  # length 3, but d=3 expects length 4\n        s1 = [0, 1, 2]\n        s2 = [0, 1, 2]\n        with pytest.raises(Exception):\n            solve(3, 2, s0, s1, s2)\n\n    def test_solve_error_invalid_d_zero(self):\n        \"\"\"Error when d < 1.\"\"\"\n        with pytest.raises(Exception):\n            solve(0, 1, [0], [0], [0])\n\n    def test_solve_error_invalid_k_zero(self):\n        \"\"\"Error when k < 1.\"\"\"\n        s0, s1, s2 = _make_prefix_sums([(10, 1), (20, 1), (30, 1)])\n        with pytest.raises(Exception):\n            solve(3, 0, s0, s1, s2)\n\n\n# ============================================================\n# Tests for main()\n# ============================================================\n\nclass TestMain:\n    \"\"\"Tests for main function (end-to-end).\"\"\"\n\n    def test_main_happy_basic(self):\n        \"\"\"End-to-end: main reads stdin, computes, prints a single integer line.\"\"\"\n        stdin_data = \"3 2\\n10 100\\n20 200\\n30 300\\n\"\n        with patch('sys.stdin', io.StringIO(stdin_data)):\n            from io import StringIO\n            captured = StringIO()\n            with patch('sys.stdout', captured):\n                main()\n            output = captured.getvalue().strip()\n        assert output != \"\", \"main() should print output\"\n        assert output.lstrip('-').isdigit(), f\"Output should be integer, got '{output}'\"\n        val = int(output)\n        assert val >= 0, f\"Output should be non-negative, got {val}\"\n\n    def test_main_happy_trivial_single_value(self):\n        \"\"\"End-to-end: single value yields 0.\"\"\"\n        stdin_data = \"1 1\\n42 100\\n\"\n        with patch('sys.stdin', io.StringIO(stdin_data)):\n            from io import StringIO\n            captured = StringIO()\n            with patch('sys.stdout', captured):\n                main()\n            output = captured.getvalue().strip()\n        assert output == \"0\", f\"Expected '0', got '{output}'\"\n\n    def test_main_happy_k_equals_d(self):\n        \"\"\"End-to-end: k=d yields 0.\"\"\"\n        stdin_data = \"2 2\\n0 1\\n255 1\\n\"\n        with patch('sys.stdin', io.StringIO(stdin_data)):\n            from io import StringIO\n            captured = StringIO()\n            with patch('sys.stdout', captured):\n                main()\n            output = captured.getvalue().strip()\n        assert output == \"0\", f\"Expected '0', got '{output}'\"\n\n    def test_main_happy_two_values_k1(self):\n        \"\"\"End-to-end: 2 values k=1 => exact SSE of 50.\"\"\"\n        stdin_data = \"2 1\\n0 1\\n10 1\\n\"\n        with patch('sys.stdin', io.StringIO(stdin_data)):\n            from io import StringIO\n            captured = StringIO()\n            with patch('sys.stdout', captured):\n                main()\n            output = captured.getvalue().strip()\n        assert output == \"50\", f\"Expected '50', got '{output}'\"\n\n    def test_main_single_output_line(self):\n        \"\"\"Main prints exactly one line to stdout.\"\"\"\n        stdin_data = \"3 1\\n10 1\\n20 1\\n30 1\\n\"\n        with patch('sys.stdin', io.StringIO(stdin_data)):\n            from io import StringIO\n            captured = StringIO()\n            with patch('sys.stdout', captured):\n                main()\n            lines = captured.getvalue().strip().split('\\n')\n        assert len(lines) == 1, f\"Expected exactly 1 output line, got {len(lines)}: {lines}\"\n\n    def test_main_error_empty_stdin(self):\n        \"\"\"Main raises error on empty stdin.\"\"\"\n        with patch('sys.stdin', io.StringIO(\"\")):\n            with pytest.raises(Exception):\n                main()\n\n\n# ============================================================\n# Integration / cross-function invariant tests\n# ============================================================\n\nclass TestIntegration:\n    \"\"\"Cross-function integration and invariant tests.\"\"\"\n\n    def test_build_then_cost_consistency(self):\n        \"\"\"build_prefix_sums output works correctly with cost function.\"\"\"\n        values = [(5, 2), (10, 3), (20, 5)]\n        result = build_prefix_sums(values)\n        s0, s1, s2 = _extract_prefix_sums(result)\n\n        # Compare with manually computed prefix sums\n        ms0, ms1, ms2 = _make_prefix_sums(values)\n        assert s0 == ms0, f\"s0 mismatch: {s0} vs {ms0}\"\n        assert s1 == ms1, f\"s1 mismatch: {s1} vs {ms1}\"\n        assert s2 == ms2, f\"s2 mismatch: {s2} vs {ms2}\"\n\n        # Cost should work with these\n        c = cost(0, 2, s0, s1, s2)\n        assert isinstance(c, int) and c >= 0\n\n    def test_full_pipeline_consistency(self):\n        \"\"\"Full pipeline: parse -> build -> solve produces consistent result.\"\"\"\n        stdin_data = \"4 2\\n0 1\\n1 1\\n100 1\\n101 1\\n\"\n        with patch('sys.stdin', io.StringIO(stdin_data)):\n            parsed = parse_input()\n        d, k, values = _extract_parse_result(parsed)\n\n        ps_result = build_prefix_sums(_make_values_arg(values))\n        s0, s1, s2 = _extract_prefix_sums(ps_result)\n\n        result = solve(d, k, s0, s1, s2)\n        assert isinstance(result, int), \"solve should return int\"\n        assert result >= 0, \"solve should return non-negative\"\n        assert result <= 2, f\"Known optimal for this input is <= 2, got {result}\"\n\n    def test_solve_matches_main_output(self):\n        \"\"\"solve() result matches what main() prints to stdout.\"\"\"\n        values_data = [(0, 1), (10, 1), (20, 1)]\n        stdin_data = \"3 2\\n0 1\\n10 1\\n20 1\\n\"\n\n        # Get solve result directly\n        s0, s1, s2 = _make_prefix_sums(values_data)\n        solve_result = solve(3, 2, s0, s1, s2)\n\n        # Get main output\n        with patch('sys.stdin', io.StringIO(stdin_data)):\n            from io import StringIO\n            captured = StringIO()\n            with patch('sys.stdout', captured):\n                main()\n            main_output = int(captured.getvalue().strip())\n\n        assert solve_result == main_output, \\\n            f\"solve returned {solve_result} but main printed {main_output}\"\n\n    def test_integer_arithmetic_invariant(self):\n        \"\"\"All computations use integer arithmetic; no float contamination in cost.\"\"\"\n        values = [(1, 3), (4, 7), (9, 2)]\n        s0, s1, s2 = _make_prefix_sums(values)\n        for i in range(3):\n            for j in range(i, 3):\n                c = cost(i, j, s0, s1, s2)\n                assert isinstance(c, int), \\\n                    f\"cost({i},{j}) returned {type(c).__name__}, expected int\"\n\n    def test_larger_case_monotonicity(self):\n        \"\"\"Test monotonicity of solve for a larger case with 8 values.\"\"\"\n        import random\n        random.seed(42)\n        r_vals = sorted(random.sample(range(256), 8))\n        values = [(r, random.randint(1, 100)) for r in r_vals]\n        s0, s1, s2 = _make_prefix_sums(values)\n        d = len(values)\n\n        prev_cost = None\n        for k in range(1, d + 1):\n            c = solve(d, k, s0, s1, s2)\n            assert c >= 0, f\"Negative cost at k={k}\"\n            assert isinstance(c, int), f\"Non-integer cost at k={k}\"\n            if prev_cost is not None:\n                assert c <= prev_cost, \\\n                    f\"Cost increased from k={k-1} ({prev_cost}) to k={k} ({c})\"\n            prev_cost = c\n        # At k=d, cost should be 0\n        assert solve(d, d, s0, s1, s2) == 0, \"Cost at k=d should be 0\"\n"
+}

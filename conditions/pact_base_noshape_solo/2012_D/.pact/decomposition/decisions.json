@@ -1,0 +1,17 @@
+[
+  {
+    "ambiguity": "",
+    "decision": "Single module implementation",
+    "rationale": "This is a self-contained competitive programming problem solvable in a single file under 200 LOC. All logic (input parsing, DP recurrence, pattern matching) shares the same data flow and there are no independent subsystems."
+  },
+  {
+    "ambiguity": "",
+    "decision": "KMP for overlapping pattern matching",
+    "rationale": "We need to count overlapping occurrences efficiently. KMP gives O(n+m) matching and handles overlaps naturally by not resetting the automaton state."
+  },
+  {
+    "ambiguity": "",
+    "decision": "Store prefix/suffix of length len(p)-1 at each DP step",
+    "rationale": "Cross-boundary matches can only start within the last len(p)-1 characters of F(k-1) and end within the first len(p)-1 characters of F(k-2). This keeps boundary strings bounded regardless of the exponential growth of F(n)."
+  }
+]

@@ -1,0 +1,874 @@
+{
+  "component_id": "fibonacci_words",
+  "contract_version": 1,
+  "test_cases": [
+    {
+      "id": "kmp_single_char",
+      "description": "KMP failure table for single character pattern '0'",
+      "function": "build_kmp_failure_table",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "pattern": "0"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns [0]",
+      "expected_error": "",
+      "assertions": [
+        "result == [0]",
+        "len(result) == 1"
+      ]
+    },
+    {
+      "id": "kmp_repeated_chars",
+      "description": "KMP failure table for repeated pattern '0000'",
+      "function": "build_kmp_failure_table",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "pattern": "0000"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns [0, 1, 2, 3]",
+      "expected_error": "",
+      "assertions": [
+        "result == [0, 1, 2, 3]"
+      ]
+    },
+    {
+      "id": "kmp_alternating",
+      "description": "KMP failure table for alternating pattern '0101'",
+      "function": "build_kmp_failure_table",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "pattern": "0101"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns [0, 0, 1, 2]",
+      "expected_error": "",
+      "assertions": [
+        "result == [0, 0, 1, 2]"
+      ]
+    },
+    {
+      "id": "kmp_complex_pattern",
+      "description": "KMP failure table for '01001010'",
+      "function": "build_kmp_failure_table",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "pattern": "01001010"
+      },
+      "input_description": "",
+      "expected_output_description": "Correct failure table with proper prefix-suffix lengths",
+      "expected_error": "",
+      "assertions": [
+        "len(result) == 8",
+        "result[0] == 0"
+      ]
+    },
+    {
+      "id": "kmp_length_invariant",
+      "description": "KMP failure table length matches pattern length",
+      "function": "build_kmp_failure_table",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "pattern": "010"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "len(result) == len('010')",
+        "result[0] == 0",
+        "all(0 <= result[i] <= i for i in range(len(result)))"
+      ]
+    },
+    {
+      "id": "kmp_empty_pattern_error",
+      "description": "KMP failure table raises error for empty pattern",
+      "function": "build_kmp_failure_table",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "pattern": ""
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "empty_pattern",
+      "assertions": []
+    },
+    {
+      "id": "count_overlapping_basic",
+      "description": "Count non-overlapping occurrences of '01' in '0101'",
+      "function": "count_overlapping",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "text": "0101",
+        "pattern": "01"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 2",
+      "expected_error": "",
+      "assertions": [
+        "result == 2"
+      ]
+    },
+    {
+      "id": "count_overlapping_overlap",
+      "description": "Count overlapping occurrences of '00' in '000'",
+      "function": "count_overlapping",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "text": "000",
+        "pattern": "00"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 2 (overlapping)",
+      "expected_error": "",
+      "assertions": [
+        "result == 2"
+      ]
+    },
+    {
+      "id": "count_overlapping_no_match",
+      "description": "Count occurrences when pattern not in text",
+      "function": "count_overlapping",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "text": "0000",
+        "pattern": "1"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 0",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "count_overlapping_full_match",
+      "description": "Count when text equals pattern exactly",
+      "function": "count_overlapping",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "text": "010",
+        "pattern": "010"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 1",
+      "expected_error": "",
+      "assertions": [
+        "result == 1"
+      ]
+    },
+    {
+      "id": "count_overlapping_text_shorter",
+      "description": "Count when text is shorter than pattern returns 0",
+      "function": "count_overlapping",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "text": "0",
+        "pattern": "01"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 0",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "count_overlapping_empty_text",
+      "description": "Count with empty text returns 0",
+      "function": "count_overlapping",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "text": "",
+        "pattern": "0"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 0",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "count_overlapping_empty_pattern_error",
+      "description": "Count raises error for empty pattern",
+      "function": "count_overlapping",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "text": "010",
+        "pattern": ""
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "empty_pattern",
+      "assertions": []
+    },
+    {
+      "id": "count_overlapping_triple_overlap",
+      "description": "Count overlapping '010' in '01010' returns 2",
+      "function": "count_overlapping",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "text": "01010",
+        "pattern": "010"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 2",
+      "expected_error": "",
+      "assertions": [
+        "result == 2"
+      ]
+    },
+    {
+      "id": "make_base_f0_long_pattern",
+      "description": "Base state for F(0)='0' with pattern longer than base string",
+      "function": "make_base_fib_state",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "base_string": "0",
+        "pattern": "010"
+      },
+      "input_description": "",
+      "expected_output_description": "count=0, length=1, prefix='0', suffix='0'",
+      "expected_error": "",
+      "assertions": [
+        "result.count == 0",
+        "result.length == 1",
+        "result.prefix == '0'",
+        "result.suffix == '0'",
+        "len(result.prefix) == 1",
+        "len(result.suffix) == 1"
+      ]
+    },
+    {
+      "id": "make_base_f1_long_pattern",
+      "description": "Base state for F(1)='1' with pattern longer than base string",
+      "function": "make_base_fib_state",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "base_string": "1",
+        "pattern": "010"
+      },
+      "input_description": "",
+      "expected_output_description": "count=0, length=1, prefix='1', suffix='1'",
+      "expected_error": "",
+      "assertions": [
+        "result.count == 0",
+        "result.length == 1",
+        "result.prefix == '1'",
+        "result.suffix == '1'"
+      ]
+    },
+    {
+      "id": "make_base_f0_single_char_pattern",
+      "description": "Base state for F(0)='0' with pattern='0' (exact match)",
+      "function": "make_base_fib_state",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "base_string": "0",
+        "pattern": "0"
+      },
+      "input_description": "",
+      "expected_output_description": "count=1, length=1",
+      "expected_error": "",
+      "assertions": [
+        "result.count == 1",
+        "result.length == 1"
+      ]
+    },
+    {
+      "id": "make_base_f1_single_char_pattern_no_match",
+      "description": "Base state for F(1)='1' with pattern='0' (no match)",
+      "function": "make_base_fib_state",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "base_string": "1",
+        "pattern": "0"
+      },
+      "input_description": "",
+      "expected_output_description": "count=0, length=1",
+      "expected_error": "",
+      "assertions": [
+        "result.count == 0",
+        "result.length == 1"
+      ]
+    },
+    {
+      "id": "make_base_prefix_suffix_len",
+      "description": "Prefix and suffix length is min(1, len(pattern)-1)",
+      "function": "make_base_fib_state",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "base_string": "0",
+        "pattern": "01"
+      },
+      "input_description": "",
+      "expected_output_description": "prefix and suffix each have length 1",
+      "expected_error": "",
+      "assertions": [
+        "len(result.prefix) == min(1, len('01') - 1)",
+        "len(result.suffix) == min(1, len('01') - 1)"
+      ]
+    },
+    {
+      "id": "combine_no_cross_boundary",
+      "description": "Combine two states where pattern does not span boundary",
+      "function": "combine_fib_states",
+      "category": "happy_path",
+      "setup_description": "Create FibState objects manually for known small Fibonacci words",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "left and right states where junction has no new pattern matches",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": []
+    },
+    {
+      "id": "combine_with_cross_boundary",
+      "description": "Combine two states where pattern spans the join point",
+      "function": "combine_fib_states",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "left suffix + right prefix contains a pattern occurrence not in either piece alone",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": []
+    },
+    {
+      "id": "combine_count_nonnegative",
+      "description": "Combined count is always non-negative",
+      "function": "combine_fib_states",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": []
+    },
+    {
+      "id": "format_output_basic",
+      "description": "Format case 1 with count 5",
+      "function": "format_output",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "case_number": "1",
+        "count": "5"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 'Case 1: 5'",
+      "expected_error": "",
+      "assertions": [
+        "result == 'Case 1: 5'"
+      ]
+    },
+    {
+      "id": "format_output_large_count",
+      "description": "Format case 3 with large count",
+      "function": "format_output",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "case_number": "3",
+        "count": "1234567890"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 'Case 3: 1234567890'",
+      "expected_error": "",
+      "assertions": [
+        "result == 'Case 3: 1234567890'"
+      ]
+    },
+    {
+      "id": "format_output_zero_count",
+      "description": "Format case 1 with count 0",
+      "function": "format_output",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "case_number": "1",
+        "count": "0"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 'Case 1: 0'",
+      "expected_error": "",
+      "assertions": [
+        "result == 'Case 1: 0'"
+      ]
+    },
+    {
+      "id": "format_output_regex",
+      "description": "Format output matches required regex pattern",
+      "function": "format_output",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "case_number": "42",
+        "count": "99"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "import re; assert re.match(r'^Case \\d+: \\d+$', result)"
+      ]
+    },
+    {
+      "id": "parse_input_single_case",
+      "description": "Parse single test case input",
+      "function": "parse_input",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "raw_input": "3\n010\n"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns list with one TestCase(n=3, pattern='010')",
+      "expected_error": "",
+      "assertions": [
+        "len(result) == 1",
+        "result[0].n == 3",
+        "result[0].pattern == '010'"
+      ]
+    },
+    {
+      "id": "parse_input_multiple_cases",
+      "description": "Parse multiple test cases",
+      "function": "parse_input",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "raw_input": "5\n1\n10\n01\n"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns list with two TestCases",
+      "expected_error": "",
+      "assertions": [
+        "len(result) == 2",
+        "result[0].n == 5",
+        "result[0].pattern == '1'",
+        "result[1].n == 10",
+        "result[1].pattern == '01'"
+      ]
+    },
+    {
+      "id": "parse_input_odd_lines_error",
+      "description": "Parse raises error for odd number of lines",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "raw_input": "3\n010\n5\n"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "odd_number_of_lines",
+      "assertions": []
+    },
+    {
+      "id": "parse_input_invalid_n_error",
+      "description": "Parse raises error for non-integer n",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "raw_input": "abc\n010\n"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "invalid_n_value",
+      "assertions": []
+    },
+    {
+      "id": "parse_input_invalid_pattern_error",
+      "description": "Parse raises error for pattern with invalid chars",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "raw_input": "3\n012\n"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "invalid_pattern_value",
+      "assertions": []
+    },
+    {
+      "id": "parse_input_n_out_of_range_error",
+      "description": "Parse raises error for n > 100",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "raw_input": "101\n010\n"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "invalid_n_value",
+      "assertions": []
+    },
+    {
+      "id": "solve_f0_pattern_0",
+      "description": "Solve for F(0)='0' with pattern '0' returns 1",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "n": "0",
+        "pattern": "0"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 1",
+      "expected_error": "",
+      "assertions": [
+        "result == 1"
+      ]
+    },
+    {
+      "id": "solve_f0_pattern_1",
+      "description": "Solve for F(0)='0' with pattern '1' returns 0",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "n": "0",
+        "pattern": "1"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 0",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "solve_f1_pattern_1",
+      "description": "Solve for F(1)='1' with pattern '1' returns 1",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "n": "1",
+        "pattern": "1"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 1",
+      "expected_error": "",
+      "assertions": [
+        "result == 1"
+      ]
+    },
+    {
+      "id": "solve_f2",
+      "description": "Solve for F(2)='10' with pattern '10' returns 1",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "n": "2",
+        "pattern": "10"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 1",
+      "expected_error": "",
+      "assertions": [
+        "result == 1"
+      ]
+    },
+    {
+      "id": "solve_f3",
+      "description": "Solve for F(3)='101' with pattern '1' returns 2",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "n": "3",
+        "pattern": "1"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 2",
+      "expected_error": "",
+      "assertions": [
+        "result == 2"
+      ]
+    },
+    {
+      "id": "solve_nonnegative",
+      "description": "Solve always returns non-negative value",
+      "function": "solve",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "n": "5",
+        "pattern": "010"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "result >= 0"
+      ]
+    },
+    {
+      "id": "solve_n_negative_error",
+      "description": "Solve raises error for negative n",
+      "function": "solve",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "n": "-1",
+        "pattern": "0"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "n_out_of_range",
+      "assertions": []
+    },
+    {
+      "id": "solve_n_too_large_error",
+      "description": "Solve raises error for n > 100",
+      "function": "solve",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "n": "101",
+        "pattern": "0"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "n_out_of_range",
+      "assertions": []
+    },
+    {
+      "id": "solve_empty_pattern_error",
+      "description": "Solve raises error for empty pattern",
+      "function": "solve",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "n": "5",
+        "pattern": ""
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "empty_pattern",
+      "assertions": []
+    },
+    {
+      "id": "solve_invalid_pattern_chars_error",
+      "description": "Solve raises error for pattern with invalid characters",
+      "function": "solve",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "n": "5",
+        "pattern": "012"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "invalid_pattern_chars",
+      "assertions": []
+    },
+    {
+      "id": "oracle_small_n",
+      "description": "Brute-force oracle: solve matches naive count for small n values",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "Multiple (n, pattern) pairs for n in 0..15 compared against brute-force Fibonacci word generation",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": []
+    },
+    {
+      "id": "recurrence_property",
+      "description": "Recurrence: solve(n,p) = solve(n-1,p) + solve(n-2,p) + cross(n,p) for n>=2",
+      "function": "solve",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "Verify DP recurrence for several n and pattern values",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": []
+    },
+    {
+      "id": "single_char_count_fibonacci",
+      "description": "Count of '0' in F(n) follows a Fibonacci-like sequence",
+      "function": "solve",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": []
+    },
+    {
+      "id": "solve_large_n_no_crash",
+      "description": "Solve with n=100 completes without error (stress test)",
+      "function": "solve",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "n": "100",
+        "pattern": "010"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "result >= 0"
+      ]
+    },
+    {
+      "id": "main_basic_io",
+      "description": "Main reads stdin and writes correct output to stdout",
+      "function": "main",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "Mock stdin with '3\\n1\\n' and verify stdout output",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": []
+    },
+    {
+      "id": "main_multiple_cases_io",
+      "description": "Main handles multiple test cases with correct numbering",
+      "function": "main",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "Mock stdin with two test cases",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": []
+    },
+    {
+      "id": "kmp_prefix_suffix_property",
+      "description": "KMP table satisfies prefix==suffix property for all entries",
+      "function": "build_kmp_failure_table",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "pattern": "010010"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "all(pattern[:result[i]] == pattern[i-result[i]+1:i+1] for i in range(len(result)) if result[i] > 0)"
+      ]
+    },
+    {
+      "id": "count_overlapping_single_char_text",
+      "description": "Counting single char pattern in matching single char text",
+      "function": "count_overlapping",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "text": "1",
+        "pattern": "1"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "result == 1"
+      ]
+    },
+    {
+      "id": "count_overlapping_all_ones",
+      "description": "Counting '11' in '11111' returns 4 (overlapping)",
+      "function": "count_overlapping",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "text": "11111",
+        "pattern": "11"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "result == 4"
+      ]
+    }
+  ],
+  "test_language": "python",
+  "generated_code": "\"\"\"\nContract test suite for fibonacci_words component.\nTests organized in five tiers:\n  Tier 1: Unit tests per function\n  Tier 2: Brute-force oracle integration tests\n  Tier 3: Property-based / invariant tests\n  Tier 4: Error handling tests\n  Tier 5: End-to-end & stress tests\n\"\"\"\n\nimport re\nimport pytest\nfrom unittest.mock import patch, MagicMock\nfrom io import StringIO\n\nfrom src.fibonacci_words import (\n    build_kmp_failure_table,\n    count_overlapping,\n    make_base_fib_state,\n    combine_fib_states,\n    solve,\n    parse_input,\n    format_output,\n    main,\n)\n\n\n# ============================================================\n# Helper: Brute-force Fibonacci word generation for oracle tests\n# ============================================================\n\ndef _fib_word(n):\n    \"\"\"Generate the Fibonacci word F(n) by direct concatenation (small n only).\"\"\"\n    if n == 0:\n        return \"0\"\n    if n == 1:\n        return \"1\"\n    a, b = \"0\", \"1\"\n    for _ in range(2, n + 1):\n        a, b = b, b + a\n    return b\n\n\ndef _naive_count_overlapping(text, pattern):\n    \"\"\"Naive overlapping count for oracle comparison.\"\"\"\n    count = 0\n    plen = len(pattern)\n    for i in range(len(text) - plen + 1):\n        if text[i:i + plen] == pattern:\n            count += 1\n    return count\n\n\n# ============================================================\n# Tier 1: Unit Tests — build_kmp_failure_table\n# ============================================================\n\nclass TestBuildKmpFailureTable:\n    def test_single_char(self):\n        \"\"\"KMP failure table for single character pattern '0'.\"\"\"\n        result = build_kmp_failure_table(\"0\")\n        assert result == [0], f\"Expected [0], got {result}\"\n        assert len(result) == 1\n\n    def test_repeated_chars(self):\n        \"\"\"KMP failure table for repeated pattern '0000'.\"\"\"\n        result = build_kmp_failure_table(\"0000\")\n        assert result == [0, 1, 2, 3], f\"Expected [0, 1, 2, 3], got {result}\"\n\n    def test_alternating(self):\n        \"\"\"KMP failure table for alternating pattern '0101'.\"\"\"\n        result = build_kmp_failure_table(\"0101\")\n        assert result == [0, 0, 1, 2], f\"Expected [0, 0, 1, 2], got {result}\"\n\n    def test_complex_pattern(self):\n        \"\"\"KMP failure table for '01001010'.\"\"\"\n        pattern = \"01001010\"\n        result = build_kmp_failure_table(pattern)\n        assert len(result) == 8, f\"Expected length 8, got {len(result)}\"\n        assert result[0] == 0, \"First entry must always be 0\"\n\n    def test_length_invariant(self):\n        \"\"\"KMP failure table length matches pattern length and bounds hold.\"\"\"\n        pattern = \"010\"\n        result = build_kmp_failure_table(pattern)\n        assert len(result) == len(pattern)\n        assert result[0] == 0\n        assert all(0 <= result[i] <= i for i in range(len(result))), \\\n            f\"Bound violation in failure table: {result}\"\n\n    def test_prefix_suffix_property(self):\n        \"\"\"KMP table satisfies prefix==suffix property for all entries.\"\"\"\n        pattern = \"010010\"\n        result = build_kmp_failure_table(pattern)\n        for i in range(len(result)):\n            if result[i] > 0:\n                assert pattern[:result[i]] == pattern[i - result[i] + 1:i + 1], \\\n                    f\"Prefix-suffix mismatch at index {i}: table={result[i]}\"\n\n    def test_empty_pattern_error(self):\n        \"\"\"KMP failure table raises error for empty pattern.\"\"\"\n        with pytest.raises(Exception):\n            build_kmp_failure_table(\"\")\n\n    def test_two_chars_no_repeat(self):\n        \"\"\"KMP failure table for '01'.\"\"\"\n        result = build_kmp_failure_table(\"01\")\n        assert result == [0, 0], f\"Expected [0, 0], got {result}\"\n\n    def test_two_chars_repeat(self):\n        \"\"\"KMP failure table for '00'.\"\"\"\n        result = build_kmp_failure_table(\"00\")\n        assert result == [0, 1], f\"Expected [0, 1], got {result}\"\n\n\n# ============================================================\n# Tier 1: Unit Tests — count_overlapping\n# ============================================================\n\nclass TestCountOverlapping:\n    def test_basic_non_overlapping(self):\n        \"\"\"Count non-overlapping occurrences of '01' in '0101'.\"\"\"\n        result = count_overlapping(\"0101\", \"01\")\n        assert result == 2, f\"Expected 2, got {result}\"\n\n    def test_overlapping(self):\n        \"\"\"Count overlapping occurrences of '00' in '000'.\"\"\"\n        result = count_overlapping(\"000\", \"00\")\n        assert result == 2, f\"Expected 2, got {result}\"\n\n    def test_no_match(self):\n        \"\"\"Count occurrences when pattern not in text.\"\"\"\n        result = count_overlapping(\"0000\", \"1\")\n        assert result == 0, f\"Expected 0, got {result}\"\n\n    def test_full_match(self):\n        \"\"\"Count when text equals pattern exactly.\"\"\"\n        result = count_overlapping(\"010\", \"010\")\n        assert result == 1, f\"Expected 1, got {result}\"\n\n    def test_text_shorter_than_pattern(self):\n        \"\"\"Count when text is shorter than pattern returns 0.\"\"\"\n        result = count_overlapping(\"0\", \"01\")\n        assert result == 0, f\"Expected 0, got {result}\"\n\n    def test_empty_text(self):\n        \"\"\"Count with empty text returns 0.\"\"\"\n        result = count_overlapping(\"\", \"0\")\n        assert result == 0, f\"Expected 0, got {result}\"\n\n    def test_empty_pattern_error(self):\n        \"\"\"Count raises error for empty pattern.\"\"\"\n        with pytest.raises(Exception):\n            count_overlapping(\"010\", \"\")\n\n    def test_triple_overlap(self):\n        \"\"\"Count overlapping '010' in '01010' returns 2.\"\"\"\n        result = count_overlapping(\"01010\", \"010\")\n        assert result == 2, f\"Expected 2, got {result}\"\n\n    def test_single_char_match(self):\n        \"\"\"Counting single char pattern in matching single char text.\"\"\"\n        result = count_overlapping(\"1\", \"1\")\n        assert result == 1, f\"Expected 1, got {result}\"\n\n    def test_all_ones_overlap(self):\n        \"\"\"Counting '11' in '11111' returns 4 (overlapping).\"\"\"\n        result = count_overlapping(\"11111\", \"11\")\n        assert result == 4, f\"Expected 4, got {result}\"\n\n    def test_against_naive(self):\n        \"\"\"Verify count_overlapping against naive implementation for various inputs.\"\"\"\n        test_cases = [\n            (\"010101\", \"01\"),\n            (\"000000\", \"00\"),\n            (\"101010\", \"1010\"),\n            (\"1\", \"1\"),\n            (\"0\", \"1\"),\n            (\"01010101\", \"0101\"),\n        ]\n        for text, pattern in test_cases:\n            result = count_overlapping(text, pattern)\n            expected = _naive_count_overlapping(text, pattern)\n            assert result == expected, \\\n                f\"Mismatch for text='{text}', pattern='{pattern}': got {result}, expected {expected}\"\n\n\n# ============================================================\n# Tier 1: Unit Tests — make_base_fib_state\n# ============================================================\n\nclass TestMakeBaseFibState:\n    def test_f0_long_pattern(self):\n        \"\"\"Base state for F(0)='0' with pattern longer than base string.\"\"\"\n        result = make_base_fib_state(\"0\", \"010\")\n        assert result.count == 0, f\"Expected count=0, got {result.count}\"\n        assert result.length == 1, f\"Expected length=1, got {result.length}\"\n        assert result.prefix == \"0\", f\"Expected prefix='0', got '{result.prefix}'\"\n        assert result.suffix == \"0\", f\"Expected suffix='0', got '{result.suffix}'\"\n        assert len(result.prefix) == 1\n        assert len(result.suffix) == 1\n\n    def test_f1_long_pattern(self):\n        \"\"\"Base state for F(1)='1' with pattern longer than base string.\"\"\"\n        result = make_base_fib_state(\"1\", \"010\")\n        assert result.count == 0, f\"Expected count=0, got {result.count}\"\n        assert result.length == 1, f\"Expected length=1, got {result.length}\"\n        assert result.prefix == \"1\", f\"Expected prefix='1', got '{result.prefix}'\"\n        assert result.suffix == \"1\", f\"Expected suffix='1', got '{result.suffix}'\"\n\n    def test_f0_exact_match(self):\n        \"\"\"Base state for F(0)='0' with pattern='0' (exact match).\"\"\"\n        result = make_base_fib_state(\"0\", \"0\")\n        assert result.count == 1, f\"Expected count=1, got {result.count}\"\n        assert result.length == 1, f\"Expected length=1, got {result.length}\"\n\n    def test_f1_no_match(self):\n        \"\"\"Base state for F(1)='1' with pattern='0' (no match).\"\"\"\n        result = make_base_fib_state(\"1\", \"0\")\n        assert result.count == 0, f\"Expected count=0, got {result.count}\"\n        assert result.length == 1, f\"Expected length=1, got {result.length}\"\n\n    def test_f1_exact_match(self):\n        \"\"\"Base state for F(1)='1' with pattern='1' (exact match).\"\"\"\n        result = make_base_fib_state(\"1\", \"1\")\n        assert result.count == 1, f\"Expected count=1, got {result.count}\"\n        assert result.length == 1\n\n    def test_prefix_suffix_len_invariant(self):\n        \"\"\"Prefix and suffix length is min(1, len(pattern)-1).\"\"\"\n        for pat in [\"0\", \"01\", \"010\", \"0101\"]:\n            result = make_base_fib_state(\"0\", pat)\n            expected_len = min(1, len(pat) - 1)\n            assert len(result.prefix) == expected_len, \\\n                f\"For pattern='{pat}', prefix len={len(result.prefix)}, expected={expected_len}\"\n            assert len(result.suffix) == expected_len, \\\n                f\"For pattern='{pat}', suffix len={len(result.suffix)}, expected={expected_len}\"\n\n\n# ============================================================\n# Tier 1: Unit Tests — combine_fib_states\n# ============================================================\n\nclass TestCombineFibStates:\n    def test_combine_basic(self):\n        \"\"\"Combine F(1) and F(0) to get F(2) state with a known pattern.\"\"\"\n        # F(0)='0', F(1)='1', F(2)='10'\n        pattern = \"10\"\n        f0 = make_base_fib_state(\"0\", pattern)\n        f1 = make_base_fib_state(\"1\", pattern)\n        # F(2) = F(1) + F(0) = '10'\n        result = combine_fib_states(f1, f0, pattern)\n        # '10' contains '10' once\n        assert result.count == 1, f\"Expected count=1, got {result.count}\"\n\n    def test_combine_no_cross_boundary(self):\n        \"\"\"Combine where pattern doesn't span boundary.\"\"\"\n        pattern = \"111\"\n        f0 = make_base_fib_state(\"0\", pattern)\n        f1 = make_base_fib_state(\"1\", pattern)\n        # F(2) = '10', no '111' present\n        result = combine_fib_states(f1, f0, pattern)\n        assert result.count == 0, f\"Expected count=0, got {result.count}\"\n\n    def test_combine_with_cross_boundary(self):\n        \"\"\"Combine where pattern spans the join point.\"\"\"\n        pattern = \"10\"\n        f0 = make_base_fib_state(\"0\", pattern)\n        f1 = make_base_fib_state(\"1\", pattern)\n        # F(2) = F(1) + F(0) = '1' + '0' = '10'\n        # The pattern '10' spans the boundary\n        result = combine_fib_states(f1, f0, pattern)\n        assert result.count >= 0, \"Count should be non-negative\"\n        # Verify against direct count\n        f2_text = \"10\"\n        expected = _naive_count_overlapping(f2_text, pattern)\n        assert result.count == expected, f\"Expected {expected}, got {result.count}\"\n\n    def test_combine_count_nonnegative(self):\n        \"\"\"Combined count is always non-negative.\"\"\"\n        pattern = \"01\"\n        f0 = make_base_fib_state(\"0\", pattern)\n        f1 = make_base_fib_state(\"1\", pattern)\n        f2 = combine_fib_states(f1, f0, pattern)\n        f3 = combine_fib_states(f2, f1, pattern)\n        assert f2.count >= 0, f\"F(2) count should be non-negative: {f2.count}\"\n        assert f3.count >= 0, f\"F(3) count should be non-negative: {f3.count}\"\n\n    def test_combine_iterative_small(self):\n        \"\"\"Build F(5) via combine and compare to oracle.\"\"\"\n        pattern = \"10\"\n        f0 = make_base_fib_state(\"0\", pattern)\n        f1 = make_base_fib_state(\"1\", pattern)\n        prev2, prev1 = f0, f1\n        for k in range(2, 6):\n            combined = combine_fib_states(prev1, prev2, pattern)\n            prev2, prev1 = prev1, combined\n        fib5 = _fib_word(5)\n        expected = _naive_count_overlapping(fib5, pattern)\n        assert prev1.count == expected, \\\n            f\"F(5) count mismatch: got {prev1.count}, expected {expected}\"\n\n    def test_combine_prefix_suffix_length(self):\n        \"\"\"Verify prefix/suffix length invariants after combine.\"\"\"\n        pattern = \"010\"\n        f0 = make_base_fib_state(\"0\", pattern)\n        f1 = make_base_fib_state(\"1\", pattern)\n        f2 = combine_fib_states(f1, f0, pattern)\n        expected_ps_len = min(f2.length, len(pattern) - 1)\n        assert len(f2.prefix) == expected_ps_len, \\\n            f\"Prefix len={len(f2.prefix)}, expected={expected_ps_len}\"\n        assert len(f2.suffix) == expected_ps_len, \\\n            f\"Suffix len={len(f2.suffix)}, expected={expected_ps_len}\"\n\n\n# ============================================================\n# Tier 1: Unit Tests — format_output\n# ============================================================\n\nclass TestFormatOutput:\n    def test_basic(self):\n        \"\"\"Format case 1 with count 5.\"\"\"\n        result = format_output(1, 5)\n        assert result == \"Case 1: 5\", f\"Expected 'Case 1: 5', got '{result}'\"\n\n    def test_large_count(self):\n        \"\"\"Format case 3 with large count.\"\"\"\n        result = format_output(3, 1234567890)\n        assert result == \"Case 3: 1234567890\", f\"Expected 'Case 3: 1234567890', got '{result}'\"\n\n    def test_zero_count(self):\n        \"\"\"Format case 1 with count 0.\"\"\"\n        result = format_output(1, 0)\n        assert result == \"Case 1: 0\", f\"Expected 'Case 1: 0', got '{result}'\"\n\n    def test_regex_match(self):\n        \"\"\"Format output matches required regex pattern.\"\"\"\n        result = format_output(42, 99)\n        assert re.match(r'^Case \\d+: \\d+$', result), \\\n            f\"Output '{result}' does not match 'Case X: count' pattern\"\n\n    def test_case_number_preserved(self):\n        \"\"\"Case number in output equals input case_number.\"\"\"\n        for cn in [1, 5, 100]:\n            result = format_output(cn, 0)\n            assert f\"Case {cn}:\" in result, f\"Case number {cn} not found in '{result}'\"\n\n    def test_count_preserved(self):\n        \"\"\"Count in output equals input count.\"\"\"\n        for cnt in [0, 1, 999999]:\n            result = format_output(1, cnt)\n            assert result.endswith(f\": {cnt}\"), f\"Count {cnt} not at end of '{result}'\"\n\n\n# ============================================================\n# Tier 1: Unit Tests — parse_input\n# ============================================================\n\nclass TestParseInput:\n    def test_single_case(self):\n        \"\"\"Parse single test case input.\"\"\"\n        result = parse_input(\"3\\n010\\n\")\n        assert len(result) == 1, f\"Expected 1 test case, got {len(result)}\"\n        assert result[0].n == 3, f\"Expected n=3, got {result[0].n}\"\n        assert result[0].pattern == \"010\", f\"Expected pattern='010', got '{result[0].pattern}'\"\n\n    def test_multiple_cases(self):\n        \"\"\"Parse multiple test cases.\"\"\"\n        result = parse_input(\"5\\n1\\n10\\n01\\n\")\n        assert len(result) == 2, f\"Expected 2 test cases, got {len(result)}\"\n        assert result[0].n == 5\n        assert result[0].pattern == \"1\"\n        assert result[1].n == 10\n        assert result[1].pattern == \"01\"\n\n    def test_whitespace_stripping(self):\n        \"\"\"Parse input with extra whitespace around lines.\"\"\"\n        result = parse_input(\"  3  \\n  010  \\n\")\n        assert len(result) == 1\n        assert result[0].n == 3\n        assert result[0].pattern == \"010\"\n\n    def test_odd_lines_error(self):\n        \"\"\"Parse raises error for odd number of lines.\"\"\"\n        with pytest.raises(Exception):\n            parse_input(\"3\\n010\\n5\\n\")\n\n    def test_invalid_n_error(self):\n        \"\"\"Parse raises error for non-integer n.\"\"\"\n        with pytest.raises(Exception):\n            parse_input(\"abc\\n010\\n\")\n\n    def test_n_out_of_range_error(self):\n        \"\"\"Parse raises error for n > 100.\"\"\"\n        with pytest.raises(Exception):\n            parse_input(\"101\\n010\\n\")\n\n    def test_invalid_pattern_chars_error(self):\n        \"\"\"Parse raises error for pattern with invalid chars.\"\"\"\n        with pytest.raises(Exception):\n            parse_input(\"3\\n012\\n\")\n\n    def test_empty_pattern_error(self):\n        \"\"\"Parse raises error for empty pattern line.\"\"\"\n        with pytest.raises(Exception):\n            parse_input(\"3\\n\\n\")\n\n    def test_order_preserved(self):\n        \"\"\"TestCases are returned in input order.\"\"\"\n        result = parse_input(\"1\\n0\\n2\\n1\\n3\\n01\\n\")\n        assert len(result) == 3\n        assert [tc.n for tc in result] == [1, 2, 3]\n        assert [tc.pattern for tc in result] == [\"0\", \"1\", \"01\"]\n\n    def test_boundary_n_values(self):\n        \"\"\"Parse accepts n=0 and n=100.\"\"\"\n        result = parse_input(\"0\\n0\\n100\\n1\\n\")\n        assert len(result) == 2\n        assert result[0].n == 0\n        assert result[1].n == 100\n\n    def test_negative_n_error(self):\n        \"\"\"Parse raises error for negative n.\"\"\"\n        with pytest.raises(Exception):\n            parse_input(\"-1\\n010\\n\")\n\n\n# ============================================================\n# Tier 1: Unit Tests — solve\n# ============================================================\n\nclass TestSolve:\n    def test_f0_pattern_0(self):\n        \"\"\"Solve for F(0)='0' with pattern '0' returns 1.\"\"\"\n        result = solve(0, \"0\")\n        assert result == 1, f\"Expected 1, got {result}\"\n\n    def test_f0_pattern_1(self):\n        \"\"\"Solve for F(0)='0' with pattern '1' returns 0.\"\"\"\n        result = solve(0, \"1\")\n        assert result == 0, f\"Expected 0, got {result}\"\n\n    def test_f1_pattern_1(self):\n        \"\"\"Solve for F(1)='1' with pattern '1' returns 1.\"\"\"\n        result = solve(1, \"1\")\n        assert result == 1, f\"Expected 1, got {result}\"\n\n    def test_f1_pattern_0(self):\n        \"\"\"Solve for F(1)='1' with pattern '0' returns 0.\"\"\"\n        result = solve(1, \"0\")\n        assert result == 0, f\"Expected 0, got {result}\"\n\n    def test_f2_pattern_10(self):\n        \"\"\"Solve for F(2)='10' with pattern '10' returns 1.\"\"\"\n        result = solve(2, \"10\")\n        assert result == 1, f\"Expected 1, got {result}\"\n\n    def test_f3_pattern_1(self):\n        \"\"\"Solve for F(3)='101' with pattern '1' returns 2.\"\"\"\n        result = solve(3, \"1\")\n        assert result == 2, f\"Expected 2, got {result}\"\n\n    def test_nonnegative(self):\n        \"\"\"Solve always returns non-negative value.\"\"\"\n        result = solve(5, \"010\")\n        assert result >= 0, f\"Expected non-negative, got {result}\"\n\n    def test_n_negative_error(self):\n        \"\"\"Solve raises error for negative n.\"\"\"\n        with pytest.raises(Exception):\n            solve(-1, \"0\")\n\n    def test_n_too_large_error(self):\n        \"\"\"Solve raises error for n > 100.\"\"\"\n        with pytest.raises(Exception):\n            solve(101, \"0\")\n\n    def test_empty_pattern_error(self):\n        \"\"\"Solve raises error for empty pattern.\"\"\"\n        with pytest.raises(Exception):\n            solve(5, \"\")\n\n    def test_invalid_pattern_chars_error(self):\n        \"\"\"Solve raises error for pattern with invalid characters.\"\"\"\n        with pytest.raises(Exception):\n            solve(5, \"012\")\n\n    def test_f2_all_patterns(self):\n        \"\"\"Solve for F(2)='10' with all 1-2 char patterns.\"\"\"\n        # F(2) = '10'\n        assert solve(2, \"0\") == 1\n        assert solve(2, \"1\") == 1\n        assert solve(2, \"10\") == 1\n        assert solve(2, \"01\") == 0\n        assert solve(2, \"00\") == 0\n        assert solve(2, \"11\") == 0\n\n    def test_f4(self):\n        \"\"\"Solve for F(4)='10110' with various patterns.\"\"\"\n        # F(4) = F(3) + F(2) = '101' + '10' = '10110'\n        assert solve(4, \"1\") == 3\n        assert solve(4, \"0\") == 2\n        assert solve(4, \"10\") == 2\n        assert solve(4, \"01\") == 1\n        assert solve(4, \"101\") == 1\n        assert solve(4, \"10110\") == 1\n\n\n# ============================================================\n# Tier 2: Brute-Force Oracle Integration Tests\n# ============================================================\n\nclass TestOracleComparison:\n    \"\"\"Compare solve() against naive brute-force for small n.\"\"\"\n\n    def test_oracle_single_char_patterns(self):\n        \"\"\"Verify solve matches naive count for single char patterns across small n.\"\"\"\n        for n in range(16):\n            fib = _fib_word(n)\n            for pattern in [\"0\", \"1\"]:\n                expected = _naive_count_overlapping(fib, pattern)\n                result = solve(n, pattern)\n                assert result == expected, \\\n                    f\"Mismatch at n={n}, pattern='{pattern}': solve={result}, naive={expected}\"\n\n    def test_oracle_two_char_patterns(self):\n        \"\"\"Verify solve matches naive count for two char patterns across small n.\"\"\"\n        for n in range(16):\n            fib = _fib_word(n)\n            for pattern in [\"00\", \"01\", \"10\", \"11\"]:\n                expected = _naive_count_overlapping(fib, pattern)\n                result = solve(n, pattern)\n                assert result == expected, \\\n                    f\"Mismatch at n={n}, pattern='{pattern}': solve={result}, naive={expected}\"\n\n    def test_oracle_three_char_patterns(self):\n        \"\"\"Verify solve matches naive count for three char patterns.\"\"\"\n        for n in range(14):\n            fib = _fib_word(n)\n            for pattern in [\"000\", \"001\", \"010\", \"011\", \"100\", \"101\", \"110\", \"111\"]:\n                expected = _naive_count_overlapping(fib, pattern)\n                result = solve(n, pattern)\n                assert result == expected, \\\n                    f\"Mismatch at n={n}, pattern='{pattern}': solve={result}, naive={expected}\"\n\n    def test_oracle_longer_patterns(self):\n        \"\"\"Verify solve matches naive count for longer patterns at moderate n.\"\"\"\n        patterns = [\"10110\", \"01011\", \"10101\", \"10110101\", \"1011010110\"]\n        for n in range(20):\n            fib = _fib_word(n)\n            for pattern in patterns:\n                if len(pattern) <= len(fib):\n                    expected = _naive_count_overlapping(fib, pattern)\n                    result = solve(n, pattern)\n                    assert result == expected, \\\n                        f\"Mismatch at n={n}, pattern='{pattern}': solve={result}, naive={expected}\"\n\n    def test_oracle_pattern_longer_than_fib(self):\n        \"\"\"When pattern is longer than F(n), solve returns 0.\"\"\"\n        for n in range(8):\n            fib = _fib_word(n)\n            long_pattern = \"0\" * (len(fib) + 1)\n            if len(long_pattern) <= 100000:\n                result = solve(n, long_pattern)\n                assert result == 0, \\\n                    f\"Expected 0 for n={n}, pattern longer than F(n), got {result}\"\n\n\n# ============================================================\n# Tier 3: Property-Based / Invariant Tests\n# ============================================================\n\nclass TestRecurrenceProperty:\n    \"\"\"Verify the DP recurrence: solve(n,p) relates to solve(n-1,p) + solve(n-2,p) + cross.\"\"\"\n\n    def test_recurrence_holds(self):\n        \"\"\"solve(n) = solve(n-1) + solve(n-2) + cross for n>=2.\"\"\"\n        patterns = [\"0\", \"1\", \"01\", \"10\", \"010\", \"101\", \"1011\"]\n        for pattern in patterns:\n            for n in range(2, 16):\n                sn = solve(n, pattern)\n                sn1 = solve(n - 1, pattern)\n                sn2 = solve(n - 2, pattern)\n                cross = sn - sn1 - sn2\n                assert cross >= 0, \\\n                    f\"Negative cross-boundary for n={n}, pattern='{pattern}': \" \\\n                    f\"solve(n)={sn}, solve(n-1)={sn1}, solve(n-2)={sn2}, cross={cross}\"\n                assert sn == sn1 + sn2 + cross, \\\n                    f\"Recurrence broken at n={n}, pattern='{pattern}'\"\n\n    def test_cross_boundary_matches_formula(self):\n        \"\"\"Verify cross-boundary formula against direct computation for small n.\"\"\"\n        pattern = \"10\"\n        for n in range(2, 14):\n            fn = _fib_word(n)\n            fn1 = _fib_word(n - 1)\n            fn2 = _fib_word(n - 2)\n            total = _naive_count_overlapping(fn, pattern)\n            c1 = _naive_count_overlapping(fn1, pattern)\n            c2 = _naive_count_overlapping(fn2, pattern)\n            cross = total - c1 - c2\n            # cross should equal matches at the boundary\n            assert cross >= 0, f\"Negative cross at n={n}: total={total}, c1={c1}, c2={c2}\"\n            assert solve(n, pattern) == total, \\\n                f\"solve({n}, '{pattern}') = {solve(n, pattern)} != {total}\"\n\n\nclass TestSingleCharCountFibonacci:\n    \"\"\"Count of '0' and '1' in F(n) follows known Fibonacci-like patterns.\"\"\"\n\n    def test_count_of_0_sequence(self):\n        \"\"\"Count of '0' in F(n) should match a known sequence.\"\"\"\n        # F(0)='0': 1 zero, F(1)='1': 0 zeros, F(2)='10': 1 zero,\n        # F(3)='101': 1 zero, F(4)='10110': 2 zeros, F(5)='10110101': 3 zeros\n        expected_zeros = []\n        for n in range(16):\n            fib = _fib_word(n)\n            expected_zeros.append(fib.count('0'))\n\n        for n in range(16):\n            result = solve(n, \"0\")\n            assert result == expected_zeros[n], \\\n                f\"Count of '0' in F({n}): solve={result}, expected={expected_zeros[n]}\"\n\n    def test_count_of_1_sequence(self):\n        \"\"\"Count of '1' in F(n) should match a known sequence.\"\"\"\n        expected_ones = []\n        for n in range(16):\n            fib = _fib_word(n)\n            expected_ones.append(fib.count('1'))\n\n        for n in range(16):\n            result = solve(n, \"1\")\n            assert result == expected_ones[n], \\\n                f\"Count of '1' in F({n}): solve={result}, expected={expected_ones[n]}\"\n\n\nclass TestCountNonNegativeInvariant:\n    \"\"\"solve() always returns non-negative values.\"\"\"\n\n    def test_nonnegative_across_range(self):\n        \"\"\"Solve returns non-negative for a range of n and patterns.\"\"\"\n        import random\n        random.seed(42)\n        for _ in range(50):\n            n = random.randint(0, 100)\n            plen = random.randint(1, 20)\n            pattern = ''.join(random.choice('01') for _ in range(plen))\n            result = solve(n, pattern)\n            assert result >= 0, \\\n                f\"Negative result for n={n}, pattern='{pattern}': {result}\"\n\n\nclass TestPatternNotInAlphabet:\n    \"\"\"Pattern that cannot appear should return 0 for base cases.\"\"\"\n\n    def test_long_all_zeros_pattern(self):\n        \"\"\"Pattern '0000' never appears in small Fibonacci words (no consecutive zeros in Fib words for n>=2).\"\"\"\n        # Actually Fibonacci words can have consecutive zeros for larger n.\n        # But for base cases: F(0)='0', F(1)='1' - '0000' can't appear.\n        assert solve(0, \"0000\") == 0\n        assert solve(1, \"0000\") == 0\n\n\n# ============================================================\n# Tier 4: Additional Error Handling Tests\n# ============================================================\n\nclass TestErrorHandling:\n    def test_solve_n_boundary_low(self):\n        \"\"\"Solve accepts n=0.\"\"\"\n        result = solve(0, \"0\")\n        assert result >= 0\n\n    def test_solve_n_boundary_high(self):\n        \"\"\"Solve accepts n=100.\"\"\"\n        result = solve(100, \"0\")\n        assert result >= 0\n\n    def test_solve_n_just_below_range(self):\n        \"\"\"Solve rejects n=-1.\"\"\"\n        with pytest.raises(Exception):\n            solve(-1, \"0\")\n\n    def test_solve_n_just_above_range(self):\n        \"\"\"Solve rejects n=101.\"\"\"\n        with pytest.raises(Exception):\n            solve(101, \"0\")\n\n    def test_solve_pattern_with_spaces(self):\n        \"\"\"Solve rejects pattern with spaces.\"\"\"\n        with pytest.raises(Exception):\n            solve(5, \"0 1\")\n\n    def test_solve_pattern_with_letters(self):\n        \"\"\"Solve rejects pattern with letters.\"\"\"\n        with pytest.raises(Exception):\n            solve(5, \"0a1\")\n\n    def test_count_overlapping_empty_pattern(self):\n        \"\"\"count_overlapping rejects empty pattern.\"\"\"\n        with pytest.raises(Exception):\n            count_overlapping(\"010\", \"\")\n\n    def test_build_kmp_empty_pattern(self):\n        \"\"\"build_kmp_failure_table rejects empty pattern.\"\"\"\n        with pytest.raises(Exception):\n            build_kmp_failure_table(\"\")\n\n\n# ============================================================\n# Tier 5: End-to-End & Stress Tests\n# ============================================================\n\nclass TestMainEndToEnd:\n    def test_main_single_case(self):\n        \"\"\"Main reads stdin with single case and writes correct output.\"\"\"\n        input_data = \"3\\n1\\n\"\n        expected_count = solve(3, \"1\")\n        expected_output = f\"Case 1: {expected_count}\\n\"\n\n        with patch('sys.stdin', StringIO(input_data)), \\\n             patch('sys.stdout', new_callable=StringIO) as mock_stdout:\n            main()\n            output = mock_stdout.getvalue()\n            assert output == expected_output, \\\n                f\"Expected '{expected_output}', got '{output}'\"\n\n    def test_main_multiple_cases(self):\n        \"\"\"Main handles multiple test cases with correct numbering.\"\"\"\n        input_data = \"3\\n1\\n5\\n010\\n\"\n        count1 = solve(3, \"1\")\n        count2 = solve(5, \"010\")\n        expected_output = f\"Case 1: {count1}\\nCase 2: {count2}\\n\"\n\n        with patch('sys.stdin', StringIO(input_data)), \\\n             patch('sys.stdout', new_callable=StringIO) as mock_stdout:\n            main()\n            output = mock_stdout.getvalue()\n            assert output == expected_output, \\\n                f\"Expected:\\n{expected_output}\\nGot:\\n{output}\"\n\n    def test_main_output_format_exact(self):\n        \"\"\"Main output lines match 'Case X: count' regex with no trailing spaces.\"\"\"\n        input_data = \"0\\n0\\n1\\n1\\n2\\n10\\n\"\n\n        with patch('sys.stdin', StringIO(input_data)), \\\n             patch('sys.stdout', new_callable=StringIO) as mock_stdout:\n            main()\n            output = mock_stdout.getvalue()\n            lines = output.strip().split('\\n')\n            assert len(lines) == 3, f\"Expected 3 lines, got {len(lines)}\"\n            for i, line in enumerate(lines):\n                assert re.match(r'^Case \\d+: \\d+$', line), \\\n                    f\"Line {i + 1} doesn't match format: '{line}'\"\n                assert not line.endswith(' '), \\\n                    f\"Line {i + 1} has trailing space: '{line}'\"\n\n    def test_main_case_numbering(self):\n        \"\"\"Main uses 1-based case numbering.\"\"\"\n        input_data = \"0\\n0\\n0\\n0\\n0\\n0\\n\"\n\n        with patch('sys.stdin', StringIO(input_data)), \\\n             patch('sys.stdout', new_callable=StringIO) as mock_stdout:\n            main()\n            output = mock_stdout.getvalue()\n            lines = output.strip().split('\\n')\n            for i, line in enumerate(lines):\n                assert line.startswith(f\"Case {i + 1}:\"), \\\n                    f\"Expected 'Case {i + 1}:', got '{line}'\"\n\n\nclass TestStress:\n    def test_solve_large_n_completes(self):\n        \"\"\"Solve with n=100 completes without error (stress test).\"\"\"\n        result = solve(100, \"010\")\n        assert result >= 0, f\"Expected non-negative result, got {result}\"\n\n    def test_solve_large_n_long_pattern(self):\n        \"\"\"Solve with n=100 and a longer pattern completes.\"\"\"\n        pattern = \"10110101\" * 10  # 80 chars\n        result = solve(100, pattern)\n        assert result >= 0, f\"Expected non-negative result, got {result}\"\n\n    def test_solve_large_n_single_char(self):\n        \"\"\"Solve with n=100 and single char pattern returns large count.\"\"\"\n        result_0 = solve(100, \"0\")\n        result_1 = solve(100, \"1\")\n        # F(100) has a known large length; counts should be positive\n        assert result_0 > 0, f\"Expected positive count of '0' in F(100), got {result_0}\"\n        assert result_1 > 0, f\"Expected positive count of '1' in F(100), got {result_1}\"\n        # Total chars = count('0') + count('1') = len(F(100))\n        # F(100) length = fib(101) in terms of the Fibonacci sequence starting 1,1,...\n        # Just verify it's a very large number\n        assert result_0 + result_1 > 10**10, \\\n            f\"F(100) should be astronomically long, got total chars = {result_0 + result_1}\"\n\n    def test_solve_n100_count_0_plus_1_equals_length(self):\n        \"\"\"Count of '0' + count of '1' in F(n) equals len(F(n)) for small n, extrapolate property.\"\"\"\n        for n in range(20):\n            fib = _fib_word(n)\n            c0 = solve(n, \"0\")\n            c1 = solve(n, \"1\")\n            assert c0 + c1 == len(fib), \\\n                f\"For n={n}: count('0')={c0} + count('1')={c1} != len(F(n))={len(fib)}\"\n\n    def test_solve_n100_performance(self):\n        \"\"\"Ensure solve(100, p) is fast for maximum-length pattern.\"\"\"\n        import time\n        # Pattern of length ~1000\n        pattern = (\"10110101\" * 125)[:1000]\n        start = time.time()\n        result = solve(100, pattern)\n        elapsed = time.time() - start\n        assert result >= 0\n        # Should complete well within 10 seconds for a DP approach\n        assert elapsed < 10.0, f\"solve(100, pattern) took {elapsed:.2f}s, too slow\"\n\n\n# ============================================================\n# Additional invariant tests\n# ============================================================\n\nclass TestInvariants:\n    def test_fibonacci_word_definition(self):\n        \"\"\"F(0)='0', F(1)='1', F(k)=F(k-1)+F(k-2) for k>=2.\"\"\"\n        assert _fib_word(0) == \"0\"\n        assert _fib_word(1) == \"1\"\n        for k in range(2, 15):\n            assert _fib_word(k) == _fib_word(k - 1) + _fib_word(k - 2), \\\n                f\"Fibonacci word definition violated at k={k}\"\n\n    def test_solve_consistent_with_count_overlapping_base(self):\n        \"\"\"For n=0 and n=1, solve equals count_overlapping on the base string.\"\"\"\n        for pattern in [\"0\", \"1\", \"00\", \"01\", \"10\", \"11\", \"010\", \"101\"]:\n            assert solve(0, pattern) == count_overlapping(\"0\", pattern), \\\n                f\"solve(0, '{pattern}') != count_overlapping('0', '{pattern}')\"\n            assert solve(1, pattern) == count_overlapping(\"1\", pattern), \\\n                f\"solve(1, '{pattern}') != count_overlapping('1', '{pattern}')\"\n\n    def test_overlapping_semantics(self):\n        \"\"\"Verify overlapping semantics: '00' in '000' is 2, not 1.\"\"\"\n        assert count_overlapping(\"000\", \"00\") == 2\n        assert count_overlapping(\"0000\", \"00\") == 3\n        assert count_overlapping(\"00000\", \"00\") == 4\n\n    def test_no_pattern_means_zero(self):\n        \"\"\"If a pattern only contains chars not in the alphabet of Fib words, count is 0.\n        Actually all patterns are '0'/'1' which IS the alphabet. Test a pattern\n        that can't appear in any Fibonacci word for structural reasons.\"\"\"\n        # '00' never appears in Fibonacci words (proven property)\n        # F(0)='0', F(1)='1', F(2)='10', F(3)='101', F(4)='10110'\n        # Wait - '00' does NOT appear in Fibonacci words? Let's check F(5):\n        # F(5) = F(4)+F(3) = '10110'+'101' = '10110101' -> no '00'\n        # F(6) = F(5)+F(4) = '10110101'+'10110' = '1011010110110' -> has '00'? no wait...\n        # Actually let me check: '1011010110110' - position 9,10 = '1','0' not '00'\n        # Hmm, let me just verify by checking small n\n        for n in range(15):\n            fib = _fib_word(n)\n            expected = _naive_count_overlapping(fib, \"00\")\n            result = solve(n, \"00\")\n            assert result == expected, \\\n                f\"Mismatch for '00' in F({n}): solve={result}, expected={expected}\"\n"
+}

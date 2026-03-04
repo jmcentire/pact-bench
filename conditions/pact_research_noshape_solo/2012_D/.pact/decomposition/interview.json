@@ -1,0 +1,45 @@
+{
+  "risks": [
+    "Performance: F(100) has length equal to fib(102) ≈ 9.27 × 10^20 characters. You absolutely cannot construct the string. A merge-based / dynamic-programming approach is required: count occurrences in F(n) by combining counts from F(n-1) and F(n-2) plus overlapping matches at the junction. Getting this wrong means either TLE or memory explosion.",
+    "Junction overlap counting: When merging F(n-1) + F(n-2), new pattern occurrences can span the boundary. You need to maintain suffix/prefix strings of length len(p)-1 at the boundaries of each F(k) to detect these cross-boundary matches. Implementing KMP or similar over the junction region is error-prone.",
+    "Large n with short pattern: For n=100 and a 1-character pattern like '1', the count will be astronomically large (≈ fib(102) scale). Python handles big integers natively, but the output must be the exact decimal representation.",
+    "Edge cases: p longer than F(n). For example, if n=0 then F(0)='0' and p could be up to 100,000 chars. The answer is 0 but the code must not crash. Similarly, if len(p) > len(F(n)), the suffix/prefix strings stored are the entire F(n) string, not len(p)-1 chars.",
+    "Multiple test cases: The solution must process ALL test cases from stdin and number them sequentially. A common mistake is exiting after the first test case or resetting the case counter.",
+    "Overlapping matches: The spec explicitly says 'Occurrences may overlap.' Using Python's str.count() would NOT work as it counts non-overlapping occurrences. Must use KMP or a sliding-window approach that allows overlapping.",
+    "Correctness of F(n) = F(n-1) + F(n-2) concatenation order: Getting this reversed (F(n-2) + F(n-1)) would silently produce wrong answers. The spec is clear but it's an easy mistake.",
+    "Pattern of length 1: When len(p)=1, the suffix/prefix overlap region has length 0. The DP merge step must handle this edge case (no junction string to search)."
+  ],
+  "ambiguities": [
+    "Input termination: The spec doesn't clearly state how input ends. Is it EOF-terminated? Is there a sentinel value? The sample input shows 5 test cases but no leading count or termination marker — implying read-until-EOF, but this is not explicitly stated.",
+    "Input format: Each test case is described as having n on the first line and p on the second line. The sample input shows pairs of lines (n, p) consecutively. But are there blank lines between test cases? Are there trailing newlines or whitespace to handle?",
+    "The sample table shows F(6) = 1011010110110 which has 13 characters (fib(8)=21? No, len(F(n)) = fib(n+2) for standard Fibonacci). Need to verify: len(F(6)) should be fib(8)=21 but 1011010110110 has 13 characters — this equals fib(7)=13. The indexing convention needs careful verification as it affects the entire solution.",
+    "Case numbering: Cases are numbered starting from 1 (shown in sample output), but this is implicit — not stated in the output spec.",
+    "The spec says occurrences < 2^63 but doesn't clarify signed vs unsigned. Python handles arbitrary precision natively, but the phrasing '2^63' suggests this was originally a C/C++ problem with uint64_t. Should output ever be exactly 2^63-1, or is the bound strict?"
+  ],
+  "questions": [
+    "How is input terminated — read until EOF, or is there a count of test cases at the beginning?",
+    "Can n and p have leading/trailing whitespace that needs to be stripped?",
+    "Should the output have a trailing newline after the last case?",
+    "The sample shows F(6) = 1011010110110 (13 chars). Can you confirm the length progression: len(F(0))=1, len(F(1))=1, len(F(2))=2, len(F(3))=3, len(F(4))=5, len(F(5))=8, len(F(6))=13? This means len(F(n)) = fib(n+1) using 1-indexed Fibonacci (fib(1)=1, fib(2)=1, fib(3)=2...)?",
+    "Is the pattern p guaranteed to consist only of '0' and '1' characters, or do we need to handle invalid input?"
+  ],
+  "assumptions": [
+    "Input is read until EOF with no leading test-case count.",
+    "Each test case is exactly two consecutive lines: n then p, with no blank lines between test cases.",
+    "Case numbering starts at 1 and increments sequentially.",
+    "Pattern p contains only '0' and '1' characters.",
+    "We strip whitespace/newlines from each input line.",
+    "Python's arbitrary-precision integers are sufficient for all counts (no need for modular arithmetic).",
+    "str.count() must NOT be used for counting since it skips overlapping matches; KMP or equivalent overlapping search is required.",
+    "For the DP approach, we store prefix and suffix strings of each F(k) of length min(len(F(k)), len(p)-1) to compute cross-boundary matches.",
+    "Output has a trailing newline after the last case (standard competitive programming convention)."
+  ],
+  "user_answers": {
+    "How is input terminated — read until EOF, or is there a count of test cases at the beginning?": "Input is read until EOF with no leading test-case count.",
+    "Can n and p have leading/trailing whitespace that needs to be stripped?": "Each test case is exactly two consecutive lines: n then p, with no blank lines between test cases.",
+    "Should the output have a trailing newline after the last case?": "Output has a trailing newline after the last case (standard competitive programming convention).",
+    "The sample shows F(6) = 1011010110110 (13 chars). Can you confirm the length progression: len(F(0))=1, len(F(1))=1, len(F(2))=2, len(F(3))=3, len(F(4))=5, len(F(5))=8, len(F(6))=13? This means len(F(n)) = fib(n+1) using 1-indexed Fibonacci (fib(1)=1, fib(2)=1, fib(3)=2...)?": "Pattern p contains only '0' and '1' characters.",
+    "Is the pattern p guaranteed to consist only of '0' and '1' characters, or do we need to handle invalid input?": "Pattern p contains only '0' and '1' characters."
+  },
+  "approved": true
+}

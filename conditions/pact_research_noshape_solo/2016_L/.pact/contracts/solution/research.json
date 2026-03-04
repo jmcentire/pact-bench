@@ -1,0 +1,96 @@
+{
+  "task_summary": "Define the interface contract for 'Swap Space Solution' (solution.py): a competitive-programming-style solution that reads drive specifications from stdin, computes the minimum extra storage needed to reformat all drives using a greedy ordering strategy, and prints the result to stdout. Python 3.10+, standard library only, O(n log n) time for n up to 10^6.",
+  "findings": [
+    {
+      "topic": "Greedy ordering for Swap Space problem",
+      "finding": "The classic greedy for this problem splits drives into 'growers' (b_i >= a_i) and 'shrinkers' (b_i < a_i). Growers are sorted by a_i ascending (cheapest to evacuate first, maximizing cumulative free space gain early). Shrinkers are sorted by b_i descending (those that lose the least capacity first, preserving free space for expensive shrinkers later). This is a well-known exchange argument proof: swapping any two adjacent drives in a suboptimal order cannot improve the result.",
+      "source": "Competitive programming literature (Kattis 'swapspace' problem, ICPC problem sets)",
+      "relevance": "Core algorithm correctness — wrong sort order produces wrong answers",
+      "confidence": 0.97
+    },
+    {
+      "topic": "Simulation for minimum extra space (no binary search needed)",
+      "finding": "Track free_space starting at 0. For each drive in sorted order: free_space -= a_i, then record the minimum value of free_space seen so far, then free_space += b_i. The answer is max(0, -min_free_space). This works because adding E to the initial free space shifts the entire trajectory up by E; we need the trajectory to never go below 0, so E = -min(trajectory) when min < 0. This avoids binary search entirely and runs in O(n) after sorting.",
+      "source": "Standard prefix-sum / simulation technique in scheduling problems",
+      "relevance": "Critical implementation detail — the deficit must be tracked AFTER subtracting a_i but BEFORE adding b_i, since you must have space to evacuate before the reformat yields new capacity",
+      "confidence": 0.95
+    },
+    {
+      "topic": "Python I/O performance for large inputs (n up to 10^6)",
+      "finding": "sys.stdin.read() followed by split() is significantly faster than line-by-line input() calls for large n. For n=10^6 with two integers per line, the difference can be 5-10x. Using sys.stdin.buffer.read() and decoding is even marginally faster but usually unnecessary. Avoid using input() in a loop for competitive programming with large inputs in Python.",
+      "source": "Python competitive programming best practices, CPython performance guides",
+      "relevance": "With n up to 10^6 and tight time limits, I/O method choice can be the difference between TLE and AC",
+      "confidence": 0.95
+    },
+    {
+      "topic": "Type annotations for competitive programming solutions",
+      "finding": "Per project standards (Python 3.10+), use modern type annotation syntax: list[tuple[int, int]] instead of List[Tuple[int, int]], int | None instead of Optional[int]. For a solution.py, a main() function with -> None return type and properly typed local variables keeps the contract clear. Using a structured approach (def solve(drives: list[tuple[int, int]]) -> int) separates I/O from logic, aiding testability.",
+      "source": "Python 3.10 PEP 604, PEP 585; project coding standards",
+      "relevance": "Required by project coding standards; also improves readability and maintainability",
+      "confidence": 0.95
+    },
+    {
+      "topic": "Edge case: all drives have a_i = 0",
+      "finding": "If a drive has a_i = 0, it costs nothing to evacuate (no data to move). The answer could theoretically be 0 if every drive has a_i = 0. The simulation handles this naturally: free_space never goes negative. The problem statement likely constrains a_i >= 1, but the solution should handle a_i = 0 gracefully regardless.",
+      "source": "Problem constraint analysis",
+      "relevance": "Edge case that affects the claim 'answer > 0 always' — if a_i can be 0, answer can be 0",
+      "confidence": 0.85
+    },
+    {
+      "topic": "Edge case: n = 1",
+      "finding": "With a single drive, the answer is simply a_1 (you must evacuate it to reformat it, then it gets capacity b_1). The greedy sort is trivially correct. This is a useful sanity check for the implementation.",
+      "source": "Problem analysis",
+      "relevance": "Simplest test case for validation",
+      "confidence": 0.99
+    },
+    {
+      "topic": "Integer overflow considerations",
+      "finding": "In Python, integers are arbitrary precision, so there is no overflow concern. However, with n=10^6 drives each having capacity up to 10^9, cumulative free_space can range from roughly -10^15 to +10^15. This is fine in Python but would require 64-bit integers in C++/Java.",
+      "source": "Python language specification",
+      "relevance": "No action needed in Python, but worth noting for correctness confidence",
+      "confidence": 0.99
+    },
+    {
+      "topic": "Input format for Kattis Swap Space problem",
+      "finding": "Typical format: first line is n, then n lines each containing a_i and b_i (old and new capacity). Output is a single integer: the minimum extra storage. Some variants may differ slightly in format. The solution must match exact output format including no trailing spaces or extra newlines beyond what print() produces.",
+      "source": "Kattis problem archive",
+      "relevance": "Must conform exactly to expected I/O format per project standards",
+      "confidence": 0.9
+    },
+    {
+      "topic": "Sort stability and key functions",
+      "finding": "Python's sort is stable (Timsort). When sorting growers by a_i ascending and shrinkers by b_i descending, use key=lambda x: x[0] for growers and key=lambda x: -x[1] (or reverse=True with key=lambda x: x[1]) for shrinkers. The negation trick is idiomatic for descending sort on a single key. Concatenating the two sorted sublists gives the final order.",
+      "source": "Python sorting HOW-TO, Timsort documentation",
+      "relevance": "Implementation detail for correct ordering",
+      "confidence": 0.98
+    },
+    {
+      "topic": "Common pitfall: wrong deficit tracking point",
+      "finding": "The minimum free space must be tracked AFTER subtracting a_i (evacuation cost) but BEFORE adding b_i (new capacity). If you track after both operations, you underestimate the required extra space. The sequence per drive is: (1) subtract a_i, (2) check/update minimum, (3) add b_i. Getting this order wrong is the #1 implementation bug.",
+      "source": "Competitive programming forums, editorial discussions",
+      "relevance": "Critical correctness issue — most common bug in this problem",
+      "confidence": 0.97
+    }
+  ],
+  "recommended_approach": "Implement solution.py as follows:\n\n1. **I/O layer**: Use `sys.stdin.read()` for fast bulk input. Parse all tokens at once via `split()`. Print a single integer result via `print()`.\n\n2. **Core function** `solve(drives: list[tuple[int, int]]) -> int`: \n   - Split drives into growers (b >= a) and shrinkers (b < a).\n   - Sort growers by a ascending; sort shrinkers by b descending.\n   - Concatenate: growers_sorted + shrinkers_sorted.\n   - Simulate: `free = 0`, `min_free = 0`. For each (a, b): `free -= a`; update `min_free = min(min_free, free)`; `free += b`.\n   - Return `max(0, -min_free)`.\n\n3. **Main function** `main() -> None`: Parse stdin, call solve, print result.\n\n4. **Guard**: `if __name__ == \"__main__\": main()`\n\nType annotations on all functions. No external dependencies. O(n log n) time, O(n) space.",
+  "alternatives_considered": [
+    "Binary search on E with feasibility check: Works but is unnecessary — O(n log n log(max_val)) vs O(n log n). The direct simulation is simpler and faster.",
+    "Single unified sort with a custom comparator instead of split-then-sort: Possible via functools.cmp_to_key, but the split approach is clearer, equally efficient, and avoids the overhead of cmp_to_key for n=10^6.",
+    "Reading input via input() in a loop vs sys.stdin.read() bulk read: Bulk read is strongly preferred for performance at n=10^6.",
+    "Structuring as a class vs pure functions: Pure functions are simpler and appropriate for a single-file competitive programming solution."
+  ],
+  "risks": [
+    "Incorrect sort order (e.g., sorting shrinkers by a_i instead of b_i, or wrong ascending/descending direction) leads to suboptimal ordering and wrong answers.",
+    "Tracking the deficit at the wrong point in the simulation (after adding b_i instead of before) underestimates required extra space.",
+    "TLE risk if using input() per line instead of bulk sys.stdin.read() for n=10^6 in Python.",
+    "Off-by-one or misparse if the input format differs from expected (e.g., extra blank lines, different delimiter).",
+    "Edge case where a_i = 0 for all drives — answer should be 0, ensure max(0, ...) handles this."
+  ],
+  "compliance_notes": [
+    "Python 3.10+ with type annotations: use built-in generics (list, tuple) not typing module.",
+    "Standard library only: only sys is needed (for fast I/O).",
+    "Reads from stdin, writes to stdout: sys.stdin.read() and print().",
+    "Output must match exactly: single integer followed by newline (print() default behavior).",
+    "Must handle all input constraints: n up to 10^6, capacities up to 10^9. Python arbitrary precision handles this natively."
+  ]
+}

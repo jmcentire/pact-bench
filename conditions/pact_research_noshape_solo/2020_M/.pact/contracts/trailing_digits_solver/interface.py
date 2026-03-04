@@ -1,0 +1,163 @@
+# === Trailing Digits Solver (trailing_digits_solver) v1 ===
+# A single Python program that reads b, d, a from stdin and outputs the maximum number of consecutive trailing digits d achievable in a bundle price k*b where k*b <= a. Uses iterative linear congruence solving with GCD and modular inverse (pow(b//g, -1, mod)) to find the minimum positive multiple of b with n trailing digits equal to d, iterating n upward from 1 and terminating at the first n where no solution exists or the minimum multiple exceeds a. Handles arbitrary-precision integers (a up to 10^10000) using Python's native bigints. Standard library only, Python 3.10+.
+
+# Module invariants:
+#   - All arithmetic uses Python's arbitrary-precision integers; no floating-point operations are performed anywhere in the algorithm
+#   - The achievable set of trailing-digit counts is contiguous: if n trailing digits d are achievable (∃ k: k*b ≤ a and k*b has n trailing d's), then for all m in [1, n], m trailing digits d are also achievable (same k works mod 10^m). Therefore the answer is the maximum of a contiguous range {0} ∪ {1, ..., max_n}
+#   - Iteration terminates: the loop in solve() runs at most len(str(a)) + 1 iterations because a repdigit with more digits than a has would exceed a. In practice it terminates much earlier for most inputs
+#   - For each n, the minimum qualifying multiple is unique: the linear congruence k*b ≡ r (mod 10^n) has either 0 or exactly gcd(b, 10^n) solutions mod 10^n, and the minimum positive k*b is deterministic
+#   - k is always positive (≥ 1): if the congruence solver yields k = 0, it is replaced with k = 10^n // gcd(b, 10^n) to ensure the multiple is positive
+#   - No external dependencies are used; only Python standard library (math.gcd, sys, pow builtin) is required
+#   - Output is exactly one line containing a non-negative integer followed by a newline character
+
+int = primitive  # Python arbitrary-precision integer. Used for b, d, a, k, repdigit values, modular arithmetic operands, and results. No upper bound on magnitude.
+
+bool = primitive  # Python boolean, used for conditional checks.
+
+str = primitive  # Python string, used for raw stdin input lines.
+
+None = primitive  # Python None, used as a sentinel for 'no solution exists'.
+
+OptionalInt = Any | None
+
+class ProblemInput:
+    """The parsed and validated input triple for the trailing digits problem."""
+    b: int                                   # required, range(b >= 1), The base bundle price. Must be >= 1.
+    d: int                                   # required, range(0 <= d <= 9), The target trailing digit. Must be in {0, 1, 2, ..., 9}.
+    a: int                                   # required, range(a >= 1), The maximum allowable bundle price k*b. Must be >= 1. Can be astronomically large (up to 10^10000).
+
+class CongruenceParams:
+    """Internal parameters for the linear congruence k*b ≡ r (mod m) at a given iteration n. Not exposed externally but documents the algorithm's state."""
+    n: int                                   # required, range(n >= 1), The current number of trailing digits being tested. n >= 1.
+    modulus: int                             # required, range(modulus >= 10), 10^n — the modular base for the congruence. Always a positive power of 10.
+    repdigit: int                            # required, range(repdigit >= 0), The target residue r = d * (10^n - 1) / 9 for d != 0, or 0 for d = 0. This is the n-digit repdigit ddd...d.
+    gcd_b_mod: int                           # required, range(gcd_b_mod >= 1), gcd(b, modulus). Used to determine solvability and reduce the congruence.
+
+def main() -> None:
+    """
+    Entry point. Reads b, d, a from stdin (whitespace-separated), calls solve(), prints the result to stdout followed by a newline. Handles the sys.set_int_max_str_digits(0) guard for Python 3.11+ to allow conversion of very large integer strings. This is the only function with I/O side effects.
+
+    Preconditions:
+      - stdin contains exactly three whitespace-separated non-negative integer tokens
+      - The integers satisfy: b >= 1, 0 <= d <= 9, a >= 1
+      - Python 3.10+ runtime is available
+
+    Postconditions:
+      - Exactly one line is written to stdout containing the integer result of solve(b, d, a)
+      - The output line is terminated by a newline character
+      - No other output is written to stdout
+
+    Errors:
+      - stdin_empty (ValueError): stdin is empty or does not contain three parseable integer tokens
+          message: Expected three whitespace-separated integers on stdin
+      - invalid_integer_token (ValueError): A token on stdin cannot be parsed as an integer
+          message: Non-integer token encountered in input
+
+    Side effects: Reads from stdin, Writes to stdout
+    Idempotent: no
+    """
+    ...
+
+def parse_input(
+    raw_input: str,            # custom(len(raw_input.split()) == 3)
+) -> ProblemInput:
+    """
+    Reads all of stdin, splits on whitespace, and parses exactly three integer tokens into a ProblemInput struct. Calls sys.set_int_max_str_digits(0) if available (Python 3.11+ guard) before parsing to support a values up to 10^10000.
+
+    Preconditions:
+      - raw_input contains exactly three whitespace-separated tokens
+      - All three tokens are valid decimal integer representations
+      - sys.set_int_max_str_digits(0) has been called if needed (Python 3.11+)
+
+    Postconditions:
+      - Returned ProblemInput has b >= 1, 0 <= d <= 9, a >= 1
+      - The values exactly correspond to the parsed tokens in order (b, d, a)
+
+    Errors:
+      - wrong_token_count (ValueError): Number of whitespace-separated tokens is not exactly 3
+          message: Expected exactly 3 tokens, got {actual_count}
+      - non_integer_token (ValueError): Any of the three tokens cannot be converted to int
+          message: Token '{token}' is not a valid integer
+      - b_out_of_range (ValueError): Parsed b < 1
+          message: b must be >= 1, got {b}
+      - d_out_of_range (ValueError): Parsed d < 0 or d > 9
+          message: d must be in [0, 9], got {d}
+      - a_out_of_range (ValueError): Parsed a < 1
+          message: a must be >= 1, got {a}
+
+    Side effects: none
+    Idempotent: yes
+    """
+    ...
+
+def solve(
+    b: int,                    # range(b >= 1)
+    d: int,                    # range(0 <= d <= 9)
+    a: int,                    # range(a >= 1)
+) -> int:
+    """
+    Core algorithm. Given b, d, a, returns the maximum number of consecutive trailing digits equal to d achievable in any positive multiple k*b where k*b <= a. Iterates n from 1 upward, calling min_multiple_with_n_trailing(b, d, n) for each n. Terminates and returns n-1 at the first n where no solution exists or the minimum qualifying multiple exceeds a. Returns 0 if no multiple of b in [b, a] ends in digit d. Uses incremental computation of 10^n (multiply by 10 each iteration) and repdigit (repdigit = repdigit * 10 + d each iteration) for efficiency.
+
+    Preconditions:
+      - b >= 1
+      - 0 <= d <= 9
+      - a >= 1
+
+    Postconditions:
+      - result >= 0
+      - For all n in 1..result: there exists a positive integer k such that k*b <= a and the last n digits of k*b are all equal to d
+      - Either result == max_possible_n (repdigit with result+1 digits > a) OR no positive k exists such that k*b <= a and k*b has (result+1) consecutive trailing digits d
+      - If result == 0, then no positive multiple of b in [1, a] ends in digit d
+
+    Errors:
+      - b_zero_or_negative (ValueError): b < 1
+          message: b must be a positive integer
+      - d_not_digit (ValueError): d < 0 or d > 9
+          message: d must be a single digit 0-9
+      - a_zero_or_negative (ValueError): a < 1
+          message: a must be a positive integer
+
+    Side effects: none
+    Idempotent: yes
+    """
+    ...
+
+def min_multiple_with_n_trailing(
+    b: int,                    # range(b >= 1)
+    d: int,                    # range(0 <= d <= 9)
+    n: int,                    # range(n >= 1)
+    modulus: int,              # custom(modulus == 10**n)
+    repdigit: int,             # custom((d == 0 and repdigit == 0) or (d != 0 and repdigit == d * (modulus - 1) // 9))
+) -> OptionalInt:
+    """
+    Returns the smallest positive multiple of b (i.e., k*b with k >= 1) whose last n decimal digits are all equal to d, or None if no such multiple exists. Solves the linear congruence k*b ≡ r (mod 10^n) where r is the n-digit repdigit ddd...d (or 0 if d=0). Steps: (1) Compute g = gcd(b, 10^n). (2) If g does not divide r, return None (no solution). (3) Divide through: solve k * (b/g) ≡ (r/g) (mod 10^n/g). (4) Compute modular inverse of (b/g) mod (10^n/g) via pow(b//g, -1, 10**n//g). (5) k = ((r//g) * inverse) mod (10^n//g). (6) If k == 0, set k = 10^n // g (smallest positive solution). (7) Return k * b. Accepts precomputed modulus and repdigit for efficiency in the iterative caller.
+
+    Preconditions:
+      - b >= 1
+      - 0 <= d <= 9
+      - n >= 1
+      - modulus == 10**n
+      - (d == 0 and repdigit == 0) or (d != 0 and repdigit == d * (modulus - 1) // 9)
+
+    Postconditions:
+      - If result is not None: result > 0
+      - If result is not None: result % b == 0 (result is a multiple of b)
+      - If result is not None: result % modulus == repdigit (last n digits are all d)
+      - If result is not None: result is the SMALLEST positive multiple of b satisfying the trailing-digit property
+      - If result is None: no positive integer k exists such that (k * b) % modulus == repdigit
+
+    Errors:
+      - modular_inverse_does_not_exist (ValueError): gcd(b // gcd(b, modulus), modulus // gcd(b, modulus)) != 1 — should not occur since modulus is a power of 10 and after dividing by gcd the reduced modulus and reduced b are coprime
+          message: Internal error: modular inverse does not exist after GCD reduction. This indicates a bug.
+      - congruence_unsolvable (None): gcd(b, modulus) does not divide repdigit — this is a normal case, not an error; function returns None
+          message: No solution exists; function returns None (not an exception)
+
+    Side effects: none
+    Idempotent: yes
+    """
+    ...
+
+# ── REQUIRED EXPORTS ──────────────────────────────────
+# Your implementation module MUST export ALL of these names
+# with EXACTLY these spellings. Tests import them by name.
+# __all__ = ['OptionalInt', 'ProblemInput', 'CongruenceParams', 'main', 'parse_input', 'solve', 'min_multiple_with_n_trailing']

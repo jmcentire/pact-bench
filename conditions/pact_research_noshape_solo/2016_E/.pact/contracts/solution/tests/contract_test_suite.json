@@ -1,0 +1,923 @@
+{
+  "component_id": "solution",
+  "contract_version": 1,
+  "test_cases": [
+    {
+      "id": "to_base_happy_simple",
+      "description": "to_base converts 123 in base 10 to [1, 2, 3]",
+      "function": "to_base",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "123",
+        "b": "10"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns [1, 2, 3]",
+      "expected_error": "",
+      "assertions": [
+        "result == [1, 2, 3]"
+      ]
+    },
+    {
+      "id": "to_base_happy_base2",
+      "description": "to_base converts 10 in base 2 to [1, 0, 1, 0]",
+      "function": "to_base",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "10",
+        "b": "2"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns [1, 0, 1, 0]",
+      "expected_error": "",
+      "assertions": [
+        "result == [1, 0, 1, 0]"
+      ]
+    },
+    {
+      "id": "to_base_zero",
+      "description": "to_base converts 0 to [0] in any base",
+      "function": "to_base",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "0",
+        "b": "10"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns [0]",
+      "expected_error": "",
+      "assertions": [
+        "result == [0]"
+      ]
+    },
+    {
+      "id": "to_base_digit_ge_10_returns_none",
+      "description": "to_base returns None when a digit >= 10 exists",
+      "function": "to_base",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "11",
+        "b": "11"
+      },
+      "input_description": "",
+      "expected_output_description": "11 in base 11 is [1, 0], all digits < 10, returns [1, 0]",
+      "expected_error": "",
+      "assertions": [
+        "result == [1, 0]"
+      ]
+    },
+    {
+      "id": "to_base_returns_none_for_large_digit",
+      "description": "to_base returns None when digit >= 10 (e.g., 10 in base 10 is [1,0] but 255 in base 16 has digit 15)",
+      "function": "to_base",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "255",
+        "b": "16"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns None because 255 = 15*16 + 15 and digit 15 >= 10",
+      "expected_error": "",
+      "assertions": [
+        "result is None"
+      ]
+    },
+    {
+      "id": "to_base_single_digit",
+      "description": "to_base of a single digit number returns list with one element",
+      "function": "to_base",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "9",
+        "b": "10"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns [9]",
+      "expected_error": "",
+      "assertions": [
+        "result == [9]"
+      ]
+    },
+    {
+      "id": "to_base_large_number",
+      "description": "to_base handles large y up to 10^18",
+      "function": "to_base",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "1000000000000000000",
+        "b": "10"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]",
+      "expected_error": "",
+      "assertions": [
+        "result is not None",
+        "result[0] == 1",
+        "all(d == 0 for d in result[1:])",
+        "len(result) == 19"
+      ]
+    },
+    {
+      "id": "to_base_invalid_base_error",
+      "description": "to_base raises error when b < 2",
+      "function": "to_base",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "10",
+        "b": "1"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "invalid_base",
+      "assertions": [
+        "raises an exception for b < 2"
+      ]
+    },
+    {
+      "id": "to_base_negative_input_error",
+      "description": "to_base raises error when y < 0",
+      "function": "to_base",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "-1",
+        "b": "10"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "negative_input",
+      "assertions": [
+        "raises an exception for y < 0"
+      ]
+    },
+    {
+      "id": "to_base_reconstruction_property",
+      "description": "to_base result can reconstruct original number",
+      "function": "to_base",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "9876",
+        "b": "10"
+      },
+      "input_description": "",
+      "expected_output_description": "Digits reconstruct to original y",
+      "expected_error": "",
+      "assertions": [
+        "result is not None",
+        "sum(d * 10**(len(result)-1-i) for i, d in enumerate(result)) == 9876"
+      ]
+    },
+    {
+      "id": "reinterpret_happy",
+      "description": "reinterpret_base10 interprets [1, 2, 3] as 123",
+      "function": "reinterpret_base10",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "digits": "[1, 2, 3]"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 123",
+      "expected_error": "",
+      "assertions": [
+        "result == 123"
+      ]
+    },
+    {
+      "id": "reinterpret_single_digit",
+      "description": "reinterpret_base10 interprets [5] as 5",
+      "function": "reinterpret_base10",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "digits": "[5]"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 5",
+      "expected_error": "",
+      "assertions": [
+        "result == 5"
+      ]
+    },
+    {
+      "id": "reinterpret_leading_zeros_preserved",
+      "description": "reinterpret_base10 of [0, 1] returns 1",
+      "function": "reinterpret_base10",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "digits": "[0, 1]"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 1",
+      "expected_error": "",
+      "assertions": [
+        "result == 1"
+      ]
+    },
+    {
+      "id": "reinterpret_all_zeros",
+      "description": "reinterpret_base10 of [0] returns 0",
+      "function": "reinterpret_base10",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "digits": "[0]"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 0",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "reinterpret_empty_error",
+      "description": "reinterpret_base10 raises error on empty list",
+      "function": "reinterpret_base10",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "digits": "[]"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "empty_digits",
+      "assertions": [
+        "raises an exception for empty list"
+      ]
+    },
+    {
+      "id": "reinterpret_digit_out_of_range_error",
+      "description": "reinterpret_base10 raises error when digit not in [0,9]",
+      "function": "reinterpret_base10",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "digits": "[1, 10, 3]"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "digit_out_of_range",
+      "assertions": [
+        "raises an exception for digit >= 10"
+      ]
+    },
+    {
+      "id": "reinterpret_negative_digit_error",
+      "description": "reinterpret_base10 raises error when digit is negative",
+      "function": "reinterpret_base10",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "digits": "[-1, 2]"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "digit_out_of_range",
+      "assertions": [
+        "raises an exception for negative digit"
+      ]
+    },
+    {
+      "id": "ikr_happy_square_root",
+      "description": "integer_kth_root(100, 2) returns 10",
+      "function": "integer_kth_root",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "n": "100",
+        "k": "2"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 10",
+      "expected_error": "",
+      "assertions": [
+        "result == 10"
+      ]
+    },
+    {
+      "id": "ikr_cube_root_exact",
+      "description": "integer_kth_root(27, 3) returns 3",
+      "function": "integer_kth_root",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "n": "27",
+        "k": "3"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 3",
+      "expected_error": "",
+      "assertions": [
+        "result == 3"
+      ]
+    },
+    {
+      "id": "ikr_non_exact",
+      "description": "integer_kth_root(10, 2) returns 3 since 3^2=9<=10<16=4^2",
+      "function": "integer_kth_root",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "n": "10",
+        "k": "2"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 3",
+      "expected_error": "",
+      "assertions": [
+        "result == 3"
+      ]
+    },
+    {
+      "id": "ikr_zero",
+      "description": "integer_kth_root(0, 5) returns 0",
+      "function": "integer_kth_root",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "n": "0",
+        "k": "5"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 0",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "ikr_one",
+      "description": "integer_kth_root(1, 1) returns 1",
+      "function": "integer_kth_root",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "n": "1",
+        "k": "1"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 1",
+      "expected_error": "",
+      "assertions": [
+        "result == 1"
+      ]
+    },
+    {
+      "id": "ikr_k_equals_1",
+      "description": "integer_kth_root(n, 1) returns n",
+      "function": "integer_kth_root",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "n": "999",
+        "k": "1"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 999",
+      "expected_error": "",
+      "assertions": [
+        "result == 999"
+      ]
+    },
+    {
+      "id": "ikr_large_n",
+      "description": "integer_kth_root(10^18, 2) returns 10^9",
+      "function": "integer_kth_root",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "n": "1000000000000000000",
+        "k": "2"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 1000000000",
+      "expected_error": "",
+      "assertions": [
+        "result == 1000000000"
+      ]
+    },
+    {
+      "id": "ikr_large_cube",
+      "description": "integer_kth_root(10^18, 3) returns 10^6",
+      "function": "integer_kth_root",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "n": "1000000000000000000",
+        "k": "3"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 1000000",
+      "expected_error": "",
+      "assertions": [
+        "result == 1000000"
+      ]
+    },
+    {
+      "id": "ikr_postcondition_property",
+      "description": "integer_kth_root satisfies r^k <= n < (r+1)^k",
+      "function": "integer_kth_root",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "n": "123456789",
+        "k": "4"
+      },
+      "input_description": "",
+      "expected_output_description": "r^k <= n and (r+1)^k > n",
+      "expected_error": "",
+      "assertions": [
+        "result ** 4 <= 123456789",
+        "(result + 1) ** 4 > 123456789"
+      ]
+    },
+    {
+      "id": "ikr_negative_n_error",
+      "description": "integer_kth_root raises error for negative n",
+      "function": "integer_kth_root",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "n": "-1",
+        "k": "2"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "negative_n",
+      "assertions": [
+        "raises an exception for n < 0"
+      ]
+    },
+    {
+      "id": "ikr_invalid_k_error",
+      "description": "integer_kth_root raises error for k < 1",
+      "function": "integer_kth_root",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "n": "10",
+        "k": "0"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "invalid_k",
+      "assertions": [
+        "raises an exception for k < 1"
+      ]
+    },
+    {
+      "id": "phase1_happy_path",
+      "description": "Phase 1 finds a valid 2-digit base for y=21, l=2 (y=21=2*10+1, base 10 gives '21' -> 21>=2, but base 20 gives 1*20+1=21 -> '11' -> 11>=2)",
+      "function": "solve_phase1_two_digit",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "21",
+        "l": "2"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns the largest valid 2-digit base >= 11",
+      "expected_error": "",
+      "assertions": [
+        "result >= 11",
+        "result > 0"
+      ]
+    },
+    {
+      "id": "phase1_no_valid_base",
+      "description": "Phase 1 returns 0 when no valid 2-digit base >= 11 exists (y=10, only 2-digit base rep is base 10 itself but we need >= 11)",
+      "function": "solve_phase1_two_digit",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "10",
+        "l": "2"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 0 since no 2-digit base >= 11 works",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "phase1_y_equals_l_small",
+      "description": "Phase 1 with y=l=20: y=20=2*10+0, base 10 -> 20>=20. Need base>=11: 1*20+0 -> base 20, digits [1,0], reinterpret=10 < 20. So need 10*a+c >= 20.",
+      "function": "solve_phase1_two_digit",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "20",
+        "l": "20"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 0 or a valid base where reinterpreted value >= 20",
+      "expected_error": "",
+      "assertions": [
+        "result == 0 or result >= 11"
+      ]
+    },
+    {
+      "id": "phase1_large_y",
+      "description": "Phase 1 with large y and small l: should find a large 2-digit base",
+      "function": "solve_phase1_two_digit",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "100",
+        "l": "2"
+      },
+      "input_description": "",
+      "expected_output_description": "y=100, a=1,c=0 -> b=100 which is valid; a=2,c=0 -> b=50; etc. Max should be 100",
+      "expected_error": "",
+      "assertions": [
+        "result == 100"
+      ]
+    },
+    {
+      "id": "phase2_happy_path",
+      "description": "Phase 2 finds a valid 3-digit base for y=1000, l=2",
+      "function": "solve_phase2_three_digit",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "1000",
+        "l": "2"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns a valid 3-digit base >= 11 or 0",
+      "expected_error": "",
+      "assertions": [
+        "result == 0 or result >= 11"
+      ]
+    },
+    {
+      "id": "phase2_known_triple",
+      "description": "Phase 2: y=131, base 11 -> 1*121 + 0*11 + 10 -> digit 10 invalid. y=133, base 11 -> 1*121+1*11+1 = 133 -> [1,1,1] -> 111 >= 2",
+      "function": "solve_phase2_three_digit",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "133",
+        "l": "2"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 11 as a valid 3-digit base (133 = 1*121 + 1*11 + 1)",
+      "expected_error": "",
+      "assertions": [
+        "result >= 11 or result == 0"
+      ]
+    },
+    {
+      "id": "phase2_no_valid_base",
+      "description": "Phase 2 returns 0 when no valid 3-digit base exists",
+      "function": "solve_phase2_three_digit",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "10",
+        "l": "2"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 0 since y=10 can't have a 3-digit representation in base >= 11",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "phase3_happy_path",
+      "description": "Phase 3 finds valid 4+ digit bases for larger y",
+      "function": "solve_phase3_four_plus_digit",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "14641",
+        "l": "2"
+      },
+      "input_description": "",
+      "expected_output_description": "14641 = 11^4, in base 11 it's [1,0,0,0,0] -> 10000 >= 2, so base 11 is valid",
+      "expected_error": "",
+      "assertions": [
+        "result >= 11 or result == 0"
+      ]
+    },
+    {
+      "id": "phase3_no_valid_base",
+      "description": "Phase 3 returns 0 when no valid 4+ digit base >= 11 exists for small y",
+      "function": "solve_phase3_four_plus_digit",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "100",
+        "l": "2"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 0; for base 11, 100 is 2 digits. No 4-digit rep possible.",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "solve_happy_base10_fallback",
+      "description": "solve returns at least 10 for any valid input since base 10 always works",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "100",
+        "l": "2"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns a base >= 10",
+      "expected_error": "",
+      "assertions": [
+        "result >= 10"
+      ]
+    },
+    {
+      "id": "solve_y_equals_l",
+      "description": "solve when y == l: base 10 always works since y in base 10 is y itself >= l",
+      "function": "solve",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "100",
+        "l": "100"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns a base >= 10",
+      "expected_error": "",
+      "assertions": [
+        "result >= 10"
+      ]
+    },
+    {
+      "id": "solve_small_y_l",
+      "description": "solve(2, 2): y=2, l=2. Base 10 gives '2' >= 2. Any larger base gives single digit 2 >= 2. Max base is y itself = 2, but need b >= 10. So answer is 10.",
+      "function": "solve",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "2",
+        "l": "2"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 10",
+      "expected_error": "",
+      "assertions": [
+        "result == 10"
+      ]
+    },
+    {
+      "id": "solve_optimality_check",
+      "description": "solve(21, 2): base 20 -> [1,1] -> 11>=2, base 21 -> [1,0] -> 10>=2. Max should be 21.",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "21",
+        "l": "2"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 21",
+      "expected_error": "",
+      "assertions": [
+        "result == 21"
+      ]
+    },
+    {
+      "id": "solve_validity_postconditions",
+      "description": "solve result must satisfy all postconditions: valid base, all digits in [0,9], reinterpretation >= l",
+      "function": "solve",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "500",
+        "l": "10"
+      },
+      "input_description": "",
+      "expected_output_description": "Returned base satisfies all postconditions",
+      "expected_error": "",
+      "assertions": [
+        "result >= 10"
+      ]
+    },
+    {
+      "id": "solve_large_inputs",
+      "description": "solve handles y=10^18, l=2",
+      "function": "solve",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "1000000000000000000",
+        "l": "2"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns a valid base >= 10",
+      "expected_error": "",
+      "assertions": [
+        "result >= 10"
+      ]
+    },
+    {
+      "id": "solve_invariant_base10_always_valid",
+      "description": "Base 10 is always valid: y in base 10 is y itself, and y >= l",
+      "function": "solve",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "999",
+        "l": "50"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns base >= 10",
+      "expected_error": "",
+      "assertions": [
+        "result >= 10"
+      ]
+    },
+    {
+      "id": "main_happy_path",
+      "description": "main reads two integers from stdin and prints result to stdout",
+      "function": "main",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "stdin": "21 2"
+      },
+      "input_description": "",
+      "expected_output_description": "Prints the solve result followed by newline",
+      "expected_error": "",
+      "assertions": [
+        "output is an integer followed by newline"
+      ]
+    },
+    {
+      "id": "main_output_format",
+      "description": "main output is exactly one integer followed by newline",
+      "function": "main",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "stdin": "100 2"
+      },
+      "input_description": "",
+      "expected_output_description": "Output matches expected format",
+      "expected_error": "",
+      "assertions": [
+        "output ends with newline",
+        "output strip is a valid integer"
+      ]
+    },
+    {
+      "id": "solve_brute_force_oracle_small",
+      "description": "For small y values, solve matches brute-force oracle",
+      "function": "solve",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "range(10, 200)",
+        "l": "2"
+      },
+      "input_description": "",
+      "expected_output_description": "Matches brute-force for all y in range",
+      "expected_error": "",
+      "assertions": [
+        "solve(y, l) matches brute force for each y"
+      ]
+    },
+    {
+      "id": "to_base_base11_example",
+      "description": "to_base correctly converts a number to base 11",
+      "function": "to_base",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "14641",
+        "b": "11"
+      },
+      "input_description": "",
+      "expected_output_description": "14641 = 11^4, so [1, 0, 0, 0, 0]",
+      "expected_error": "",
+      "assertions": [
+        "result == [1, 0, 0, 0, 0]"
+      ]
+    },
+    {
+      "id": "reinterpret_large_digits",
+      "description": "reinterpret_base10 handles a long digit list",
+      "function": "reinterpret_base10",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "digits": "[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]"
+      },
+      "input_description": "",
+      "expected_output_description": "Returns 10^18",
+      "expected_error": "",
+      "assertions": [
+        "result == 1000000000000000000"
+      ]
+    },
+    {
+      "id": "solve_constraint_violation_y_lt_l",
+      "description": "solve raises error when y < l",
+      "function": "solve",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "5",
+        "l": "10"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "constraint_violation",
+      "assertions": [
+        "raises an exception when y < l"
+      ]
+    },
+    {
+      "id": "solve_constraint_violation_l_lt_2",
+      "description": "solve raises error when l < 2",
+      "function": "solve",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "y": "10",
+        "l": "1"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "constraint_violation",
+      "assertions": [
+        "raises an exception when l < 2"
+      ]
+    }
+  ],
+  "test_language": "python",
+  "generated_code": "\"\"\"\nContract test suite for the Forever Young Solution.\nTests verify behavior at boundaries (inputs/outputs), not internals.\nCovers happy paths, edge cases, error cases, and invariants.\n\"\"\"\nimport pytest\nimport sys\nimport io\nfrom unittest.mock import patch\nfrom src.solution import (\n    main,\n    solve,\n    to_base,\n    reinterpret_base10,\n    integer_kth_root,\n    solve_phase1_two_digit,\n    solve_phase2_three_digit,\n    solve_phase3_four_plus_digit,\n)\n\n\n# ============================================================================\n# Helper: brute-force oracle for small inputs\n# ============================================================================\ndef brute_force_solve(y, l):\n    \"\"\"\n    Brute-force oracle: try all bases from y down to 10, return the largest\n    valid base b where y in base b has all digits in [0,9] and the base-10\n    reinterpretation is >= l.\n    \"\"\"\n    for b in range(y, 9, -1):\n        digits = []\n        n = y\n        valid = True\n        if n == 0:\n            digits = [0]\n        else:\n            while n > 0:\n                d = n % b\n                if d >= 10:\n                    valid = False\n                    break\n                digits.append(d)\n                n //= b\n            digits.reverse()\n        if valid and digits:\n            val = 0\n            for d in digits:\n                val = val * 10 + d\n            if val >= l:\n                return b\n    return 10  # base 10 always works\n\n\n# ============================================================================\n# Tests for to_base\n# ============================================================================\nclass TestToBase:\n    \"\"\"Unit tests for to_base function.\"\"\"\n\n    def test_to_base_happy_simple(self):\n        \"\"\"to_base converts 123 in base 10 to [1, 2, 3]\"\"\"\n        result = to_base(123, 10)\n        assert result == [1, 2, 3], f\"Expected [1, 2, 3], got {result}\"\n\n    def test_to_base_happy_base2(self):\n        \"\"\"to_base converts 10 in base 2 to [1, 0, 1, 0]\"\"\"\n        result = to_base(10, 2)\n        assert result == [1, 0, 1, 0], f\"Expected [1, 0, 1, 0], got {result}\"\n\n    def test_to_base_zero(self):\n        \"\"\"to_base converts 0 to [0] in any base\"\"\"\n        result = to_base(0, 10)\n        assert result == [0], f\"Expected [0], got {result}\"\n\n    def test_to_base_zero_various_bases(self):\n        \"\"\"to_base converts 0 to [0] in various bases\"\"\"\n        for b in [2, 5, 10, 16, 100]:\n            result = to_base(0, b)\n            assert result == [0], f\"Expected [0] for base {b}, got {result}\"\n\n    def test_to_base_base11_valid(self):\n        \"\"\"to_base(11, 11) should return [1, 0] since 11 = 1*11 + 0\"\"\"\n        result = to_base(11, 11)\n        assert result == [1, 0], f\"Expected [1, 0], got {result}\"\n\n    def test_to_base_returns_none_for_digit_ge_10(self):\n        \"\"\"to_base returns None when a digit >= 10 (255 in base 16 has digits 15)\"\"\"\n        result = to_base(255, 16)\n        assert result is None, f\"Expected None, got {result}\"\n\n    def test_to_base_returns_none_for_10_in_base_10_NOT(self):\n        \"\"\"to_base(10, 10) should be [1, 0], all valid\"\"\"\n        result = to_base(10, 10)\n        assert result == [1, 0], f\"Expected [1, 0], got {result}\"\n\n    def test_to_base_single_digit(self):\n        \"\"\"to_base of single digit returns list with one element\"\"\"\n        result = to_base(9, 10)\n        assert result == [9], f\"Expected [9], got {result}\"\n\n    def test_to_base_single_digit_in_large_base(self):\n        \"\"\"to_base(5, 100) returns [5]\"\"\"\n        result = to_base(5, 100)\n        assert result == [5], f\"Expected [5], got {result}\"\n\n    def test_to_base_large_number(self):\n        \"\"\"to_base handles y = 10^18 in base 10\"\"\"\n        result = to_base(1000000000000000000, 10)\n        assert result is not None, \"Expected non-None result\"\n        assert result[0] == 1, f\"Expected leading digit 1, got {result[0]}\"\n        assert all(d == 0 for d in result[1:]), \"Expected all trailing zeros\"\n        assert len(result) == 19, f\"Expected 19 digits, got {len(result)}\"\n\n    def test_to_base_base11_14641(self):\n        \"\"\"to_base correctly converts 14641 (11^4) to base 11\"\"\"\n        result = to_base(14641, 11)\n        assert result == [1, 0, 0, 0, 0], f\"Expected [1, 0, 0, 0, 0], got {result}\"\n\n    def test_to_base_reconstruction_property(self):\n        \"\"\"to_base result reconstructs to original number\"\"\"\n        y, b = 9876, 10\n        result = to_base(y, b)\n        assert result is not None, \"Expected non-None result\"\n        reconstructed = sum(d * b ** (len(result) - 1 - i) for i, d in enumerate(result))\n        assert reconstructed == y, f\"Reconstruction {reconstructed} != {y}\"\n\n    def test_to_base_reconstruction_property_various_bases(self):\n        \"\"\"to_base reconstruction works for various bases\"\"\"\n        for y in [1, 42, 100, 999, 12345]:\n            for b in [10, 11, 12, 20, 100]:\n                result = to_base(y, b)\n                if result is not None:\n                    reconstructed = sum(\n                        d * b ** (len(result) - 1 - i)\n                        for i, d in enumerate(result)\n                    )\n                    assert reconstructed == y, (\n                        f\"Reconstruction failed for y={y}, b={b}: \"\n                        f\"got {reconstructed}\"\n                    )\n\n    def test_to_base_no_leading_zeros(self):\n        \"\"\"to_base result has no leading zeros for y > 0\"\"\"\n        for y in [1, 10, 100, 999, 12345]:\n            for b in [10, 11, 16]:\n                result = to_base(y, b)\n                if result is not None:\n                    assert result[0] != 0, (\n                        f\"Leading zero found for y={y}, b={b}: {result}\"\n                    )\n\n    def test_to_base_all_digits_valid_range(self):\n        \"\"\"When to_base returns non-None, all digits are in [0, 9]\"\"\"\n        for y in [1, 42, 100, 999, 12345]:\n            for b in [10, 11, 20, 100]:\n                result = to_base(y, b)\n                if result is not None:\n                    for d in result:\n                        assert 0 <= d <= 9, (\n                            f\"Digit {d} out of range for y={y}, b={b}\"\n                        )\n\n    def test_to_base_invalid_base_error(self):\n        \"\"\"to_base raises error when b < 2\"\"\"\n        with pytest.raises(Exception):\n            to_base(10, 1)\n\n    def test_to_base_invalid_base_zero(self):\n        \"\"\"to_base raises error when b = 0\"\"\"\n        with pytest.raises(Exception):\n            to_base(10, 0)\n\n    def test_to_base_negative_input_error(self):\n        \"\"\"to_base raises error when y < 0\"\"\"\n        with pytest.raises(Exception):\n            to_base(-1, 10)\n\n\n# ============================================================================\n# Tests for reinterpret_base10\n# ============================================================================\nclass TestReinterpretBase10:\n    \"\"\"Unit tests for reinterpret_base10 function.\"\"\"\n\n    def test_reinterpret_happy(self):\n        \"\"\"reinterpret_base10 interprets [1, 2, 3] as 123\"\"\"\n        result = reinterpret_base10([1, 2, 3])\n        assert result == 123, f\"Expected 123, got {result}\"\n\n    def test_reinterpret_single_digit(self):\n        \"\"\"reinterpret_base10 interprets [5] as 5\"\"\"\n        result = reinterpret_base10([5])\n        assert result == 5, f\"Expected 5, got {result}\"\n\n    def test_reinterpret_zero(self):\n        \"\"\"reinterpret_base10 of [0] returns 0\"\"\"\n        result = reinterpret_base10([0])\n        assert result == 0, f\"Expected 0, got {result}\"\n\n    def test_reinterpret_leading_zero(self):\n        \"\"\"reinterpret_base10 of [0, 1] returns 1\"\"\"\n        result = reinterpret_base10([0, 1])\n        assert result == 1, f\"Expected 1, got {result}\"\n\n    def test_reinterpret_large_digits(self):\n        \"\"\"reinterpret_base10 handles a 19-digit number (10^18)\"\"\"\n        digits = [1] + [0] * 18\n        result = reinterpret_base10(digits)\n        assert result == 1000000000000000000, f\"Expected 10^18, got {result}\"\n\n    def test_reinterpret_all_nines(self):\n        \"\"\"reinterpret_base10 of [9, 9, 9] returns 999\"\"\"\n        result = reinterpret_base10([9, 9, 9])\n        assert result == 999, f\"Expected 999, got {result}\"\n\n    def test_reinterpret_formula_property(self):\n        \"\"\"reinterpret_base10 follows the sum formula\"\"\"\n        digits = [3, 1, 4, 1, 5]\n        result = reinterpret_base10(digits)\n        expected = sum(d * 10 ** (len(digits) - 1 - i) for i, d in enumerate(digits))\n        assert result == expected, f\"Expected {expected}, got {result}\"\n\n    def test_reinterpret_non_negative(self):\n        \"\"\"reinterpret_base10 always returns non-negative value\"\"\"\n        for digits in [[0], [0, 0], [1], [9, 9, 9]]:\n            result = reinterpret_base10(digits)\n            assert result >= 0, f\"Expected non-negative, got {result} for {digits}\"\n\n    def test_reinterpret_empty_error(self):\n        \"\"\"reinterpret_base10 raises error on empty list\"\"\"\n        with pytest.raises(Exception):\n            reinterpret_base10([])\n\n    def test_reinterpret_digit_out_of_range_high(self):\n        \"\"\"reinterpret_base10 raises error when digit >= 10\"\"\"\n        with pytest.raises(Exception):\n            reinterpret_base10([1, 10, 3])\n\n    def test_reinterpret_digit_out_of_range_negative(self):\n        \"\"\"reinterpret_base10 raises error when digit is negative\"\"\"\n        with pytest.raises(Exception):\n            reinterpret_base10([-1, 2])\n\n\n# ============================================================================\n# Tests for integer_kth_root\n# ============================================================================\nclass TestIntegerKthRoot:\n    \"\"\"Unit tests for integer_kth_root function.\"\"\"\n\n    def test_ikr_square_root_exact(self):\n        \"\"\"integer_kth_root(100, 2) returns 10\"\"\"\n        result = integer_kth_root(100, 2)\n        assert result == 10, f\"Expected 10, got {result}\"\n\n    def test_ikr_cube_root_exact(self):\n        \"\"\"integer_kth_root(27, 3) returns 3\"\"\"\n        result = integer_kth_root(27, 3)\n        assert result == 3, f\"Expected 3, got {result}\"\n\n    def test_ikr_non_exact_sqrt(self):\n        \"\"\"integer_kth_root(10, 2) returns 3\"\"\"\n        result = integer_kth_root(10, 2)\n        assert result == 3, f\"Expected 3, got {result}\"\n\n    def test_ikr_zero(self):\n        \"\"\"integer_kth_root(0, 5) returns 0\"\"\"\n        result = integer_kth_root(0, 5)\n        assert result == 0, f\"Expected 0, got {result}\"\n\n    def test_ikr_one(self):\n        \"\"\"integer_kth_root(1, 1) returns 1\"\"\"\n        result = integer_kth_root(1, 1)\n        assert result == 1, f\"Expected 1, got {result}\"\n\n    def test_ikr_k_equals_1(self):\n        \"\"\"integer_kth_root(n, 1) returns n\"\"\"\n        result = integer_kth_root(999, 1)\n        assert result == 999, f\"Expected 999, got {result}\"\n\n    def test_ikr_large_sqrt(self):\n        \"\"\"integer_kth_root(10^18, 2) returns 10^9\"\"\"\n        result = integer_kth_root(10**18, 2)\n        assert result == 10**9, f\"Expected 10^9, got {result}\"\n\n    def test_ikr_large_cube_root(self):\n        \"\"\"integer_kth_root(10^18, 3) returns 10^6\"\"\"\n        result = integer_kth_root(10**18, 3)\n        assert result == 10**6, f\"Expected 10^6, got {result}\"\n\n    def test_ikr_4th_root(self):\n        \"\"\"integer_kth_root(10^18, 4) returns floor(10^4.5) = 31622\"\"\"\n        result = integer_kth_root(10**18, 4)\n        assert result**4 <= 10**18, f\"r^4 > n: {result}^4 = {result**4}\"\n        assert (result + 1) ** 4 > 10**18, f\"(r+1)^4 <= n\"\n\n    def test_ikr_postcondition_property(self):\n        \"\"\"integer_kth_root satisfies r^k <= n < (r+1)^k\"\"\"\n        result = integer_kth_root(123456789, 4)\n        assert result**4 <= 123456789, f\"r^k > n\"\n        assert (result + 1) ** 4 > 123456789, f\"(r+1)^k <= n\"\n\n    def test_ikr_postcondition_various(self):\n        \"\"\"Postcondition holds for various inputs\"\"\"\n        test_cases = [\n            (0, 2), (1, 2), (2, 2), (3, 3), (1000, 3),\n            (10**9, 2), (10**12, 4), (10**18, 6),\n        ]\n        for n, k in test_cases:\n            r = integer_kth_root(n, k)\n            assert r >= 0, f\"r < 0 for n={n}, k={k}\"\n            assert r**k <= n, f\"r^k > n for n={n}, k={k}: {r}^{k} = {r**k}\"\n            assert (r + 1) ** k > n, (\n                f\"(r+1)^k <= n for n={n}, k={k}: {r+1}^{k} = {(r+1)**k}\"\n            )\n\n    def test_ikr_powers_of_two(self):\n        \"\"\"integer_kth_root is exact for perfect powers\"\"\"\n        assert integer_kth_root(256, 8) == 2\n        assert integer_kth_root(1024, 10) == 2\n        assert integer_kth_root(65536, 4) == 16\n\n    def test_ikr_just_below_perfect_power(self):\n        \"\"\"integer_kth_root of n just below perfect power returns one less\"\"\"\n        # 10^2 = 100, so floor(sqrt(99)) = 9\n        result = integer_kth_root(99, 2)\n        assert result == 9, f\"Expected 9, got {result}\"\n\n    def test_ikr_negative_n_error(self):\n        \"\"\"integer_kth_root raises error for negative n\"\"\"\n        with pytest.raises(Exception):\n            integer_kth_root(-1, 2)\n\n    def test_ikr_invalid_k_error(self):\n        \"\"\"integer_kth_root raises error for k < 1\"\"\"\n        with pytest.raises(Exception):\n            integer_kth_root(10, 0)\n\n    def test_ikr_invalid_k_negative(self):\n        \"\"\"integer_kth_root raises error for negative k\"\"\"\n        with pytest.raises(Exception):\n            integer_kth_root(10, -1)\n\n\n# ============================================================================\n# Tests for solve_phase1_two_digit\n# ============================================================================\nclass TestSolvePhase1TwoDigit:\n    \"\"\"Unit tests for solve_phase1_two_digit function.\"\"\"\n\n    def test_phase1_happy_large_base(self):\n        \"\"\"Phase 1: y=100, l=2. a=1,c=0 -> b=100, digits [1,0] -> 10>=2. Max base = 100.\"\"\"\n        result = solve_phase1_two_digit(100, 2)\n        assert result == 100, f\"Expected 100, got {result}\"\n\n    def test_phase1_happy_21_l2(self):\n        \"\"\"Phase 1: y=21, l=2. a=1,c=0 -> b=21. a=2,c=1 -> b=10 (not >=11). a=1,c=1 -> b=20. Max = 21.\"\"\"\n        result = solve_phase1_two_digit(21, 2)\n        assert result == 21, f\"Expected 21, got {result}\"\n\n    def test_phase1_returns_zero_for_small_y(self):\n        \"\"\"Phase 1: y=10, l=2. Only 2-digit base rep: base 10 -> [1,0]. Need b>=11. For a=1,c=0 -> b=10 (not >=11). No valid.\"\"\"\n        result = solve_phase1_two_digit(10, 2)\n        assert result == 0, f\"Expected 0, got {result}\"\n\n    def test_phase1_result_constraint_zero_or_ge_11(self):\n        \"\"\"Phase 1 returns 0 or a value >= 11\"\"\"\n        for y in [10, 20, 50, 100, 200, 999]:\n            for l_val in [2, 10, 50]:\n                if l_val <= y:\n                    result = solve_phase1_two_digit(y, l_val)\n                    assert result == 0 or result >= 11, (\n                        f\"Phase 1 returned {result} for y={y}, l={l_val}\"\n                    )\n\n    def test_phase1_l_constraint_filters(self):\n        \"\"\"Phase 1: high l filters out bases where reinterpretation < l\"\"\"\n        # y=91, l=90. a=9,c=1 -> b=10 (not >= 11). a=1,c=0 -> b=91, digits [1,0] -> 10 < 90. \n        # a=7,c=0 -> b=13, digits [7,0] -> 70 < 90. a=9,c=1 -> b=10.\n        result = solve_phase1_two_digit(91, 90)\n        # Only (a,c) pairs where 10a+c >= 90: a=9,c>=0. 10*9+c >= 90 for any c.\n        # a=9: b = (91-c)/9. c=1 -> b=10 (not >=11). c=0 -> b=91/9 not int.\n        # So result should be 0\n        assert result == 0 or result >= 11, f\"Unexpected result {result}\"\n\n    def test_phase1_valid_result_satisfies_postcondition(self):\n        \"\"\"When Phase 1 returns b > 0, verify y = a*b + c with valid digits\"\"\"\n        y, l_val = 100, 2\n        result = solve_phase1_two_digit(y, l_val)\n        if result > 0:\n            digits = to_base(y, result)\n            assert digits is not None, \"Digits should not be None for valid base\"\n            assert len(digits) == 2, f\"Expected 2 digits, got {len(digits)}\"\n            assert all(0 <= d <= 9 for d in digits), \"All digits should be in [0,9]\"\n            val = reinterpret_base10(digits)\n            assert val >= l_val, f\"Reinterpreted value {val} < l={l_val}\"\n\n\n# ============================================================================\n# Tests for solve_phase2_three_digit\n# ============================================================================\nclass TestSolvePhase2ThreeDigit:\n    \"\"\"Unit tests for solve_phase2_three_digit function.\"\"\"\n\n    def test_phase2_happy_path(self):\n        \"\"\"Phase 2: y=1000, l=2. Looking for 3-digit bases.\"\"\"\n        result = solve_phase2_three_digit(1000, 2)\n        assert result == 0 or result >= 11, f\"Unexpected result {result}\"\n\n    def test_phase2_known_value(self):\n        \"\"\"Phase 2: y=133, base 11 -> 1*121+1*11+1=133 -> [1,1,1] -> 111>=2\"\"\"\n        result = solve_phase2_three_digit(133, 2)\n        if result > 0:\n            assert result >= 11, f\"Expected >= 11, got {result}\"\n            digits = to_base(133, result)\n            assert digits is not None\n            assert len(digits) == 3\n\n    def test_phase2_no_valid_base_small_y(self):\n        \"\"\"Phase 2: y=10, l=2. No 3-digit representation possible in base >= 11\"\"\"\n        result = solve_phase2_three_digit(10, 2)\n        assert result == 0, f\"Expected 0 for y=10, got {result}\"\n\n    def test_phase2_result_constraint(self):\n        \"\"\"Phase 2 returns 0 or >= 11\"\"\"\n        for y in [100, 500, 1000, 5000]:\n            result = solve_phase2_three_digit(y, 2)\n            assert result == 0 or result >= 11, (\n                f\"Phase 2 returned {result} for y={y}\"\n            )\n\n    def test_phase2_valid_result_satisfies_postcondition(self):\n        \"\"\"When Phase 2 returns b > 0, verify 3-digit representation\"\"\"\n        # y = 1*11^2 + 2*11 + 3 = 121 + 22 + 3 = 146\n        y = 146\n        result = solve_phase2_three_digit(y, 2)\n        if result > 0:\n            digits = to_base(y, result)\n            assert digits is not None\n            assert len(digits) == 3\n            assert all(0 <= d <= 9 for d in digits)\n            val = reinterpret_base10(digits)\n            assert val >= 2\n\n\n# ============================================================================\n# Tests for solve_phase3_four_plus_digit\n# ============================================================================\nclass TestSolvePhase3FourPlusDigit:\n    \"\"\"Unit tests for solve_phase3_four_plus_digit function.\"\"\"\n\n    def test_phase3_happy_path(self):\n        \"\"\"Phase 3: y=14641=11^4, base 11 -> [1,0,0,0,0] (5 digits) -> 10000>=2\"\"\"\n        result = solve_phase3_four_plus_digit(14641, 2)\n        # Base 11 gives 5 digits (>= 4), should be found\n        if result > 0:\n            assert result >= 11, f\"Expected >= 11, got {result}\"\n            digits = to_base(14641, result)\n            assert digits is not None\n            assert len(digits) >= 4\n\n    def test_phase3_no_valid_base_small_y(self):\n        \"\"\"Phase 3: y=100, l=2. No 4-digit rep in base >= 11 possible.\"\"\"\n        result = solve_phase3_four_plus_digit(100, 2)\n        assert result == 0, f\"Expected 0 for y=100, got {result}\"\n\n    def test_phase3_result_constraint(self):\n        \"\"\"Phase 3 returns 0 or >= 11\"\"\"\n        for y in [100, 1000, 10000, 100000]:\n            result = solve_phase3_four_plus_digit(y, 2)\n            assert result == 0 or result >= 11, (\n                f\"Phase 3 returned {result} for y={y}\"\n            )\n\n    def test_phase3_valid_result_has_4_plus_digits(self):\n        \"\"\"When Phase 3 returns b > 0, representation has >= 4 digits\"\"\"\n        y = 14641\n        result = solve_phase3_four_plus_digit(y, 2)\n        if result > 0:\n            digits = to_base(y, result)\n            assert digits is not None\n            assert len(digits) >= 4, f\"Expected >= 4 digits, got {len(digits)}\"\n\n\n# ============================================================================\n# Tests for solve\n# ============================================================================\nclass TestSolve:\n    \"\"\"Unit tests for the core solve function.\"\"\"\n\n    def test_solve_returns_at_least_10(self):\n        \"\"\"solve always returns base >= 10 (invariant: base 10 always valid)\"\"\"\n        result = solve(100, 2)\n        assert result >= 10, f\"Expected >= 10, got {result}\"\n\n    def test_solve_y_equals_l(self):\n        \"\"\"solve when y == l: base 10 works (y in base 10 is y >= l)\"\"\"\n        result = solve(100, 100)\n        assert result >= 10, f\"Expected >= 10, got {result}\"\n\n    def test_solve_minimum_inputs(self):\n        \"\"\"solve(2, 2): smallest valid input. Base 10 gives '2' >= 2. Answer is 10.\"\"\"\n        result = solve(2, 2)\n        assert result == 10, f\"Expected 10, got {result}\"\n\n    def test_solve_21_2(self):\n        \"\"\"solve(21, 2): base 21 gives [1,0] -> 10 >= 2. This should be max.\"\"\"\n        result = solve(21, 2)\n        assert result == 21, f\"Expected 21, got {result}\"\n\n    def test_solve_optimality(self):\n        \"\"\"solve returns the LARGEST valid base\"\"\"\n        y, l_val = 21, 2\n        result = solve(y, l_val)\n        # Verify no larger base works\n        for b in range(result + 1, y + 2):\n            digits = to_base(y, b)\n            if digits is not None:\n                val = reinterpret_base10(digits)\n                assert val < l_val, (\n                    f\"Base {b} > {result} is also valid with value {val} >= {l_val}\"\n                )\n\n    def test_solve_validity_postconditions(self):\n        \"\"\"solve result satisfies all postconditions\"\"\"\n        y, l_val = 500, 10\n        result = solve(y, l_val)\n        assert result >= 10, f\"Base {result} < 10\"\n        digits = to_base(y, result)\n        assert digits is not None, f\"to_base({y}, {result}) returned None\"\n        val = reinterpret_base10(digits)\n        assert val >= l_val, f\"Reinterpreted value {val} < l={l_val}\"\n\n    def test_solve_validity_postconditions_various(self):\n        \"\"\"solve postconditions hold for various inputs\"\"\"\n        test_cases = [\n            (10, 2), (20, 5), (100, 10), (999, 50),\n            (1000, 100), (12345, 2), (99999, 9999),\n        ]\n        for y, l_val in test_cases:\n            result = solve(y, l_val)\n            assert result >= 10, f\"solve({y},{l_val}) returned {result} < 10\"\n            digits = to_base(y, result)\n            assert digits is not None, f\"to_base({y},{result}) returned None\"\n            val = reinterpret_base10(digits)\n            assert val >= l_val, (\n                f\"solve({y},{l_val}): reinterpreted value {val} < {l_val} \"\n                f\"for base {result}\"\n            )\n\n    def test_solve_large_y(self):\n        \"\"\"solve handles y = 10^18\"\"\"\n        result = solve(10**18, 2)\n        assert result >= 10, f\"Expected >= 10, got {result}\"\n        digits = to_base(10**18, result)\n        assert digits is not None\n        val = reinterpret_base10(digits)\n        assert val >= 2\n\n    def test_solve_large_y_l_equal(self):\n        \"\"\"solve handles y = l = 10^18\"\"\"\n        result = solve(10**18, 10**18)\n        assert result >= 10, f\"Expected >= 10, got {result}\"\n        # Must be base 10 since y in base 10 is y itself = l\n        assert result == 10, f\"Expected 10 when y=l=10^18, got {result}\"\n\n    def test_solve_constraint_violation_y_lt_l(self):\n        \"\"\"solve raises error when y < l\"\"\"\n        with pytest.raises(Exception):\n            solve(5, 10)\n\n    def test_solve_constraint_violation_l_lt_2(self):\n        \"\"\"solve raises error when l < 2\"\"\"\n        with pytest.raises(Exception):\n            solve(10, 1)\n\n    def test_solve_constraint_violation_l_zero(self):\n        \"\"\"solve raises error when l = 0\"\"\"\n        with pytest.raises(Exception):\n            solve(10, 0)\n\n    def test_solve_constraint_violation_negative(self):\n        \"\"\"solve raises error for negative inputs\"\"\"\n        with pytest.raises(Exception):\n            solve(-1, -2)\n\n    def test_solve_base_10_always_valid_invariant(self):\n        \"\"\"Invariant: base 10 is always valid, so solve >= 10\"\"\"\n        import random\n        random.seed(42)\n        for _ in range(20):\n            y = random.randint(2, 10**6)\n            l_val = random.randint(2, y)\n            result = solve(y, l_val)\n            assert result >= 10, (\n                f\"solve({y},{l_val}) returned {result} < 10\"\n            )\n\n    def test_solve_result_bounded_by_y(self):\n        \"\"\"Invariant: result base <= y\"\"\"\n        test_cases = [(10, 2), (100, 5), (1000, 10), (50, 3)]\n        for y, l_val in test_cases:\n            result = solve(y, l_val)\n            assert result <= y, f\"solve({y},{l_val}) = {result} > y={y}\"\n\n\n# ============================================================================\n# Oracle / brute-force comparison tests\n# ============================================================================\nclass TestSolveBruteForceOracle:\n    \"\"\"Compare solve against brute-force oracle for small inputs.\"\"\"\n\n    def test_oracle_small_range_l2(self):\n        \"\"\"Brute-force comparison for y in [10, 200], l=2\"\"\"\n        for y in range(10, 201):\n            expected = brute_force_solve(y, 2)\n            result = solve(y, 2)\n            assert result == expected, (\n                f\"solve({y}, 2) = {result}, oracle says {expected}\"\n            )\n\n    def test_oracle_small_range_l10(self):\n        \"\"\"Brute-force comparison for y in [10, 200], l=10\"\"\"\n        for y in range(10, 201):\n            expected = brute_force_solve(y, 10)\n            result = solve(y, 10)\n            assert result == expected, (\n                f\"solve({y}, 10) = {result}, oracle says {expected}\"\n            )\n\n    def test_oracle_y_equals_l_range(self):\n        \"\"\"Brute-force comparison for y == l in [2, 100]\"\"\"\n        for y in range(2, 101):\n            expected = brute_force_solve(y, y)\n            result = solve(y, y)\n            assert result == expected, (\n                f\"solve({y}, {y}) = {result}, oracle says {expected}\"\n            )\n\n    def test_oracle_various_l_values(self):\n        \"\"\"Brute-force comparison for various (y, l) pairs\"\"\"\n        import random\n        random.seed(123)\n        for _ in range(100):\n            y = random.randint(2, 500)\n            l_val = random.randint(2, y)\n            expected = brute_force_solve(y, l_val)\n            result = solve(y, l_val)\n            assert result == expected, (\n                f\"solve({y}, {l_val}) = {result}, oracle says {expected}\"\n            )\n\n    def test_oracle_medium_range(self):\n        \"\"\"Brute-force comparison for y in [200, 1000], l=2\"\"\"\n        for y in range(200, 1001, 10):\n            expected = brute_force_solve(y, 2)\n            result = solve(y, 2)\n            assert result == expected, (\n                f\"solve({y}, 2) = {result}, oracle says {expected}\"\n            )\n\n\n# ============================================================================\n# Tests for main (I/O integration)\n# ============================================================================\nclass TestMain:\n    \"\"\"Integration tests for main() using mocked stdin/stdout.\"\"\"\n\n    def test_main_happy_path(self):\n        \"\"\"main reads '21 2' and prints result followed by newline\"\"\"\n        with patch('sys.stdin', io.StringIO('21 2\\n')):\n            with patch('sys.stdout', new_callable=io.StringIO) as mock_out:\n                main()\n                output = mock_out.getvalue()\n                assert output.strip().isdigit() or (\n                    output.strip().lstrip('-').isdigit()\n                ), f\"Output should be integer, got: {output!r}\"\n                assert output.endswith('\\n'), \"Output should end with newline\"\n\n    def test_main_output_matches_solve(self):\n        \"\"\"main output matches solve(21, 2)\"\"\"\n        expected = solve(21, 2)\n        with patch('sys.stdin', io.StringIO('21 2\\n')):\n            with patch('sys.stdout', new_callable=io.StringIO) as mock_out:\n                main()\n                output = mock_out.getvalue().strip()\n                assert int(output) == expected, (\n                    f\"Expected {expected}, got {output}\"\n                )\n\n    def test_main_output_format_single_integer(self):\n        \"\"\"main prints exactly one integer followed by a newline\"\"\"\n        with patch('sys.stdin', io.StringIO('100 2\\n')):\n            with patch('sys.stdout', new_callable=io.StringIO) as mock_out:\n                main()\n                output = mock_out.getvalue()\n                lines = output.split('\\n')\n                # Should be exactly one non-empty line\n                non_empty = [line for line in lines if line.strip()]\n                assert len(non_empty) == 1, (\n                    f\"Expected 1 line of output, got {len(non_empty)}: {output!r}\"\n                )\n                assert non_empty[0].strip().isdigit(), (\n                    f\"Output should be integer, got: {non_empty[0]!r}\"\n                )\n\n    def test_main_small_input(self):\n        \"\"\"main handles smallest valid input y=2, l=2\"\"\"\n        with patch('sys.stdin', io.StringIO('2 2\\n')):\n            with patch('sys.stdout', new_callable=io.StringIO) as mock_out:\n                main()\n                output = mock_out.getvalue().strip()\n                assert int(output) == 10, f\"Expected 10, got {output}\"\n\n    def test_main_large_input(self):\n        \"\"\"main handles large input y=10^18, l=2\"\"\"\n        with patch('sys.stdin', io.StringIO('1000000000000000000 2\\n')):\n            with patch('sys.stdout', new_callable=io.StringIO) as mock_out:\n                main()\n                output = mock_out.getvalue().strip()\n                val = int(output)\n                assert val >= 10, f\"Expected >= 10, got {val}\"\n\n\n# ============================================================================\n# Invariant tests\n# ============================================================================\nclass TestInvariants:\n    \"\"\"Tests for documented invariants.\"\"\"\n\n    def test_invariant_base10_always_valid(self):\n        \"\"\"Base 10 is always a valid answer: y in base 10 is y >= l.\"\"\"\n        test_cases = [\n            (2, 2), (10, 5), (100, 100), (9999, 42), (10**18, 2),\n        ]\n        for y, l_val in test_cases:\n            result = solve(y, l_val)\n            assert result >= 10, (\n                f\"Invariant violated: solve({y},{l_val}) = {result} < 10\"\n            )\n\n    def test_invariant_valid_base_implies_digits_le_9(self):\n        \"\"\"For any valid base b, every digit must be in [0,9], so b >= 10.\"\"\"\n        import random\n        random.seed(77)\n        for _ in range(30):\n            y = random.randint(2, 10**6)\n            l_val = random.randint(2, y)\n            b = solve(y, l_val)\n            digits = to_base(y, b)\n            assert digits is not None, (\n                f\"to_base({y}, {b}) returned None\"\n            )\n            for d in digits:\n                assert 0 <= d <= 9, (\n                    f\"Digit {d} out of range for y={y}, b={b}\"\n                )\n\n    def test_invariant_base_bounded_by_y(self):\n        \"\"\"The answer base b satisfies b <= y.\"\"\"\n        import random\n        random.seed(88)\n        for _ in range(30):\n            y = random.randint(2, 10**6)\n            l_val = random.randint(2, y)\n            b = solve(y, l_val)\n            assert b <= y, f\"solve({y},{l_val}) = {b} > y\"\n\n    def test_invariant_two_digit_constraints(self):\n        \"\"\"For k=2: y=a*b+c with a in [1,9], c in [0,9], b > max(a,c).\"\"\"\n        import random\n        random.seed(99)\n        for _ in range(30):\n            y = random.randint(11, 10000)\n            b = solve_phase1_two_digit(y, 2)\n            if b > 0:\n                digits = to_base(y, b)\n                assert digits is not None\n                assert len(digits) == 2\n                a, c = digits[0], digits[1]\n                assert 1 <= a <= 9, f\"Leading digit {a} not in [1,9]\"\n                assert 0 <= c <= 9, f\"Second digit {c} not in [0,9]\"\n                assert b > max(a, c), f\"b={b} not > max({a},{c})\"\n                assert y == a * b + c, f\"y={y} != {a}*{b}+{c}\"\n\n    def test_invariant_three_digit_constraints(self):\n        \"\"\"For k=3: y=a*b^2+d*b+e with a in [1,9], d,e in [0,9], b > max(a,d,e).\"\"\"\n        import random\n        random.seed(101)\n        for _ in range(50):\n            y = random.randint(121, 100000)  # need at least 11^2 = 121 for 3 digits\n            b = solve_phase2_three_digit(y, 2)\n            if b > 0:\n                digits = to_base(y, b)\n                assert digits is not None\n                assert len(digits) == 3, f\"Expected 3 digits, got {len(digits)}\"\n                a, d, e = digits[0], digits[1], digits[2]\n                assert 1 <= a <= 9\n                assert 0 <= d <= 9\n                assert 0 <= e <= 9\n                assert b > max(a, d, e)\n                assert y == a * b**2 + d * b + e\n\n    def test_invariant_integer_kth_root_exact(self):\n        \"\"\"integer_kth_root returns r such that r^k <= n < (r+1)^k.\"\"\"\n        import random\n        random.seed(55)\n        for _ in range(50):\n            n = random.randint(0, 10**15)\n            k = random.randint(1, 10)\n            r = integer_kth_root(n, k)\n            assert r >= 0\n            assert r**k <= n, f\"r^k > n for r={r}, k={k}, n={n}\"\n            assert (r + 1) ** k > n, f\"(r+1)^k <= n for r={r}, k={k}, n={n}\"\n\n    def test_invariant_reinterpret_non_negative(self):\n        \"\"\"reinterpret_base10 always returns >= 0.\"\"\"\n        test_lists = [[0], [0, 0, 0], [1], [9, 9, 9], [1, 0, 0, 0]]\n        for digits in test_lists:\n            result = reinterpret_base10(digits)\n            assert result >= 0, f\"Got negative for {digits}: {result}\"\n\n    def test_invariant_to_base_roundtrip_with_reinterpret(self):\n        \"\"\"For base 10, reinterpret_base10(to_base(y, 10)) == y.\"\"\"\n        for y in [0, 1, 9, 10, 99, 100, 12345, 999999999]:\n            digits = to_base(y, 10)\n            assert digits is not None\n            result = reinterpret_base10(digits)\n            assert result == y, (\n                f\"Roundtrip failed for y={y}: got {result}\"\n            )\n"
+}

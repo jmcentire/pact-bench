@@ -1,0 +1,99 @@
+{
+  "task_summary": "Define the interface contract for a Fibonacci Words Solution component (solution.py) that reads EOF-terminated test cases (n, pattern p) and counts overlapping occurrences of pattern p in the n-th Fibonacci string F(n), using a DP recurrence with prefix/suffix tracking and KMP-based pattern matching. Output format is 'Case X: Y'.",
+  "findings": [
+    {
+      "topic": "KMP for overlapping pattern matching",
+      "finding": "The KMP failure function approach is the standard O(n+m) method for counting overlapping occurrences. The key difference from non-overlapping KMP: when a full match is found (j == len(pattern)), instead of resetting j to 0, set j = failure[j-1] to allow the next match to overlap. This is critical for correctness. The failure table must be built on the pattern alone (not the text).",
+      "source": "Classic algorithms literature (CLRS, Knuth-Morris-Pratt 1977)",
+      "relevance": "Core subroutine used both for direct counting on small strings and for cross-boundary counting in the DP recurrence",
+      "confidence": 0.99
+    },
+    {
+      "topic": "Fibonacci string DP recurrence for pattern counting",
+      "finding": "The established pattern for counting in Fibonacci strings: store (count, prefix, suffix) per level. F(k) = F(k-1) + F(k-2) concatenation. count(k) = count(k-1) + count(k-2) + cross_matches(suffix(k-1) + prefix(k-2)). The cross_matches must be computed as: occurrences_in(suffix_{k-1} + prefix_{k-2}) - occurrences_in(suffix_{k-1}) - occurrences_in(prefix_{k-2}). The prefix/suffix length is min(len(F(k)), len(p)-1). This avoids double-counting matches already attributed to F(k-1) or F(k-2).",
+      "source": "Competitive programming references (UVa 11963, various Fibonacci word problems on Codeforces/UVa)",
+      "relevance": "Directly defines the DP interface and the core algorithm contract",
+      "confidence": 0.97
+    },
+    {
+      "topic": "Prefix/suffix update rule during DP",
+      "finding": "When building F(k) = F(k-1) + F(k-2): prefix(k) = (prefix(k-1) + prefix(k-2))[:len_p-1] if len(F(k)) > len_p-1, else F(k-1)+F(k-2) truncated. Similarly suffix(k) = (suffix(k-1) + suffix(k-2))[-(len_p-1):]. For small k where len(F(k)) < len(p)-1, the prefix and suffix are equal to the full string F(k). A common bug is not handling this small-k case, where F(k) is shorter than the pattern itself.",
+      "source": "Competitive programming editorial patterns",
+      "relevance": "Critical for correctness of the prefix/suffix tracking; defines the interface for stored state at each DP level",
+      "confidence": 0.95
+    },
+    {
+      "topic": "Fibonacci string definition conventions",
+      "finding": "Two common conventions exist: (1) F(0)='0', F(1)='1', F(n)=F(n-1)+F(n-2) for n>=2, or (2) F(1)='1', F(2)='0', F(n)=F(n-2)+F(n-1). The UVa problem (likely 11963 or similar) must be checked for which convention is used. The problem statement must be followed exactly. Many WA verdicts come from off-by-one in the Fibonacci definition or reversed concatenation order.",
+      "source": "UVa Online Judge problem archives, competitive programming forums",
+      "relevance": "The concatenation order (F(n-1)+F(n-2) vs F(n-2)+F(n-1)) directly affects correctness of cross-boundary matching",
+      "confidence": 0.93
+    },
+    {
+      "topic": "Input parsing: EOF-terminated pairs",
+      "finding": "Standard Python idiom for EOF-terminated input: use sys.stdin.read().split('\\n') or iterate with try/except on input(). For paired lines, read all lines at once, strip empties, then process in pairs. Edge case: trailing newline at EOF can produce an empty final element. Using sys.stdin.read().splitlines() is safest as it handles both \\n and \\r\\n and doesn't produce a trailing empty string.",
+      "source": "Python standard library docs, competitive programming best practices",
+      "relevance": "Defines the I/O interface contract",
+      "confidence": 0.96
+    },
+    {
+      "topic": "Output format strictness",
+      "finding": "The output format 'Case X: Y' must have exactly one space after 'Case', one space after the colon, X is 1-indexed, Y is the count. No trailing spaces, no blank lines between cases. Some judges are sensitive to trailing newline on the last line (most accept it).",
+      "source": "UVa judge behavior, ICPC output format conventions",
+      "relevance": "Directly constrains the output interface",
+      "confidence": 0.95
+    },
+    {
+      "topic": "Type annotations for competitive programming solutions",
+      "finding": "For a single-file competitive solution with Python 3.10+, use: function signatures with full type annotations, dataclasses or NamedTuples for structured state (e.g., the DP entry holding count/prefix/suffix). Since standard library only, no Pydantic. Use `int` freely (Python handles arbitrary precision). For the KMP failure function, return type is list[int]. For the count function, return type is int.",
+      "source": "Python 3.10+ typing best practices, PEP 604, PEP 585",
+      "relevance": "Aligns with coding standards requiring type annotations",
+      "confidence": 0.94
+    },
+    {
+      "topic": "Edge cases frequently missed",
+      "finding": "Key edge cases: (1) Pattern longer than F(n) → count is 0. (2) Pattern of length 1 ('0' or '1') → every character is a match, count equals number of that character in F(n) (can be computed via Fibonacci length recurrence). (3) n=0 or n=1 where F(n) is a single character. (4) Pattern equals F(n) exactly → count is 1. (5) Empty pattern (if allowed) → undefined/0. (6) Pattern consisting of repeated single character like '000...' in a Fibonacci string that has long runs.",
+      "source": "Competitive programming problem discussion threads",
+      "relevance": "Directly impacts interface preconditions and postconditions",
+      "confidence": 0.92
+    },
+    {
+      "topic": "KMP implementation pitfalls in Python",
+      "finding": "Common bugs: (1) Off-by-one in failure function computation — the failure array should have the same length as the pattern, with failure[0]=0. (2) When counting overlapping matches, after a match at position j==m, must set j=failure[j-1] not j=failure[m-1] (they're the same, but indexing errors happen). (3) For the cross-boundary counting, the text is suffix+prefix which has length 2*(len_p-1); the KMP search is O(len_p) per cross-boundary check, and there are O(n) levels, so total is O(n * len_p) which is fine for n≤100 and len_p≤100000.",
+      "source": "Algorithm implementation references, Python competitive programming guides",
+      "relevance": "Directly affects correctness of the core matching subroutine",
+      "confidence": 0.95
+    },
+    {
+      "topic": "Naming conventions and module structure",
+      "finding": "For a single-file solution: use snake_case for functions and variables, PascalCase for any dataclass/NamedTuple. Recommended function decomposition: (1) build_failure_table(pattern: str) -> list[int], (2) count_overlapping(text: str, pattern: str, failure: list[int]) -> int, (3) solve(n: int, pattern: str) -> int (the DP driver), (4) main() for I/O. Keep the DP state as a NamedTuple like FibState(count: int, prefix: str, suffix: str).",
+      "source": "PEP 8, Python typing conventions",
+      "relevance": "Defines naming and structural conventions for the interface contract",
+      "confidence": 0.94
+    }
+  ],
+  "recommended_approach": "Define the interface contract around four core functions and one state type:\n\n**State Type:** `FibState(NamedTuple)` with fields `count: int`, `prefix: str`, `suffix: str` — represents the memoized state for F(k) relative to a given pattern.\n\n**Core Functions:**\n1. `build_failure(pattern: str) -> list[int]` — KMP failure/prefix function. Precomputed once per test case.\n2. `count_overlapping(text: str, pattern: str, failure: list[int]) -> int` — Count all overlapping occurrences of pattern in text using precomputed failure table. Used for small strings and cross-boundary counting.\n3. `solve(n: int, pattern: str) -> int` — Main DP driver. Builds FibState bottom-up from k=0 to k=n. For each level, computes cross-boundary matches from `count_overlapping(suffix[k-1] + prefix[k-2], pattern, failure) - count_overlapping(suffix[k-1], ...) - count_overlapping(prefix[k-2], ...)`. Returns FibState.count for level n.\n4. `main() -> None` — Reads all input via `sys.stdin.read().splitlines()`, processes pairs, prints `Case {i}: {result}`.\n\n**Preconditions:** n ≥ 0, len(pattern) ≥ 1, pattern consists of '0' and '1' only. **Postconditions:** Output count is a non-negative integer representing overlapping occurrences. The prefix/suffix stored at each DP level has length `min(fib_len[k], len(pattern) - 1)` where `fib_len[k]` is the length of F(k) (tracked separately to avoid computing actual strings for large k, capped at some large sentinel once it exceeds len(pattern)).",
+  "alternatives_considered": [
+    "Rabin-Karp rolling hash instead of KMP: Rejected because overlapping counting with Rabin-Karp requires careful handling and KMP is cleaner with guaranteed O(n+m) and no hash collisions.",
+    "Aho-Corasick for multi-pattern matching: Overkill since we only have one pattern per test case; KMP is simpler and sufficient.",
+    "Building full Fibonacci strings up to some threshold and only using DP beyond that: Viable hybrid but adds complexity; the DP approach works uniformly for all n if the base cases (n=0, n=1) are handled correctly, so a uniform DP approach is preferred.",
+    "Using a dataclass vs NamedTuple for FibState: NamedTuple is lighter, immutable (appropriate since each DP level produces a new state), and requires no __init__ boilerplate. Preferred over dataclass for this use case.",
+    "Storing full KMP automaton state at boundaries instead of prefix/suffix strings: More complex to implement, harder to reason about correctness; the string prefix/suffix approach is well-established and memory is manageable (at most 2 * 100000 chars per level, 100 levels = ~20MB worst case)."
+  ],
+  "risks": [
+    "Fibonacci string definition mismatch: If the concatenation order is wrong (F(n-1)+F(n-2) vs F(n-2)+F(n-1)) or base cases differ from the problem statement, all outputs will be wrong. Must verify against problem statement exactly.",
+    "Off-by-one in prefix/suffix length: Using len(p) instead of len(p)-1 for stored prefix/suffix length would waste memory and potentially cause incorrect cross-boundary subtraction.",
+    "Double-counting in cross-boundary matches: The subtraction step (removing matches entirely within suffix or entirely within prefix) is error-prone. If the suffix or prefix is shorter than len(p)-1 (for small F(k)), matches that shouldn't be subtracted could be subtracted.",
+    "Large pattern with small n: If len(p) > len(F(n)), the count is trivially 0, but the prefix/suffix logic must handle this gracefully (the full F(n) string is shorter than len(p)-1).",
+    "Input parsing edge cases: Trailing newlines, blank lines, or unexpected whitespace in input could cause misalignment of (n, pattern) pairs.",
+    "Integer overflow: Not a risk in Python (arbitrary precision), but the problem states results up to 2^63-1, confirming large counts are expected."
+  ],
+  "compliance_notes": [
+    "Python 3.10+ required: use `X | Y` union syntax if needed (PEP 604), `list[int]` lowercase generics (PEP 585).",
+    "Standard library only: NamedTuple from typing or collections, sys for I/O. No external packages.",
+    "stdin/stdout only: read from sys.stdin, print to sys.stdout.",
+    "Type annotations on all function signatures per coding standards.",
+    "Output format must be exactly 'Case X: Y\\n' with 1-indexed X and integer Y, no trailing spaces.",
+    "Must handle all valid inputs: n up to 100, pattern up to 100,000 characters, overlapping matches, results up to 2^63-1."
+  ]
+}

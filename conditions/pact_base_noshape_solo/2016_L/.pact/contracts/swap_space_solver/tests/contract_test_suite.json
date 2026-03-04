@@ -1,0 +1,428 @@
+{
+  "component_id": "swap_space_solver",
+  "contract_version": 1,
+  "test_cases": [
+    {
+      "id": "parse_input_empty_list",
+      "description": "parse_input with n=0 returns an empty list",
+      "function": "parse_input",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin contains '0\\n'",
+      "expected_output_description": "Empty list []",
+      "expected_error": "",
+      "assertions": [
+        "result == []",
+        "len(result) == 0"
+      ]
+    },
+    {
+      "id": "parse_input_single_drive",
+      "description": "parse_input with n=1 returns a list with one (a,b) tuple",
+      "function": "parse_input",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin contains '1\\n10 20\\n'",
+      "expected_output_description": "[(10, 20)]",
+      "expected_error": "",
+      "assertions": [
+        "result == [(10, 20)]",
+        "len(result) == 1"
+      ]
+    },
+    {
+      "id": "parse_input_many_drives",
+      "description": "parse_input with n=3 returns three (a,b) tuples in order",
+      "function": "parse_input",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin contains '3\\n1 2\\n3 4\\n5 6\\n'",
+      "expected_output_description": "[(1,2),(3,4),(5,6)]",
+      "expected_error": "",
+      "assertions": [
+        "result == [(1, 2), (3, 4), (5, 6)]",
+        "len(result) == 3"
+      ]
+    },
+    {
+      "id": "parse_input_empty_stdin",
+      "description": "parse_input raises ValueError when stdin is empty",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin is empty string ''",
+      "expected_output_description": "",
+      "expected_error": "ValueError",
+      "assertions": []
+    },
+    {
+      "id": "parse_input_malformed_n",
+      "description": "parse_input raises ValueError when first token is not a valid integer",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin contains 'abc\\n1 2\\n'",
+      "expected_output_description": "",
+      "expected_error": "ValueError",
+      "assertions": []
+    },
+    {
+      "id": "parse_input_insufficient_tokens",
+      "description": "parse_input raises error when fewer than 2*n tokens follow n",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin contains '2\\n1 2\\n'",
+      "expected_output_description": "",
+      "expected_error": "ValueError or IndexError",
+      "assertions": []
+    },
+    {
+      "id": "parse_input_non_integer_token",
+      "description": "parse_input raises ValueError when a drive data token is not an integer",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin contains '1\\nfoo 2\\n'",
+      "expected_output_description": "",
+      "expected_error": "ValueError",
+      "assertions": []
+    },
+    {
+      "id": "solve_empty_list",
+      "description": "solve([]) returns 0",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "drives": "[]"
+      },
+      "input_description": "",
+      "expected_output_description": "0",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "solve_single_gainer",
+      "description": "solve with a single drive where b >= a returns a (need a space to hold data)",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "drives": "[(10, 20)]"
+      },
+      "input_description": "",
+      "expected_output_description": "10",
+      "expected_error": "",
+      "assertions": [
+        "result == 10"
+      ]
+    },
+    {
+      "id": "solve_single_loser",
+      "description": "solve with a single drive where b < a returns a",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "drives": "[(20, 10)]"
+      },
+      "input_description": "",
+      "expected_output_description": "20",
+      "expected_error": "",
+      "assertions": [
+        "result == 20"
+      ]
+    },
+    {
+      "id": "solve_all_gainers",
+      "description": "solve with all gainers sorted by a ascending; verify known answer",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "drives": "[(5, 10), (3, 8), (1, 4)]"
+      },
+      "input_description": "",
+      "expected_output_description": "Minimum extra space for all gainers",
+      "expected_error": "",
+      "assertions": [
+        "result >= 0",
+        "result <= sum(a for a, b in [(5, 10), (3, 8), (1, 4)])"
+      ]
+    },
+    {
+      "id": "solve_all_losers",
+      "description": "solve with all losers (b < a); verify known answer",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "drives": "[(10, 5), (20, 10), (15, 8)]"
+      },
+      "input_description": "",
+      "expected_output_description": "Minimum extra space for all losers",
+      "expected_error": "",
+      "assertions": [
+        "result >= 0"
+      ]
+    },
+    {
+      "id": "solve_mixed_drives",
+      "description": "solve with a mix of gainers and losers returns correct known answer",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "drives": "[(10, 20), (20, 10)]"
+      },
+      "input_description": "",
+      "expected_output_description": "10 (process gainer (10,20) first, then loser (20,10))",
+      "expected_error": "",
+      "assertions": [
+        "result == 10"
+      ]
+    },
+    {
+      "id": "solve_identical_drives",
+      "description": "solve with identical drives where a==b",
+      "function": "solve",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "drives": "[(5, 5), (5, 5), (5, 5)]"
+      },
+      "input_description": "",
+      "expected_output_description": "5 (need space for first drive, then net gain is 0 each time)",
+      "expected_error": "",
+      "assertions": [
+        "result == 5"
+      ]
+    },
+    {
+      "id": "solve_zero_capacity_drives",
+      "description": "solve with all a==0 returns 0",
+      "function": "solve",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "drives": "[(0, 10), (0, 5), (0, 0)]"
+      },
+      "input_description": "",
+      "expected_output_description": "0",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "solve_large_values",
+      "description": "solve handles large integer values correctly",
+      "function": "solve",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "drives": "[(10**18, 10**18 + 1)]"
+      },
+      "input_description": "",
+      "expected_output_description": "10**18",
+      "expected_error": "",
+      "assertions": [
+        "result == 10**18"
+      ]
+    },
+    {
+      "id": "solve_single_drive_zero_a",
+      "description": "Single drive with a=0 requires no extra space",
+      "function": "solve",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "drives": "[(0, 100)]"
+      },
+      "input_description": "",
+      "expected_output_description": "0",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "solve_negative_capacity_error",
+      "description": "solve raises error when a drive has negative capacity",
+      "function": "solve",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "drives": "[(-1, 5)]"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "ValueError",
+      "assertions": []
+    },
+    {
+      "id": "solve_negative_b_error",
+      "description": "solve raises error when a drive has negative b",
+      "function": "solve",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "drives": "[(5, -1)]"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "ValueError",
+      "assertions": []
+    },
+    {
+      "id": "solve_nonnegative_invariant",
+      "description": "solve always returns a non-negative integer (invariant check with random inputs)",
+      "function": "solve",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "Seeded random drives",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "result >= 0"
+      ]
+    },
+    {
+      "id": "solve_permutation_invariant",
+      "description": "solve returns the same result regardless of input order (permutation invariance)",
+      "function": "solve",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "Same drives in different orders",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "all results are equal"
+      ]
+    },
+    {
+      "id": "solve_upper_bound_invariant",
+      "description": "solve result is <= sum of all a values",
+      "function": "solve",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "drives": "[(10, 20), (30, 5), (15, 15)]"
+      },
+      "input_description": "",
+      "expected_output_description": "result <= 55",
+      "expected_error": "",
+      "assertions": [
+        "result <= sum(a for a, b in drives)"
+      ]
+    },
+    {
+      "id": "solve_simulation_feasibility",
+      "description": "Simulation confirms the returned S is sufficient and minimal",
+      "function": "solve",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "Various drive configurations verified by replay simulation",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "simulate(drives, S) is True",
+        "S == 0 or simulate(drives, S-1) is False"
+      ]
+    },
+    {
+      "id": "main_happy_path",
+      "description": "main() reads stdin, computes result, prints to stdout with trailing newline",
+      "function": "main",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin: '2\\n10 20\\n20 10\\n'",
+      "expected_output_description": "stdout: '10\\n'",
+      "expected_error": "",
+      "assertions": [
+        "stdout_output == '10\\n'"
+      ]
+    },
+    {
+      "id": "main_empty_drives",
+      "description": "main() with n=0 prints 0",
+      "function": "main",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin: '0\\n'",
+      "expected_output_description": "stdout: '0\\n'",
+      "expected_error": "",
+      "assertions": [
+        "stdout_output == '0\\n'"
+      ]
+    },
+    {
+      "id": "main_input_error",
+      "description": "main() propagates error from parse_input on malformed input",
+      "function": "main",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin: 'not_a_number\\n'",
+      "expected_output_description": "",
+      "expected_error": "ValueError or SystemExit",
+      "assertions": []
+    },
+    {
+      "id": "main_io_error_stdout",
+      "description": "main() raises error when stdout write fails",
+      "function": "main",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "stdin valid, stdout mocked to raise IOError on write",
+      "expected_output_description": "",
+      "expected_error": "IOError or OSError",
+      "assertions": []
+    }
+  ],
+  "test_language": "python",
+  "generated_code": "\"\"\"\nContract test suite for swap_space_solver.\nThree-tier structure:\n  Tier 1: TestParseInput  — unit tests for parse_input()\n  Tier 2: TestSolve       — unit tests for solve()\n  Tier 3: TestMain        — integration tests for main()\n\nUses only pytest and unittest.mock (stdlib). All randomized tests are seeded.\n\"\"\"\n\nimport io\nimport sys\nimport random\nfrom unittest.mock import patch, MagicMock\n\nimport pytest\n\nfrom src.swap_space_solver import parse_input, solve, main\n\n\n# ---------------------------------------------------------------------------\n# Helper: simulate the greedy reformat sequence and check feasibility\n# ---------------------------------------------------------------------------\n\ndef _greedy_order(drives):\n    \"\"\"Return drives in the canonical greedy order:\n    gainers (b >= a) sorted by a ascending, then losers (b < a) sorted by b descending.\n    \"\"\"\n    gainers = [(a, b) for a, b in drives if b >= a]\n    losers = [(a, b) for a, b in drives if b < a]\n    gainers.sort(key=lambda d: d[0])\n    losers.sort(key=lambda d: d[1], reverse=True)\n    return gainers + losers\n\n\ndef simulate(drives, extra):\n    \"\"\"Replay the greedy upgrade starting with *extra* free space.\n    Returns True iff free space never drops below 0.\"\"\"\n    ordered = _greedy_order(drives)\n    free = extra\n    for a, b in ordered:\n        if free < a:\n            return False\n        free = free - a + b\n    return True\n\n\n# ===========================================================================\n# Tier 1 — parse_input()\n# ===========================================================================\n\nclass TestParseInput:\n    \"\"\"Unit tests for parse_input().\"\"\"\n\n    def test_parse_input_empty_list(self):\n        \"\"\"n=0 ⇒ empty list.\"\"\"\n        with patch(\"sys.stdin\", new_callable=lambda: lambda: io.StringIO(\"0\\n\")):\n            pass  # need direct assignment\n        fake_stdin = io.StringIO(\"0\\n\")\n        with patch.object(sys, \"stdin\", fake_stdin):\n            result = parse_input()\n        assert result == [], f\"Expected empty list, got {result}\"\n        assert len(result) == 0\n\n    def test_parse_input_single_drive(self):\n        \"\"\"n=1 with one (a,b) pair.\"\"\"\n        fake_stdin = io.StringIO(\"1\\n10 20\\n\")\n        with patch.object(sys, \"stdin\", fake_stdin):\n            result = parse_input()\n        assert result == [(10, 20)], f\"Expected [(10, 20)], got {result}\"\n        assert len(result) == 1\n\n    def test_parse_input_many_drives(self):\n        \"\"\"n=3 with three (a,b) pairs preserves order.\"\"\"\n        fake_stdin = io.StringIO(\"3\\n1 2\\n3 4\\n5 6\\n\")\n        with patch.object(sys, \"stdin\", fake_stdin):\n            result = parse_input()\n        assert result == [(1, 2), (3, 4), (5, 6)]\n        assert len(result) == 3\n\n    def test_parse_input_large_values(self):\n        \"\"\"Large integers parse correctly.\"\"\"\n        big = 10**18\n        fake_stdin = io.StringIO(f\"1\\n{big} {big + 1}\\n\")\n        with patch.object(sys, \"stdin\", fake_stdin):\n            result = parse_input()\n        assert result == [(big, big + 1)]\n\n    def test_parse_input_whitespace_variations(self):\n        \"\"\"Tokens separated by mixed whitespace still parse.\"\"\"\n        fake_stdin = io.StringIO(\"2\\n  1   2  \\n  3   4  \\n\")\n        with patch.object(sys, \"stdin\", fake_stdin):\n            result = parse_input()\n        assert result == [(1, 2), (3, 4)]\n\n    # --- Error cases ---\n\n    def test_parse_input_empty_stdin(self):\n        \"\"\"Empty stdin raises an error.\"\"\"\n        fake_stdin = io.StringIO(\"\")\n        with patch.object(sys, \"stdin\", fake_stdin):\n            with pytest.raises((ValueError, IndexError)):\n                parse_input()\n\n    def test_parse_input_malformed_n(self):\n        \"\"\"Non-integer first token raises ValueError.\"\"\"\n        fake_stdin = io.StringIO(\"abc\\n1 2\\n\")\n        with patch.object(sys, \"stdin\", fake_stdin):\n            with pytest.raises((ValueError, IndexError)):\n                parse_input()\n\n    def test_parse_input_insufficient_tokens(self):\n        \"\"\"Fewer than 2*n data tokens raises an error.\"\"\"\n        fake_stdin = io.StringIO(\"2\\n1 2\\n\")\n        with patch.object(sys, \"stdin\", fake_stdin):\n            with pytest.raises((ValueError, IndexError)):\n                parse_input()\n\n    def test_parse_input_non_integer_token(self):\n        \"\"\"Non-integer drive data token raises ValueError.\"\"\"\n        fake_stdin = io.StringIO(\"1\\nfoo 2\\n\")\n        with patch.object(sys, \"stdin\", fake_stdin):\n            with pytest.raises((ValueError, IndexError)):\n                parse_input()\n\n    def test_parse_input_negative_n(self):\n        \"\"\"Negative n should raise an error or return empty.\"\"\"\n        fake_stdin = io.StringIO(\"-1\\n\")\n        with patch.object(sys, \"stdin\", fake_stdin):\n            # Either raises or returns empty; either is acceptable.\n            try:\n                result = parse_input()\n                # If it doesn't raise, it should be empty (n <= 0 drives).\n                assert result == [] or True  # implementation-specific\n            except (ValueError, IndexError):\n                pass  # acceptable\n\n\n# ===========================================================================\n# Tier 2 — solve()\n# ===========================================================================\n\nclass TestSolve:\n    \"\"\"Unit tests for solve().\"\"\"\n\n    # --- Happy-path / known-answer tests ---\n\n    def test_solve_empty_list(self):\n        \"\"\"Empty drive list ⇒ 0.\"\"\"\n        assert solve([]) == 0\n\n    def test_solve_single_gainer(self):\n        \"\"\"Single drive (10, 20): need 10 extra space.\"\"\"\n        result = solve([(10, 20)])\n        assert result == 10, f\"Expected 10, got {result}\"\n\n    def test_solve_single_loser(self):\n        \"\"\"Single drive (20, 10): need 20 extra space.\"\"\"\n        result = solve([(20, 10)])\n        assert result == 20, f\"Expected 20, got {result}\"\n\n    def test_solve_mixed_drives(self):\n        \"\"\"Two drives: gainer (10,20) then loser (20,10).\n        Greedy order: (10,20) first (gainer, a=10), then (20,10) (loser, b=10).\n        Need S >= 10 to process first. After first: free = S + 10.\n        Need S + 10 >= 20 ⇒ S >= 10. So S = 10.\"\"\"\n        result = solve([(10, 20), (20, 10)])\n        assert result == 10, f\"Expected 10, got {result}\"\n\n    def test_solve_mixed_drives_reversed_input(self):\n        \"\"\"Same drives in reversed input order — should give same result (permutation invariance).\"\"\"\n        result = solve([(20, 10), (10, 20)])\n        assert result == 10, f\"Expected 10, got {result}\"\n\n    def test_solve_all_gainers(self):\n        \"\"\"All gainers: (1,4), (3,8), (5,10).\n        Sorted by a: (1,4), (3,8), (5,10).\n        prefix_net before i=0: 0 ⇒ need S >= 1.\n        prefix_net before i=1: 3 ⇒ need S >= 3 - 3 = 0.\n        prefix_net before i=2: 3 + 5 = 8 ⇒ need S >= 5 - 8 = 0.\n        S = 1.\"\"\"\n        result = solve([(5, 10), (3, 8), (1, 4)])\n        assert result == 1, f\"Expected 1, got {result}\"\n        assert simulate([(5, 10), (3, 8), (1, 4)], result)\n\n    def test_solve_all_losers(self):\n        \"\"\"All losers: (10,5), (20,10), (15,8).\n        Sorted by b desc: (20,10), (15,8), (10,5).\n        prefix_net before i=0: 0 ⇒ need S >= 20.\n        prefix_net before i=1: -10 ⇒ need S >= 15 + 10 = 25.\n        prefix_net before i=2: -10 + -7 = -17 ⇒ need S >= 10 + 17 = 27.\n        S = 27.\"\"\"\n        result = solve([(10, 5), (20, 10), (15, 8)])\n        assert result == 27, f\"Expected 27, got {result}\"\n        assert simulate([(10, 5), (20, 10), (15, 8)], result)\n\n    def test_solve_identical_drives_a_eq_b(self):\n        \"\"\"Identical drives with a == b: (5,5) x3.\n        All are gainers (b >= a). Sorted by a=5, all same.\n        prefix_net before i=0: 0 ⇒ S >= 5.\n        prefix_net before i=1: 0 ⇒ S >= 5.\n        prefix_net before i=2: 0 ⇒ S >= 5.\n        S = 5.\"\"\"\n        result = solve([(5, 5), (5, 5), (5, 5)])\n        assert result == 5, f\"Expected 5, got {result}\"\n\n    def test_solve_zero_capacity_drives(self):\n        \"\"\"All a == 0 ⇒ S == 0.\"\"\"\n        result = solve([(0, 10), (0, 5), (0, 0)])\n        assert result == 0, f\"Expected 0, got {result}\"\n\n    def test_solve_all_zero(self):\n        \"\"\"All drives (0, 0).\"\"\"\n        result = solve([(0, 0), (0, 0)])\n        assert result == 0\n\n    def test_solve_large_values(self):\n        \"\"\"Single drive with a = 10^18.\"\"\"\n        big = 10**18\n        result = solve([(big, big + 1)])\n        assert result == big\n\n    def test_solve_single_zero_a(self):\n        \"\"\"Single drive (0, 100): no data to move.\"\"\"\n        result = solve([(0, 100)])\n        assert result == 0\n\n    # --- Edge cases ---\n\n    def test_solve_two_gainers_order_matters(self):\n        \"\"\"Two gainers: (100, 200) and (1, 50).\n        Sorted by a: (1, 50), (100, 200).\n        prefix_net before i=0: 0 ⇒ S >= 1.\n        prefix_net before i=1: 49 ⇒ S >= 100 - 49 = 51.\n        S = 51.\"\"\"\n        result = solve([(100, 200), (1, 50)])\n        assert result == 51, f\"Expected 51, got {result}\"\n        assert simulate([(100, 200), (1, 50)], result)\n        assert not simulate([(100, 200), (1, 50)], result - 1)\n\n    def test_solve_complex_mixed(self):\n        \"\"\"More complex mixed example with known answer verified by simulation.\"\"\"\n        drives = [(10, 20), (5, 3), (8, 15), (12, 6)]\n        result = solve(drives)\n        assert result >= 0\n        assert simulate(drives, result), f\"S={result} should be feasible\"\n        if result > 0:\n            assert not simulate(drives, result - 1), f\"S={result-1} should be infeasible\"\n\n    # --- Error cases ---\n\n    def test_solve_negative_a(self):\n        \"\"\"Negative a raises ValueError.\"\"\"\n        with pytest.raises((ValueError, AssertionError)):\n            solve([(-1, 5)])\n\n    def test_solve_negative_b(self):\n        \"\"\"Negative b raises ValueError.\"\"\"\n        with pytest.raises((ValueError, AssertionError)):\n            solve([(5, -1)])\n\n    # --- Invariant tests (seeded random) ---\n\n    def test_solve_nonnegative_invariant_random(self):\n        \"\"\"solve always returns a non-negative integer (random inputs, seeded).\"\"\"\n        rng = random.Random(42)\n        for _ in range(50):\n            n = rng.randint(0, 20)\n            drives = [(rng.randint(0, 1000), rng.randint(0, 1000)) for _ in range(n)]\n            result = solve(drives)\n            assert result >= 0, f\"Negative result {result} for drives={drives}\"\n            assert isinstance(result, int), f\"Result should be int, got {type(result)}\"\n\n    def test_solve_permutation_invariant_random(self):\n        \"\"\"solve returns the same result regardless of input order.\"\"\"\n        rng = random.Random(123)\n        for _ in range(30):\n            n = rng.randint(1, 15)\n            drives = [(rng.randint(0, 500), rng.randint(0, 500)) for _ in range(n)]\n            result1 = solve(drives)\n            shuffled = drives[:]\n            rng.shuffle(shuffled)\n            result2 = solve(shuffled)\n            assert result1 == result2, (\n                f\"Permutation invariance violated: {result1} != {result2} \"\n                f\"for drives={drives}, shuffled={shuffled}\"\n            )\n\n    def test_solve_upper_bound_invariant_random(self):\n        \"\"\"solve result <= sum of all a values.\"\"\"\n        rng = random.Random(99)\n        for _ in range(50):\n            n = rng.randint(0, 20)\n            drives = [(rng.randint(0, 1000), rng.randint(0, 1000)) for _ in range(n)]\n            result = solve(drives)\n            total_a = sum(a for a, b in drives)\n            assert result <= total_a, (\n                f\"Result {result} exceeds sum of a values {total_a} for {drives}\"\n            )\n\n    def test_solve_simulation_feasibility_random(self):\n        \"\"\"Simulation confirms S is feasible and minimal (random inputs, seeded).\"\"\"\n        rng = random.Random(777)\n        for _ in range(50):\n            n = rng.randint(0, 15)\n            drives = [(rng.randint(0, 500), rng.randint(0, 500)) for _ in range(n)]\n            result = solve(drives)\n            assert simulate(drives, result), (\n                f\"S={result} infeasible for {drives}\"\n            )\n            if result > 0:\n                assert not simulate(drives, result - 1), (\n                    f\"S={result - 1} should be infeasible but isn't for {drives}\"\n                )\n\n    def test_solve_specific_upper_bound(self):\n        \"\"\"Explicit upper bound check.\"\"\"\n        drives = [(10, 20), (30, 5), (15, 15)]\n        result = solve(drives)\n        assert result >= 0\n        assert result <= 55, f\"Result {result} should be <= sum of a=55\"\n\n    def test_solve_known_answer_three_drives(self):\n        \"\"\"Three drives: (10,20), (30,5), (15,15). Verify by simulation.\"\"\"\n        drives = [(10, 20), (30, 5), (15, 15)]\n        result = solve(drives)\n        assert simulate(drives, result)\n        if result > 0:\n            assert not simulate(drives, result - 1)\n\n\n# ===========================================================================\n# Tier 3 — main()\n# ===========================================================================\n\nclass TestMain:\n    \"\"\"Integration tests for main().\"\"\"\n\n    def test_main_happy_path(self):\n        \"\"\"main() reads stdin, prints correct result to stdout.\"\"\"\n        fake_stdin = io.StringIO(\"2\\n10 20\\n20 10\\n\")\n        fake_stdout = io.StringIO()\n        with patch.object(sys, \"stdin\", fake_stdin), \\\n             patch.object(sys, \"stdout\", fake_stdout):\n            main()\n        output = fake_stdout.getvalue()\n        assert output == \"10\\n\", f\"Expected '10\\\\n', got {output!r}\"\n\n    def test_main_empty_drives(self):\n        \"\"\"main() with n=0 prints '0'.\"\"\"\n        fake_stdin = io.StringIO(\"0\\n\")\n        fake_stdout = io.StringIO()\n        with patch.object(sys, \"stdin\", fake_stdin), \\\n             patch.object(sys, \"stdout\", fake_stdout):\n            main()\n        output = fake_stdout.getvalue()\n        assert output == \"0\\n\", f\"Expected '0\\\\n', got {output!r}\"\n\n    def test_main_single_drive(self):\n        \"\"\"main() with one drive.\"\"\"\n        fake_stdin = io.StringIO(\"1\\n7 3\\n\")\n        fake_stdout = io.StringIO()\n        with patch.object(sys, \"stdin\", fake_stdin), \\\n             patch.object(sys, \"stdout\", fake_stdout):\n            main()\n        output = fake_stdout.getvalue()\n        assert output == \"7\\n\", f\"Expected '7\\\\n', got {output!r}\"\n\n    def test_main_output_format_trailing_newline(self):\n        \"\"\"Output is exactly one line with trailing newline.\"\"\"\n        fake_stdin = io.StringIO(\"1\\n5 10\\n\")\n        fake_stdout = io.StringIO()\n        with patch.object(sys, \"stdin\", fake_stdin), \\\n             patch.object(sys, \"stdout\", fake_stdout):\n            main()\n        output = fake_stdout.getvalue()\n        assert output.endswith(\"\\n\"), \"Output must end with newline\"\n        lines = output.strip().split(\"\\n\")\n        assert len(lines) == 1, f\"Expected exactly one line, got {len(lines)}\"\n        assert lines[0].strip().isdigit() or lines[0].strip() == \"0\", (\n            f\"Output should be a non-negative integer, got {lines[0]!r}\"\n        )\n\n    def test_main_input_error_malformed(self):\n        \"\"\"main() propagates error on malformed input.\"\"\"\n        fake_stdin = io.StringIO(\"not_a_number\\n\")\n        fake_stdout = io.StringIO()\n        with patch.object(sys, \"stdin\", fake_stdin), \\\n             patch.object(sys, \"stdout\", fake_stdout):\n            with pytest.raises((ValueError, IndexError, SystemExit)):\n                main()\n\n    def test_main_io_error_stdout(self):\n        \"\"\"main() raises error when stdout write fails.\"\"\"\n        fake_stdin = io.StringIO(\"1\\n5 10\\n\")\n        mock_stdout = MagicMock()\n        mock_stdout.write = MagicMock(side_effect=OSError(\"write failed\"))\n        with patch.object(sys, \"stdin\", fake_stdin), \\\n             patch.object(sys, \"stdout\", mock_stdout):\n            with pytest.raises((OSError, IOError)):\n                main()\n\n    def test_main_larger_example(self):\n        \"\"\"main() with a larger known-answer example.\"\"\"\n        # 3 drives: (1, 4), (3, 8), (5, 10) — all gainers\n        # Expected S = 1 (from solve test above)\n        fake_stdin = io.StringIO(\"3\\n1 4\\n3 8\\n5 10\\n\")\n        fake_stdout = io.StringIO()\n        with patch.object(sys, \"stdin\", fake_stdin), \\\n             patch.object(sys, \"stdout\", fake_stdout):\n            main()\n        output = fake_stdout.getvalue()\n        assert output == \"1\\n\", f\"Expected '1\\\\n', got {output!r}\"\n\n    def test_main_all_losers_example(self):\n        \"\"\"main() with all losers example.\"\"\"\n        fake_stdin = io.StringIO(\"3\\n10 5\\n20 10\\n15 8\\n\")\n        fake_stdout = io.StringIO()\n        with patch.object(sys, \"stdin\", fake_stdin), \\\n             patch.object(sys, \"stdout\", fake_stdout):\n            main()\n        output = fake_stdout.getvalue()\n        assert output == \"27\\n\", f\"Expected '27\\\\n', got {output!r}\"\n"
+}

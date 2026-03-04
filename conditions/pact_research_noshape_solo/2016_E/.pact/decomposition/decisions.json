@@ -1,0 +1,17 @@
+[
+  {
+    "ambiguity": "",
+    "decision": "Solution file named solution.py as implied by test harness invocation.",
+    "rationale": "The test harness is invoked as 'python test_harness.py solution.py', so solution.py is the expected filename."
+  },
+  {
+    "ambiguity": "",
+    "decision": "Use a hybrid algorithmic approach: algebraic solution for 2-digit representations, enumeration for 3+ digit representations.",
+    "rationale": "For y up to 10^18, bases yielding 2 digits can be very large and must be handled algebraically. For 3+ digits, base <= sqrt(y) ~ 10^9, but the number of digits grows quickly so the actual enumeration range shrinks fast. We enumerate bases from floor(sqrt(y)) down to 10 for the 3+ digit case, checking each conversion."
+  },
+  {
+    "ambiguity": "",
+    "decision": "Base 10 serves as the guaranteed minimum valid answer.",
+    "rationale": "y in base 10 is y itself, all digits are 0-9, and y >= l by constraint, so a solution always exists with b=10 as a lower bound."
+  }
+]

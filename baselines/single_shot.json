@@ -1,0 +1,94 @@
+{
+  "run": 1,
+  "model": "claude-opus-4-6",
+  "condition": "single-shot",
+  "total_passed": 167,
+  "total_tests": 212,
+  "overall_pass_rate": 0.788,
+  "total_cost_usd": 0.5958,
+  "total_time_seconds": 110.2,
+  "problems": [
+    {
+      "problem_id": "2016_L",
+      "title": "Swap Space",
+      "passed": 0,
+      "total": 29,
+      "pass_rate": 0.0,
+      "cost_usd": 0.1383,
+      "time_seconds": 26.0,
+      "input_tokens": 712,
+      "output_tokens": 1702,
+      "failures": [
+        "tc_0 (line 1: expected '20', got '')",
+        "tc_1 (line 1: expected '5', got '')",
+        "tc_2 (line 1: expected '1608', got '')",
+        "tc_3 (line 1: expected '60', got '')",
+        "tc_4 (line 1: expected '497623861777', got '')",
+        "tc_5 (line 1: expected '1509', got '')",
+        "tc_6 (line 1: expected '61', got '')",
+        "tc_7 (line 1: expected '999999930', got '')",
+        "tc_8 (line 1: expected '999999638', got '')",
+        "tc_9 (line 1: expected '596', got '')"
+      ]
+    },
+    {
+      "problem_id": "2016_E",
+      "title": "Forever Young",
+      "passed": 60,
+      "total": 60,
+      "pass_rate": 1.0,
+      "cost_usd": 0.1359,
+      "time_seconds": 30.8,
+      "input_tokens": 485,
+      "output_tokens": 1715,
+      "failures": []
+    },
+    {
+      "problem_id": "2012_D",
+      "title": "Fibonacci Words",
+      "passed": 35,
+      "total": 35,
+      "pass_rate": 1.0,
+      "cost_usd": 0.1127,
+      "time_seconds": 18.5,
+      "input_tokens": 616,
+      "output_tokens": 1379,
+      "failures": []
+    },
+    {
+      "problem_id": "2017_F",
+      "title": "Posterize",
+      "passed": 41,
+      "total": 41,
+      "pass_rate": 1.0,
+      "cost_usd": 0.1081,
+      "time_seconds": 16.2,
+      "input_tokens": 749,
+      "output_tokens": 1292,
+      "failures": []
+    },
+    {
+      "problem_id": "2020_M",
+      "title": "Trailing Digits",
+      "passed": 31,
+      "total": 47,
+      "pass_rate": 0.66,
+      "cost_usd": 0.1008,
+      "time_seconds": 18.7,
+      "input_tokens": 684,
+      "output_tokens": 1207,
+      "failures": [
+        "tc_8 (line 1: expected '3', got '')",
+        "tc_9 (line 1: expected '9994', got '')",
+        "tc_12 (line 1: expected '10000', got '')",
+        "tc_13 (line 1: expected '1', got '')",
+        "tc_15 (line 1: expected '9999', got '')",
+        "tc_20 (line 1: expected '9995', got '')",
+        "tc_24 (line 1: expected '9995', got '')",
+        "tc_25 (line 1: expected '9996', got '')",
+        "tc_27 (line 1: expected '9994', got '')",
+        "tc_28 (line 1: expected '10000', got '')"
+      ]
+    }
+  ]
+}

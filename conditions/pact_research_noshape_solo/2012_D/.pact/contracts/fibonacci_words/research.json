@@ -1,0 +1,104 @@
+{
+  "task_summary": "Define the interface contract for 'Fibonacci Words Pattern Counter' — a component that counts overlapping occurrences of a bit pattern p in Fibonacci word F(n), using a DP approach with prefix/suffix tracking and KMP for pattern matching. The contract must specify types, function signatures, error handling, and edge cases for a Python 3.10+ stdin/stdout solution.",
+  "findings": [
+    {
+      "topic": "Fibonacci Word Definition & Convention",
+      "finding": "The standard competitive-programming Fibonacci word is defined as F(0)='0', F(1)='1', F(n)=F(n-1)+F(n-2) for n≥2. Some problem statements use F(1)='1', F(2)='0' or reversed concatenation order. The UVa 11362 / similar problems use F(0)='0', F(1)='1'. The interface must document which convention is used, as swapping F(0)/F(1) or using F(n)=F(n-2)+F(n-1) changes results.",
+      "source": "UVa Online Judge problem archives; competitive programming references",
+      "relevance": "Incorrect base cases silently produce wrong answers. The contract must pin down exact definitions.",
+      "confidence": 0.95
+    },
+    {
+      "topic": "KMP for Overlapping Match Counting",
+      "finding": "KMP is the standard O(n+m) algorithm for counting overlapping occurrences. Key: after a match at position i, do NOT reset the automaton state to 0 — instead, follow the failure link from the last state. This is the standard 'overlapping count' variant. An alternative is to build the full KMP automaton (DFA) and step through text, incrementing a counter whenever the accepting state is reached. For this problem, the text can be very short (junction strings of length ~2*len(p)), so even naive O(len(p)^2) would work per junction, but KMP is cleaner and specified in the design.",
+      "source": "CLRS Chapter 32; CP Handbook by Antti Laaksonen",
+      "relevance": "Core algorithm component. The interface must specify that matching is overlapping, not disjoint.",
+      "confidence": 0.98
+    },
+    {
+      "topic": "DP Recurrence for Cross-Boundary Matches",
+      "finding": "count(n) = count(n-1) + count(n-2) + cross(n), where cross(n) = overlapping_count(suffix(n-1) + prefix(n-2), p) — but we must subtract matches that are fully inside the suffix or fully inside the prefix, since those are already counted in count(n-1) and count(n-2). Equivalently: cross(n) = count_in(suffix+prefix, p) - count_in(suffix, p) - count_in(prefix, p). The suffix/prefix lengths are min(len(F(k)), len(p)-1). This is the standard technique from 'Fibonacci string' DP problems.",
+      "source": "Competitive programming editorial patterns (Codeforces, UVa)",
+      "relevance": "Directly defines the core DP logic. Getting the subtraction wrong is the #1 bug source.",
+      "confidence": 0.97
+    },
+    {
+      "topic": "Prefix/Suffix Tracking at Each DP Level",
+      "finding": "For each F(k), store prefix_k = F(k)[:L] and suffix_k = F(k)[-L:] where L = min(len(F(k)), len(p)-1). For F(k) = F(k-1) + F(k-2): prefix_k = (prefix_{k-1} + prefix_{k-2})[:L] and suffix_k = (suffix_{k-1} + suffix_{k-2})[-L:]. This works because prefix_{k-1} has length ≥ L (once F(k-1) is long enough) and thus prefix_k = prefix_{k-1}[:L]. When F(k-1) is shorter than L, we need the full string of F(k-1) concatenated with the prefix of F(k-2). The type for these should be plain `str` of max length len(p)-1.",
+      "source": "Standard DP on concatenated strings technique",
+      "relevance": "Defines the data tracked per DP level. Must handle the transition from 'small' (full string fits) to 'large' cleanly.",
+      "confidence": 0.95
+    },
+    {
+      "topic": "Edge Cases Frequently Missed",
+      "finding": "1) len(p) == 1: every character in F(n) that matches is a hit; junction strings have length 0, so cross-boundary count is always 0. 2) len(p) > len(F(n)): answer is 0. 3) n=0 or n=1: F(n) is a single character. 4) p is all '0's or all '1's — maximum overlapping. 5) Empty pattern p (if allowed) — typically not in constraints but should be guarded. 6) len(p)-1 == 0 means L=0, junction string is empty. 7) F(n) length grows as Fibonacci numbers; len(F(100)) ≈ 3.54 × 10^20, so F(n) cannot be materialized for n ≳ 80-90 depending on memory, but in practice n > ~45 already exceeds memory. The threshold for 'small n' should be based on len(F(n)) < len(p), not a fixed n cutoff.",
+      "source": "Analysis of problem constraints and common WA submissions",
+      "relevance": "These edge cases directly affect correctness. The interface must document behavior for all of them.",
+      "confidence": 0.96
+    },
+    {
+      "topic": "Type Annotation Patterns for DP State",
+      "finding": "A clean approach is to define a dataclass or NamedTuple for the per-level DP state: FibState with fields (count: int, prefix: str, suffix: str, length: int). Using a NamedTuple is idiomatic for immutable records in Python 3.10+. The length field tracks len(F(k)) without building the string, needed to know when F(k) is shorter than len(p). Using `int` for count leverages Python's arbitrary precision.",
+      "source": "Python typing best practices; PEP 484, dataclasses module",
+      "relevance": "Directly addresses the type system design for the core data structure.",
+      "confidence": 0.93
+    },
+    {
+      "topic": "Input Parsing: Reading Until EOF",
+      "finding": "Standard pattern is `import sys; lines = sys.stdin.read().split('\\n')` then iterate, or use a generator over `sys.stdin`. Must handle trailing newlines and potential blank lines at EOF. Competitive programming inputs sometimes have trailing whitespace. Using `sys.stdin` iteration with try/except EOFError on `input()` is fragile; reading all at once is more robust.",
+      "source": "Python competitive programming idioms",
+      "relevance": "Input parsing bugs are common. The interface should specify the parsing contract clearly.",
+      "confidence": 0.92
+    },
+    {
+      "topic": "Naming Conventions and Code Organization",
+      "finding": "For competitive programming solutions in Python with type annotations, the convention is: snake_case for functions and variables, PascalCase for types/classes. Functions should be: `count_overlapping(text: str, pattern: str) -> int` for KMP, `solve(n: int, pattern: str) -> int` for the main DP logic, `main() -> None` for I/O. Keep I/O separate from logic for testability.",
+      "source": "PEP 8; Python typing conventions",
+      "relevance": "Directly addresses naming conventions requested in the focus area.",
+      "confidence": 0.94
+    },
+    {
+      "topic": "KMP Failure Function Implementation Detail",
+      "finding": "The KMP failure/prefix function must be computed correctly. A common bug is off-by-one in the failure function loop. The failure array `fail[i]` represents the length of the longest proper prefix of pattern[0..i] that is also a suffix. For overlapping counting, after a full match (state == len(p)), set state = fail[len(p)-1] and continue — do NOT reset to 0.",
+      "source": "CLRS; verified competitive programming KMP templates",
+      "relevance": "Implementation correctness for the core matching routine.",
+      "confidence": 0.97
+    },
+    {
+      "topic": "Performance Considerations",
+      "finding": "The junction string has length at most 2*(len(p)-1) ≈ 200,000 chars. KMP on this is O(len(p)), done O(n) times (n up to 100), so total per test case is O(n * len(p)) ≈ 10^7, which is fine for Python within typical time limits. The DP table has O(n) entries, each storing two strings of length up to len(p)-1 ≈ 100,000. Total memory per test case: O(n * len(p)) ≈ 10^7 chars, acceptable. Can optimize by only keeping last two states plus computing incrementally, but not necessary given constraints.",
+      "source": "Complexity analysis of the algorithm",
+      "relevance": "Validates that the approach is feasible within constraints.",
+      "confidence": 0.95
+    }
+  ],
+  "recommended_approach": "Define the interface around four clear components:\n\n1. **FibState (NamedTuple)**: `count: int, prefix: str, suffix: str, length: int` — immutable per-level DP record. `length` tracks actual `len(F(k))` (capped at some large sentinel once it exceeds `len(p)` to avoid integer overflow concerns in length tracking — though Python handles big ints, capping simplifies comparisons). `prefix` and `suffix` are at most `len(p)-1` characters.\n\n2. **count_overlapping(text: str, pattern: str) -> int**: Pure KMP-based overlapping occurrence counter. Takes arbitrary text and pattern, returns count. This is the sole matching primitive — all matching goes through it.\n\n3. **solve(n: int, pattern: str) -> int**: Core DP solver. Builds base cases F(0)='0', F(1)='1' as FibState, then iterates k=2..n. At each step, computes junction = suffix[k-1] + prefix[k-2], cross = count_overlapping(junction, p) - count_overlapping(suffix[k-1], p) - count_overlapping(prefix[k-2], p), and count[k] = count[k-1] + count[k-2] + cross. Updates prefix/suffix via concatenation and truncation. For small F(k) (length < len(p)), stores the full string as both prefix and suffix with count=count_overlapping(full_string, p).\n\n4. **main() -> None**: Reads all input, parses test cases (pairs of lines: n, then p), calls solve for each, prints 'Case X: result' with 1-based indexing.\n\nKey conventions: snake_case throughout, full type annotations, I/O isolated in main(), no global mutable state. The threshold between \"small\" and \"large\" is naturally handled by checking `length < len(pattern)` at each DP level — no arbitrary cutoff needed.",
+  "alternatives_considered": [
+    "Aho-Corasick instead of KMP: Overkill for single-pattern matching. KMP is simpler and sufficient.",
+    "Rolling hash (Rabin-Karp) for overlapping matching: Viable but has hash collision risk; KMP is deterministic and preferred for correctness-critical applications.",
+    "Materializing full Fibonacci strings up to memory limit instead of DP: Simpler but fails for large n. The DP approach is necessary and more elegant.",
+    "Using `re.findall` with lookahead for overlapping matches: Works for small strings but regex compilation on 100,000-char patterns may be slow/problematic. KMP is more predictable.",
+    "Storing full DP table vs. rolling two-state: Full table is clearer and memory is acceptable (O(n * len(p)) with n≤100). Rolling optimization is unnecessary.",
+    "Using a dataclass vs. NamedTuple for FibState: NamedTuple is lighter and immutable, which fits the DP pattern where states are computed once and never mutated."
+  ],
+  "risks": [
+    "Fibonacci word base case convention mismatch: If the problem uses a different definition (e.g., F(1)='0', F(2)='1', or reversed concatenation), all results will be wrong. Must verify against sample I/O.",
+    "Off-by-one in prefix/suffix length (len(p)-1 vs len(p)): Using len(p) instead of len(p)-1 for the stored prefix/suffix would double-count matches at boundaries. Using len(p)-2 would miss valid cross-boundary matches.",
+    "KMP failure function bug: A subtle off-by-one in the failure function leads to missed or phantom matches. Must be tested against known overlapping match cases (e.g., pattern 'aa' in text 'aaaa' should return 3).",
+    "Cross-boundary subtraction error: Forgetting to subtract count_in(suffix, p) and count_in(prefix, p) from the junction count causes double-counting. This is the most common algorithmic bug.",
+    "Integer overflow: Not a risk in Python (arbitrary precision), but if porting to another language, counts near 2^63 would overflow.",
+    "EOF handling: Trailing newlines or blank lines in input may cause spurious empty test cases. Input parser must be robust.",
+    "Pattern longer than F(n): Must return 0, not crash. Edge case when len(p) == 1 means L=0, junction is empty string, cross-boundary count is always 0 — must not index out of bounds."
+  ],
+  "compliance_notes": [
+    "Python 3.10+ required: use `int` (not `typing.Optional` old-style), `str`, NamedTuple with class syntax.",
+    "Standard library only: KMP must be hand-implemented (no numpy, no third-party libs).",
+    "stdin/stdout only: use sys.stdin.read() for input, print() for output.",
+    "Output format must be exactly 'Case X: Y\\n' with 1-based case numbering, single space after colon, trailing newline per line.",
+    "Must handle n=0 and n=1 as base cases (single character strings '0' and '1').",
+    "Must handle pattern length 1 correctly (L=0, no cross-boundary matches possible).",
+    "Must handle EOF gracefully — no crash on trailing blank lines or missing final newline.",
+    "All functions must have type annotations on parameters and return types per project coding standards.",
+    "Counts are arbitrary-precision Python ints — no explicit cap needed, but document that values can exceed 2^63."
+  ]
+}

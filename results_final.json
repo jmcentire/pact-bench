@@ -1,0 +1,163 @@
+{
+  "experiment": "ICPC World Finals Benchmark",
+  "date": "2026-03-03",
+  "model": "claude-opus-4-6",
+  "problems": [
+    "2012_D",
+    "2016_E",
+    "2016_L",
+    "2017_F",
+    "2020_M"
+  ],
+  "total_test_cases": 212,
+  "conditions": {
+    "single_shot": {
+      "description": "Claude Opus 4.6, single attempt, no test feedback",
+      "total_passed": 167,
+      "total_tests": 212,
+      "pass_rate": 0.788,
+      "cost_usd": 0.5958,
+      "wall_time_seconds": 110.2,
+      "per_problem": {
+        "2016_L": {
+          "passed": 0,
+          "total": 29,
+          "cost_usd": 0.1383
+        },
+        "2016_E": {
+          "passed": 60,
+          "total": 60,
+          "cost_usd": 0.1359
+        },
+        "2012_D": {
+          "passed": 35,
+          "total": 35,
+          "cost_usd": 0.1127
+        },
+        "2017_F": {
+          "passed": 41,
+          "total": 41,
+          "cost_usd": 0.1081
+        },
+        "2020_M": {
+          "passed": 31,
+          "total": 47,
+          "cost_usd": 0.1008
+        }
+      }
+    },
+    "iterative": {
+      "description": "Claude Opus 4.6, up to 5 attempts with test feedback",
+      "total_passed": 196,
+      "total_tests": 212,
+      "pass_rate": 0.925,
+      "cost_usd": 1.2571,
+      "wall_time_seconds": 174.5,
+      "per_problem": {
+        "2016_L": {
+          "passed": 29,
+          "total": 29,
+          "cost_usd": 0.0917
+        },
+        "2016_E": {
+          "passed": 60,
+          "total": 60,
+          "cost_usd": 0.3477
+        },
+        "2012_D": {
+          "passed": 35,
+          "total": 35,
+          "cost_usd": 0.1172
+        },
+        "2017_F": {
+          "passed": 41,
+          "total": 41,
+          "cost_usd": 0.1088
+        },
+        "2020_M": {
+          "passed": 31,
+          "total": 47,
+          "cost_usd": 0.5917
+        }
+      }
+    },
+    "pact_research": {
+      "description": "Pact with research changes (context fence + vocabulary), noshape, solo",
+      "per_problem": {
+        "2012_D": {
+          "passed": 35,
+          "total": 35,
+          "cost_usd": 2.7912,
+          "implementation_file": "fibonacci_words.py"
+        },
+        "2016_E": {
+          "passed": 60,
+          "total": 60,
+          "cost_usd": 3.0241649999999995,
+          "implementation_file": "solution.py"
+        },
+        "2016_L": {
+          "passed": 29,
+          "total": 29,
+          "cost_usd": 2.097645,
+          "implementation_file": "solution.py"
+        },
+        "2017_F": {
+          "passed": 41,
+          "total": 41,
+          "cost_usd": 2.53584,
+          "implementation_file": "posterize_solver.py"
+        },
+        "2020_M": {
+          "passed": 47,
+          "total": 47,
+          "cost_usd": 3.2619000000000002,
+          "implementation_file": "trailing_digits_solver.py"
+        }
+      },
+      "total_passed": 212,
+      "total_tests": 212,
+      "pass_rate": 1.0,
+      "cost_usd": 13.71075
+    },
+    "pact_base": {
+      "description": "Pact release version, noshape, solo",
+      "per_problem": {
+        "2012_D": {
+          "passed": 35,
+          "total": 35,
+          "cost_usd": 0.21097500000000002,
+          "implementation_file": "fibonacci_words.py"
+        },
+        "2016_E": {
+          "passed": 60,
+          "total": 60,
+          "cost_usd": 0.0,
+          "implementation_file": "solution.py"
+        },
+        "2016_L": {
+          "passed": 29,
+          "total": 29,
+          "cost_usd": 0.0,
+          "implementation_file": "swap_space_solver.py"
+        },
+        "2017_F": {
+          "passed": 41,
+          "total": 41,
+          "cost_usd": 0.0,
+          "implementation_file": "posterize_solution.py"
+        },
+        "2020_M": {
+          "passed": 47,
+          "total": 47,
+          "cost_usd": 0.0,
+          "implementation_file": "trailing_digits_solver.py"
+        }
+      },
+      "total_passed": 212,
+      "total_tests": 212,
+      "pass_rate": 1.0,
+      "cost_usd": 0.21097500000000002
+    }
+  }
+}

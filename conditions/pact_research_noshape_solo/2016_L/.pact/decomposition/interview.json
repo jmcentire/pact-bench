@@ -1,0 +1,32 @@
+{
+  "risks": [
+    "Performance risk: n can be up to 10^6 and capacities up to 10^9. A brute-force or naive approach (e.g., trying all permutations of reformat order) will TLE. The algorithm must be O(n log n) or better — likely a greedy approach sorting drives by some criterion.",
+    "Integer overflow is not a concern in Python, but the total data across all drives could be up to 10^15 GB, so any language port would need 64-bit integers. In Python this is fine but worth noting.",
+    "Greedy ordering correctness risk: The key algorithmic challenge is determining the optimal order to reformat drives to minimize the extra space needed. Getting the sort/greedy criterion wrong will produce incorrect answers. The standard approach is to binary search on the extra space size and then greedily simulate, or to sort drives and greedily simulate — the correctness proof matters.",
+    "Edge case: drives where new capacity < old capacity (shrinking drives) — these are the tricky cases that force you to need more extra space. The algorithm must handle mixed growing/shrinking drives correctly.",
+    "Edge case: n=1 — you must buy enough extra space to hold the single drive's old data (a), then reformat it. Answer = a.",
+    "Edge case: all drives have the same old and new capacity — still need enough extra space to hold the smallest drive's data to start the chain.",
+    "The problem says 'splitting data if necessary' — this means data is arbitrarily divisible (continuous, not block-based). This simplifies the problem but if misread as indivisible units, the solution would be wrong."
+  ],
+  "ambiguities": [
+    "The problem doesn't explicitly state whether the answer can be 0 — i.e., is it possible that no extra drive is needed? Logically if n=0 or if some drive has 0 data... but constraints say a >= 1, so you always need at least enough space to evacuate the first drive you reformat. However, the problem says 'you will have to buy an extra hard drive' implying the answer is always >= 1, but mathematically the answer could be 0 if... actually no, all drives are filled to capacity, so you must evacuate at least one drive first.",
+    "The problem says 'all of them are filled with important data to the limits of their capacities' — this means every drive has exactly 'a' GB of data on it initially. This is critical to the solution but stated only in prose, not in the formal input spec.",
+    "Output format: should we print just the integer, or could it be a float? Given all capacities are integers and data is divisible, the answer should always be an integer. The samples confirm integer output."
+  ],
+  "questions": [
+    "Is the test harness (test_harness.py) already provided in the repo, or does it need to be created as well?",
+    "Are there any time/memory limits specified for the solution beyond what's in the problem statement? (e.g., 1 second, 256 MB — typical for competitive programming)",
+    "Should the solution file be named 'solution.py' specifically to match the test harness invocation?"
+  ],
+  "assumptions": [
+    "Every drive is initially full — drive i contains exactly a_i GB of data. This is stated in the problem prose.",
+    "Data is arbitrarily splittable (continuous model, not discrete blocks).",
+    "The answer is always a non-negative integer (given integer capacities and continuous splitting).",
+    "The solution file should be named 'solution.py' to match the test harness command.",
+    "The algorithmic approach: binary search on the extra capacity E, then for each candidate E, greedily simulate reformatting drives in an optimal order to check feasibility. Alternatively, a direct greedy: sort drives to maximize free space gain early, simulate the process tracking available free space, and the minimum extra space needed is determined by the maximum deficit encountered. The optimal strategy is to reformat drives that yield the most net free space (b_i - a_i is largest, i.e., drives that grow the most or shrink the least) first, but you need enough free space to evacuate a_i before reformatting drive i.",
+    "Standard input/output with no extra whitespace or trailing newlines beyond what print() produces.",
+    "The answer could be 0 only if n=0, which is excluded by constraints (n >= 1), so the answer is always >= 1 since you must evacuate at least one drive."
+  ],
+  "user_answers": {},
+  "approved": true
+}

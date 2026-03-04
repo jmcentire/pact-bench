@@ -1,0 +1,301 @@
+{
+  "root_id": "solution",
+  "nodes": {
+    "solution": {
+      "component_id": "solution",
+      "name": "Swap Space Solution",
+      "description": "Implement solution.py that solves the Swap Space problem.\n\nAlgorithm:\n1. Read n drives, each with old capacity a_i and new capacity b_i.\n2. Determine the minimum extra storage E needed to reformat all drives.\n\nKey insight: We need to find an optimal ordering of drives to reformat that minimizes the required extra space. The greedy strategy is:\n- Split drives into two groups: those that grow (b_i >= a_i) and those that shrink (b_i < a_i).\n- Reformat growing drives first (sorted by a_i ascending — evacuate cheapest first, gaining free space).\n- Then reformat shrinking drives (sorted by b_i descending — the ones that lose the least capacity first).\n\nSimulation: Track available free space. Start with free_space = E (the extra drive). For each drive in the chosen order, we need free_space >= a_i to evacuate it. After reformatting, free_space increases by b_i (the drive is now empty with new capacity, but data was moved to free space, so net change is b_i - a_i). We need to find the minimum E such that free_space never goes negative.\n\nDirect computation (no binary search needed):\n- Sort drives in the optimal order described above.\n- Simulate with E = 0. Track free_space. When free_space < a_i, record the deficit.\n- The answer is the maximum cumulative deficit encountered (i.e., the minimum E that makes all steps feasible).\n\nMore precisely: start with free = 0. For each drive in order: free -= a_i (evacuate data), if free < min_free update min_free, then free += b_i (reformatted drive available). Answer = -min_free if min_free < 0, else 0. But per constraints n >= 1, so answer >= 1... actually answer could be 0 if somehow possible, but we must evacuate at least the first drive so answer >= min(a_i) unless we have enough from new capacities. Wait — no, answer is max(0, -min_free).\n\nActually re-checking: the answer CAN be 0 only if you never need extra space, which is impossible since the first drive must be evacuated somewhere. So answer >= min(a_i) for the first drive... unless we account for free space from other sources. But initially there's only the extra drive. So answer >= a_i of the first reformatted drive, which is min(a_i) among growing drives (sorted by a_i asc). So answer > 0 always.\n\nImplementation:\n- Read input from stdin.\n- Sort drives as described.\n- Simulate and compute minimum extra space.\n- Print result.\n\nFile: solution.py\nConstraints: n up to 10^6, capacities up to 10^9. O(n log n) time due to sorting.",
+      "depth": 0,
+      "parent_id": "",
+      "children": [],
+      "contract": {
+        "component_id": "solution",
+        "name": "Swap Space Solution",
+        "description": "Implement solution.py that solves the Swap Space problem. Given n drives with old capacities a_i and new capacities b_i, determine the minimum extra storage E needed to reformat all drives. Uses a greedy ordering strategy: reformat growing drives first (sorted by a_i ascending), then shrinking drives (sorted by b_i descending). Simulates free space tracking to compute the answer directly without binary search. Reads from stdin, writes to stdout. O(n log n) time, O(n) space, standard library only.",
+        "version": 1,
+        "types": [
+          {
+            "name": "Drive",
+            "kind": "struct",
+            "fields": [
+              {
+                "name": "old_capacity",
+                "type_ref": "int",
+                "required": true,
+                "default": "",
+                "description": "The current capacity a_i of the drive before reformatting. Represents the amount of data that must be evacuated.",
+                "validators": [
+                  {
+                    "kind": "range",
+                    "expression": "1 <= old_capacity <= 1000000000",
+                    "error_message": "old_capacity must be between 1 and 10^9 inclusive."
+                  }
+                ]
+              },
+              {
+                "name": "new_capacity",
+                "type_ref": "int",
+                "required": true,
+                "default": "",
+                "description": "The capacity b_i of the drive after reformatting. Represents the free space gained after reformatting.",
+                "validators": [
+                  {
+                    "kind": "range",
+                    "expression": "1 <= new_capacity <= 1000000000",
+                    "error_message": "new_capacity must be between 1 and 10^9 inclusive."
+                  }
+                ]
+              }
+            ],
+            "item_type": "",
+            "variants": [],
+            "inner_types": [],
+            "description": "A single drive with its old (pre-reformat) capacity and new (post-reformat) capacity."
+          },
+          {
+            "name": "DriveList",
+            "kind": "list",
+            "fields": [],
+            "item_type": "Drive",
+            "variants": [],
+            "inner_types": [],
+            "description": "A list of Drive structs representing all drives to be reformatted."
+          },
+          {
+            "name": "RawInput",
+            "kind": "struct",
+            "fields": [
+              {
+                "name": "n",
+                "type_ref": "int",
+                "required": true,
+                "default": "",
+                "description": "Number of drives.",
+                "validators": [
+                  {
+                    "kind": "range",
+                    "expression": "1 <= n <= 1000000",
+                    "error_message": "n must be between 1 and 10^6 inclusive."
+                  }
+                ]
+              },
+              {
+                "name": "drives",
+                "type_ref": "DriveList",
+                "required": true,
+                "default": "",
+                "description": "The list of n drives parsed from input.",
+                "validators": []
+              }
+            ],
+            "item_type": "",
+            "variants": [],
+            "inner_types": [],
+            "description": "Parsed representation of the full problem input from stdin."
+          }
+        ],
+        "functions": [
+          {
+            "name": "parse_input",
+            "description": "Read all input from stdin via sys.stdin.read(), split into tokens, and parse into a RawInput structure. The input format is: first line contains integer n, followed by n lines each containing two integers a_i and b_i.",
+            "inputs": [
+              {
+                "name": "raw_text",
+                "type_ref": "str",
+                "required": true,
+                "default": "",
+                "description": "The complete raw text read from stdin via sys.stdin.read().",
+                "validators": []
+              }
+            ],
+            "output_type": "RawInput",
+            "error_cases": [
+              {
+                "name": "empty_input",
+                "condition": "raw_text is empty or contains only whitespace.",
+                "error_type": "ValueError",
+                "error_data": {
+                  "message": "Input is empty."
+                }
+              },
+              {
+                "name": "insufficient_tokens",
+                "condition": "raw_text does not contain enough tokens (expected 1 + 2*n tokens).",
+                "error_type": "ValueError",
+                "error_data": {
+                  "message": "Input does not contain the expected number of tokens."
+                }
+              },
+              {
+                "name": "non_integer_token",
+                "condition": "A token cannot be parsed as an integer.",
+                "error_type": "ValueError",
+                "error_data": {
+                  "message": "Input contains a non-integer token."
+                }
+              },
+              {
+                "name": "n_out_of_range",
+                "condition": "Parsed n is less than 1 or greater than 10^6.",
+                "error_type": "ValueError",
+                "error_data": {
+                  "message": "n is out of valid range [1, 10^6]."
+                }
+              },
+              {
+                "name": "capacity_out_of_range",
+                "condition": "Any a_i or b_i is less than 1 or greater than 10^9.",
+                "error_type": "ValueError",
+                "error_data": {
+                  "message": "Drive capacity is out of valid range [1, 10^9]."
+                }
+              }
+            ],
+            "preconditions": [
+              "raw_text is non-empty and contains at least one integer token.",
+              "raw_text contains exactly 1 + 2*n whitespace-separated integer tokens where n is the first token."
+            ],
+            "postconditions": [
+              "Returned RawInput.n equals the number of drives in RawInput.drives.",
+              "All Drive.old_capacity and Drive.new_capacity values are in range [1, 10^9].",
+              "RawInput.n is in range [1, 10^6]."
+            ],
+            "idempotent": true,
+            "side_effects": [],
+            "structured_side_effects": [
+              {
+                "kind": "none",
+                "target": "",
+                "description": "Pure parsing function with no side effects."
+              }
+            ],
+            "performance_budget": null
+          },
+          {
+            "name": "solve",
+            "description": "Given a list of drives, compute the minimum extra storage E needed to reformat all drives. Strategy: split drives into growers (new_capacity >= old_capacity) and shrinkers (new_capacity < old_capacity). Sort growers by old_capacity ascending, shrinkers by new_capacity descending. Concatenate growers then shrinkers. Simulate free space: start free=0, min_free=0. For each drive: free -= old_capacity; min_free = min(min_free, free); free += new_capacity. Return max(0, -min_free).",
+            "inputs": [
+              {
+                "name": "drives",
+                "type_ref": "DriveList",
+                "required": true,
+                "default": "",
+                "description": "List of drives to reformat, each with old_capacity and new_capacity.",
+                "validators": []
+              }
+            ],
+            "output_type": "int",
+            "error_cases": [
+              {
+                "name": "empty_drive_list",
+                "condition": "drives list is empty (length 0).",
+                "error_type": "ValueError",
+                "error_data": {
+                  "message": "Drive list must be non-empty."
+                }
+              }
+            ],
+            "preconditions": [
+              "drives is non-empty (len(drives) >= 1).",
+              "All drives have old_capacity >= 1 and new_capacity >= 1."
+            ],
+            "postconditions": [
+              "Returned value E >= 0.",
+              "E is the minimum extra storage such that all drives can be reformatted in the computed optimal order without free space ever going negative.",
+              "Starting with free_space = E and processing drives in the optimal greedy order, free_space >= 0 at every step (after evacuating each drive).",
+              "No smaller non-negative integer E' < E satisfies the above property for any ordering of drives."
+            ],
+            "idempotent": true,
+            "side_effects": [],
+            "structured_side_effects": [
+              {
+                "kind": "none",
+                "target": "",
+                "description": "Pure computation with no side effects."
+              }
+            ],
+            "performance_budget": {
+              "p95_latency_ms": 5000,
+              "max_memory_mb": 256,
+              "complexity": "O(n log n)"
+            }
+          },
+          {
+            "name": "main",
+            "description": "Entry point. Reads all input from stdin via sys.stdin.read(), parses it with parse_input, computes the answer with solve, and prints the single integer result to stdout followed by a newline.",
+            "inputs": [],
+            "output_type": "None",
+            "error_cases": [
+              {
+                "name": "stdin_read_failure",
+                "condition": "sys.stdin.read() raises an I/O error.",
+                "error_type": "IOError",
+                "error_data": {
+                  "message": "Failed to read from stdin."
+                }
+              },
+              {
+                "name": "invalid_input_format",
+                "condition": "Input from stdin does not conform to expected format, propagated from parse_input.",
+                "error_type": "ValueError",
+                "error_data": {
+                  "message": "Invalid input format."
+                }
+              }
+            ],
+            "preconditions": [
+              "stdin contains valid input conforming to the problem format.",
+              "Program is invoked as the main module."
+            ],
+            "postconditions": [
+              "Exactly one line is written to stdout containing the integer result.",
+              "The printed integer is the minimum extra storage E needed to reformat all drives.",
+              "No other output is written to stdout or stderr."
+            ],
+            "idempotent": true,
+            "side_effects": [
+              "Reads from stdin (consumes entire stdin stream).",
+              "Writes result to stdout."
+            ],
+            "structured_side_effects": [
+              {
+                "kind": "reads_file",
+                "target": "stdin",
+                "description": "Reads entire contents of stdin via sys.stdin.read() for fast bulk I/O."
+              },
+              {
+                "kind": "writes_file",
+                "target": "stdout",
+                "description": "Prints the single integer answer followed by a newline to stdout via print()."
+              }
+            ],
+            "performance_budget": null
+          }
+        ],
+        "dependencies": [],
+        "dependency_contracts": {},
+        "invariants": [
+          "The program uses only the Python 3.10+ standard library; no external dependencies.",
+          "All functions have complete type annotations.",
+          "The greedy ordering is: growers (b >= a) sorted by a ascending, then shrinkers (b < a) sorted by b descending.",
+          "The simulation computes the minimum extra space E by tracking the minimum free space encountered: E = max(0, -min_free) where min_free is the running minimum of cumulative (sum of b_i - a_i) over the prefix.",
+          "The answer E is always >= 0.",
+          "For n >= 1 with all capacities >= 1, the answer E >= min(a_i) of the first drive in the sorted order (since the first drive must be fully evacuated with no prior free space from other drives).",
+          "Time complexity is O(n log n) dominated by sorting; space complexity is O(n).",
+          "Output is exactly one line containing the integer E with no leading zeros (except E=0 itself), no trailing spaces, terminated by a newline.",
+          "The file contains an if __name__ == '__main__': main() guard."
+        ],
+        "requires": []
+      },
+      "implementation_status": "tested",
+      "test_results": {
+        "total": 47,
+        "passed": 47,
+        "failed": 0,
+        "errors": 0,
+        "failure_details": [],
+        "timestamp": "2026-03-03T12:14:51.921973"
+      }
+    }
+  }
+}

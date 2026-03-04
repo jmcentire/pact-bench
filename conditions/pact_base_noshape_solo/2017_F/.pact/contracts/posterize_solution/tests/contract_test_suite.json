@@ -1,0 +1,697 @@
+{
+  "component_id": "posterize_solution",
+  "contract_version": 1,
+  "test_cases": [
+    {
+      "id": "bps_happy_single",
+      "description": "build_prefix_sums with a single value produces correct prefix arrays of length 2",
+      "function": "build_prefix_sums",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "d": "1",
+        "values": "[10]",
+        "counts": "[5]"
+      },
+      "input_description": "",
+      "expected_output_description": "prefix_p=[0,5], prefix_rp=[0,50], prefix_r2p=[0,500]",
+      "expected_error": "",
+      "assertions": [
+        "result.prefix_p == [0, 5]",
+        "result.prefix_rp == [0, 50]",
+        "result.prefix_r2p == [0, 500]"
+      ]
+    },
+    {
+      "id": "bps_happy_two",
+      "description": "build_prefix_sums with two values produces correct cumulative sums",
+      "function": "build_prefix_sums",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "d": "2",
+        "values": "[3, 7]",
+        "counts": "[2, 4]"
+      },
+      "input_description": "",
+      "expected_output_description": "prefix_p=[0,2,6], prefix_rp=[0,6,34], prefix_r2p=[0,18,214]",
+      "expected_error": "",
+      "assertions": [
+        "result.prefix_p == [0, 2, 6]",
+        "result.prefix_rp == [0, 6, 34]",
+        "result.prefix_r2p == [0, 18, 214]"
+      ]
+    },
+    {
+      "id": "bps_happy_three",
+      "description": "build_prefix_sums with three values and equal counts",
+      "function": "build_prefix_sums",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "d": "3",
+        "values": "[0, 100, 255]",
+        "counts": "[1, 1, 1]"
+      },
+      "input_description": "",
+      "expected_output_description": "prefix_p=[0,1,2,3], prefix_rp=[0,0,100,355], prefix_r2p=[0,0,10000,75025]",
+      "expected_error": "",
+      "assertions": [
+        "result.prefix_p == [0, 1, 2, 3]",
+        "result.prefix_rp == [0, 0, 100, 355]",
+        "result.prefix_r2p == [0, 0, 10000, 75025]"
+      ]
+    },
+    {
+      "id": "bps_edge_length",
+      "description": "build_prefix_sums arrays always have length d+1",
+      "function": "build_prefix_sums",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "d": "4",
+        "values": "[1, 2, 3, 4]",
+        "counts": "[10, 20, 30, 40]"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "len(result.prefix_p) == 5",
+        "len(result.prefix_rp) == 5",
+        "len(result.prefix_r2p) == 5"
+      ]
+    },
+    {
+      "id": "bps_edge_zero_index",
+      "description": "build_prefix_sums always has index 0 equal to 0 for all arrays",
+      "function": "build_prefix_sums",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "d": "2",
+        "values": "[50, 200]",
+        "counts": "[100, 200]"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "result.prefix_p[0] == 0",
+        "result.prefix_rp[0] == 0",
+        "result.prefix_r2p[0] == 0"
+      ]
+    },
+    {
+      "id": "bps_large_counts",
+      "description": "build_prefix_sums handles large counts correctly with integer arithmetic",
+      "function": "build_prefix_sums",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "d": "2",
+        "values": "[255, 128]",
+        "counts": "[1000000, 1000000]"
+      },
+      "input_description": "",
+      "expected_output_description": "Large values computed exactly as integers",
+      "expected_error": "",
+      "assertions": [
+        "result.prefix_p == [0, 1000000, 2000000]",
+        "result.prefix_rp == [0, 255000000, 383000000]",
+        "result.prefix_r2p == [0, 65025000000, 81409000000]"
+      ]
+    },
+    {
+      "id": "cc_happy_single_element",
+      "description": "compute_cost for single element interval returns 0 (representative equals value)",
+      "function": "compute_cost",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "a": "0",
+        "b": "0",
+        "prefix_p": "[0, 5]",
+        "prefix_rp": "[0, 50]",
+        "prefix_r2p": "[0, 500]"
+      },
+      "input_description": "",
+      "expected_output_description": "0 because the representative is exactly the value 10",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "cc_happy_two_elements",
+      "description": "compute_cost for two-element interval with hand-computed SSE",
+      "function": "compute_cost",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "a": "0",
+        "b": "1",
+        "prefix_p": "[0, 1, 2]",
+        "prefix_rp": "[0, 0, 10]",
+        "prefix_r2p": "[0, 0, 100]"
+      },
+      "input_description": "",
+      "expected_output_description": "values=[0,10], counts=[1,1], mean=5, SSE=1*(0-5)^2+1*(10-5)^2=50",
+      "expected_error": "",
+      "assertions": [
+        "result == 50"
+      ]
+    },
+    {
+      "id": "cc_happy_weighted",
+      "description": "compute_cost with weighted counts where mean is not integer tests floor/ceil",
+      "function": "compute_cost",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "a": "0",
+        "b": "1",
+        "prefix_p": "[0, 1, 4]",
+        "prefix_rp": "[0, 0, 30]",
+        "prefix_r2p": "[0, 0, 300]"
+      },
+      "input_description": "",
+      "expected_output_description": "values=[0,10], counts=[1,3], S=30, P=4, mean=7.5, try v=7: 1*49+3*9=76, try v=8: 1*64+3*4=76, both equal 76",
+      "expected_error": "",
+      "assertions": [
+        "result == 76"
+      ]
+    },
+    {
+      "id": "cc_edge_full_interval",
+      "description": "compute_cost over full interval of three elements",
+      "function": "compute_cost",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "a": "0",
+        "b": "2",
+        "prefix_p": "[0, 1, 2, 3]",
+        "prefix_rp": "[0, 0, 100, 355]",
+        "prefix_r2p": "[0, 0, 10000, 75025]"
+      },
+      "input_description": "",
+      "expected_output_description": "values=[0,100,255], counts=[1,1,1], mean≈118.33, try 118 and 119",
+      "expected_error": "",
+      "assertions": [
+        "result >= 0",
+        "isinstance(result, int)"
+      ]
+    },
+    {
+      "id": "cc_error_invalid_interval_a_gt_b",
+      "description": "compute_cost raises error when a > b",
+      "function": "compute_cost",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "a": "2",
+        "b": "1",
+        "prefix_p": "[0, 1, 2, 3]",
+        "prefix_rp": "[0, 0, 100, 355]",
+        "prefix_r2p": "[0, 0, 10000, 75025]"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "invalid_interval",
+      "assertions": []
+    },
+    {
+      "id": "cc_error_invalid_interval_b_ge_d",
+      "description": "compute_cost raises error when b >= d (index out of range)",
+      "function": "compute_cost",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "a": "0",
+        "b": "3",
+        "prefix_p": "[0, 1, 2, 3]",
+        "prefix_rp": "[0, 0, 100, 355]",
+        "prefix_r2p": "[0, 0, 10000, 75025]"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "invalid_interval",
+      "assertions": []
+    },
+    {
+      "id": "cc_single_element_zero",
+      "description": "compute_cost for single element with value 0 returns 0",
+      "function": "compute_cost",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "a": "0",
+        "b": "0",
+        "prefix_p": "[0, 100]",
+        "prefix_rp": "[0, 0]",
+        "prefix_r2p": "[0, 0]"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "cc_single_element_255",
+      "description": "compute_cost for single element with value 255 returns 0",
+      "function": "compute_cost",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "a": "0",
+        "b": "0",
+        "prefix_p": "[0, 50]",
+        "prefix_rp": "[0, 12750]",
+        "prefix_r2p": "[0, 3251250]"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "solve_happy_d1_k1",
+      "description": "solve with d=1 k=1 returns 0 (single value, single allowed)",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "d": "1",
+        "k": "1",
+        "values": "[128]",
+        "counts": "[100]"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "solve_happy_k_eq_d",
+      "description": "solve with k=d returns 0 (each value maps to itself)",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "d": "3",
+        "k": "3",
+        "values": "[10, 50, 200]",
+        "counts": "[5, 10, 3]"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "solve_happy_k_gt_d",
+      "description": "solve with k>d returns 0",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "d": "2",
+        "k": "5",
+        "values": "[0, 255]",
+        "counts": "[1, 1]"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "solve_happy_d3_k2",
+      "description": "solve with d=3 k=2 hand-computable case: values=[0,1,255] counts=[1,1,1]",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "d": "3",
+        "k": "2",
+        "values": "[0, 1, 255]",
+        "counts": "[1, 1, 1]"
+      },
+      "input_description": "",
+      "expected_output_description": "k=2: best split: group {0,1} with rep 0 or 1 (cost 1 either way), and {255} with rep 255 (cost 0). Total = 1. Or group {0} rep 0, {1,255} rep 128 cost=1*(1-128)^2+1*(255-128)^2=16129+16129=32258. Clearly first split is better: cost=1",
+      "expected_error": "",
+      "assertions": [
+        "result >= 0",
+        "isinstance(result, int)"
+      ]
+    },
+    {
+      "id": "solve_happy_d2_k1",
+      "description": "solve with d=2 k=1: values=[0,10] counts=[1,1], optimal rep is 5, SSE=25+25=50",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "d": "2",
+        "k": "1",
+        "values": "[0, 10]",
+        "counts": "[1, 1]"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "result == 50"
+      ]
+    },
+    {
+      "id": "solve_happy_d4_k2",
+      "description": "solve with d=4, k=2, values=[0,1,100,101], counts=[1,1,1,1]. Optimal: group {0,1} rep 0 or 1 (cost 1), group {100,101} rep 100 or 101 (cost 1). Total=2.",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "d": "4",
+        "k": "2",
+        "values": "[0, 1, 100, 101]",
+        "counts": "[1, 1, 1, 1]"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "result == 2"
+      ]
+    },
+    {
+      "id": "solve_error_empty_values",
+      "description": "solve raises error when d>0 but values is empty",
+      "function": "solve",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "d": "3",
+        "k": "2",
+        "values": "[]",
+        "counts": "[]"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "empty_values",
+      "assertions": []
+    },
+    {
+      "id": "solve_error_mismatched_lengths",
+      "description": "solve raises error when len(values) != d",
+      "function": "solve",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "d": "3",
+        "k": "2",
+        "values": "[1, 2]",
+        "counts": "[1, 2]"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "mismatched_lengths",
+      "assertions": []
+    },
+    {
+      "id": "solve_monotonicity_k",
+      "description": "solve is monotonically non-increasing as k increases",
+      "function": "solve",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "d": "5",
+        "k": "varies",
+        "values": "[10, 50, 100, 150, 200]",
+        "counts": "[3, 7, 2, 5, 4]"
+      },
+      "input_description": "Test solve for k=1..5 and verify monotonicity",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "all(results[i] >= results[i+1] for i in range(len(results)-1))"
+      ]
+    },
+    {
+      "id": "solve_nonnegative",
+      "description": "solve always returns a non-negative integer",
+      "function": "solve",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "d": "3",
+        "k": "2",
+        "values": "[0, 128, 255]",
+        "counts": "[10, 20, 30]"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "result >= 0",
+        "isinstance(result, int)"
+      ]
+    },
+    {
+      "id": "solve_exact_integer",
+      "description": "solve returns an exact integer, not a float",
+      "function": "solve",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "d": "2",
+        "k": "1",
+        "values": "[0, 255]",
+        "counts": "[1, 1]"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "isinstance(result, int)",
+        "result >= 0"
+      ]
+    },
+    {
+      "id": "main_happy_simple",
+      "description": "main reads stdin and writes correct result to stdout for simple input",
+      "function": "main",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {
+        "stdin": "1 1\\n128 100\\n"
+      },
+      "input_values": {},
+      "input_description": "d=1 k=1, one value 128 with count 100",
+      "expected_output_description": "Prints '0' followed by newline",
+      "expected_error": "",
+      "assertions": [
+        "captured_output.strip() == '0'"
+      ]
+    },
+    {
+      "id": "main_happy_format",
+      "description": "main output has no trailing spaces, single trailing newline",
+      "function": "main",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {
+        "stdin": "2 1\\n0 1\\n10 1\\n"
+      },
+      "input_values": {},
+      "input_description": "d=2 k=1, values=[0,10] counts=[1,1]",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "captured_output == '50\\n'"
+      ]
+    },
+    {
+      "id": "main_happy_k_eq_d",
+      "description": "main prints 0 when k equals d",
+      "function": "main",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {
+        "stdin": "3 3\\n10 5\\n50 10\\n200 3\\n"
+      },
+      "input_values": {},
+      "input_description": "d=3 k=3",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "captured_output.strip() == '0'"
+      ]
+    },
+    {
+      "id": "main_error_empty_input",
+      "description": "main raises error on empty stdin",
+      "function": "main",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {
+        "stdin": ""
+      },
+      "input_values": {},
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "empty_input",
+      "assertions": []
+    },
+    {
+      "id": "main_error_malformed",
+      "description": "main raises error on malformed input (non-integer tokens)",
+      "function": "main",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {
+        "stdin": "abc def\\n"
+      },
+      "input_values": {},
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "malformed_input",
+      "assertions": []
+    },
+    {
+      "id": "inv_dp_base_zero",
+      "description": "DP base case: dp[m][0]==0 for all m, verified via solve returning 0 when k>=d",
+      "function": "solve",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "d": "4",
+        "k": "4",
+        "values": "[10, 20, 30, 40]",
+        "counts": "[1, 1, 1, 1]"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "inv_single_rep_base",
+      "description": "dp[1][i] == compute_cost(0, i-1): verify solve with k=1 matches compute_cost over full range",
+      "function": "solve",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "d": "3",
+        "k": "1",
+        "values": "[0, 100, 255]",
+        "counts": "[1, 1, 1]"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "result >= 0",
+        "isinstance(result, int)"
+      ]
+    },
+    {
+      "id": "inv_integer_arithmetic",
+      "description": "All SSE computations use integer arithmetic, verified by type checking solve output",
+      "function": "solve",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "d": "3",
+        "k": "2",
+        "values": "[1, 127, 254]",
+        "counts": "[1000000, 1000000, 1000000]"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "isinstance(result, int)",
+        "result >= 0"
+      ]
+    },
+    {
+      "id": "stress_brute_force_oracle",
+      "description": "Stress test: compare solve against brute-force oracle for small random inputs",
+      "function": "solve",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "Multiple small random inputs (d<=6, k<=d) compared against brute-force",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "all_match"
+      ]
+    },
+    {
+      "id": "cc_invariant_nonneg",
+      "description": "compute_cost always returns non-negative value",
+      "function": "compute_cost",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "a": "0",
+        "b": "2",
+        "prefix_p": "[0, 10, 30, 60]",
+        "prefix_rp": "[0, 500, 2500, 7500]",
+        "prefix_r2p": "[0, 25000, 125000, 375000]"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "result >= 0"
+      ]
+    }
+  ],
+  "test_language": "python",
+  "generated_code": "\"\"\"\nContract test suite for posterize_solution.\nCovers build_prefix_sums, compute_cost, solve, and main.\nRun with: pytest contract_test.py -v\n\"\"\"\n\nimport sys\nimport io\nimport random\nimport itertools\nimport pytest\nfrom unittest.mock import patch\n\n# Import the module under test\nfrom src.posterize_solution import (\n    build_prefix_sums,\n    compute_cost,\n    solve,\n    main,\n)\n\n\n# ============================================================\n# Layer 1: Unit tests for build_prefix_sums\n# ============================================================\n\nclass TestBuildPrefixSums:\n    \"\"\"Unit tests for build_prefix_sums.\"\"\"\n\n    def test_bps_happy_single(self):\n        \"\"\"build_prefix_sums with a single value produces correct prefix arrays of length 2.\"\"\"\n        result = build_prefix_sums(1, [10], [5])\n        assert result.prefix_p == [0, 5], f\"prefix_p mismatch: {result.prefix_p}\"\n        assert result.prefix_rp == [0, 50], f\"prefix_rp mismatch: {result.prefix_rp}\"\n        assert result.prefix_r2p == [0, 500], f\"prefix_r2p mismatch: {result.prefix_r2p}\"\n\n    def test_bps_happy_two(self):\n        \"\"\"build_prefix_sums with two values produces correct cumulative sums.\"\"\"\n        result = build_prefix_sums(2, [3, 7], [2, 4])\n        assert result.prefix_p == [0, 2, 6], f\"prefix_p mismatch: {result.prefix_p}\"\n        assert result.prefix_rp == [0, 6, 34], f\"prefix_rp mismatch: {result.prefix_rp}\"\n        assert result.prefix_r2p == [0, 18, 214], f\"prefix_r2p mismatch: {result.prefix_r2p}\"\n\n    def test_bps_happy_three_boundary_values(self):\n        \"\"\"build_prefix_sums with boundary values 0, 100, 255.\"\"\"\n        result = build_prefix_sums(3, [0, 100, 255], [1, 1, 1])\n        assert result.prefix_p == [0, 1, 2, 3], f\"prefix_p mismatch: {result.prefix_p}\"\n        assert result.prefix_rp == [0, 0, 100, 355], f\"prefix_rp mismatch: {result.prefix_rp}\"\n        assert result.prefix_r2p == [0, 0, 10000, 75025], f\"prefix_r2p mismatch: {result.prefix_r2p}\"\n\n    def test_bps_edge_length(self):\n        \"\"\"build_prefix_sums arrays always have length d+1.\"\"\"\n        result = build_prefix_sums(4, [1, 2, 3, 4], [10, 20, 30, 40])\n        assert len(result.prefix_p) == 5, f\"prefix_p length: {len(result.prefix_p)}\"\n        assert len(result.prefix_rp) == 5, f\"prefix_rp length: {len(result.prefix_rp)}\"\n        assert len(result.prefix_r2p) == 5, f\"prefix_r2p length: {len(result.prefix_r2p)}\"\n\n    def test_bps_edge_zero_index(self):\n        \"\"\"build_prefix_sums always has index 0 equal to 0 for all arrays.\"\"\"\n        result = build_prefix_sums(2, [50, 200], [100, 200])\n        assert result.prefix_p[0] == 0, \"prefix_p[0] should be 0\"\n        assert result.prefix_rp[0] == 0, \"prefix_rp[0] should be 0\"\n        assert result.prefix_r2p[0] == 0, \"prefix_r2p[0] should be 0\"\n\n    def test_bps_large_counts(self):\n        \"\"\"build_prefix_sums handles large counts correctly with integer arithmetic.\"\"\"\n        result = build_prefix_sums(2, [255, 128], [1000000, 1000000])\n        assert result.prefix_p == [0, 1000000, 2000000], f\"prefix_p: {result.prefix_p}\"\n        assert result.prefix_rp == [0, 255000000, 383000000], f\"prefix_rp: {result.prefix_rp}\"\n        assert result.prefix_r2p == [0, 65025000000, 81409000000], f\"prefix_r2p: {result.prefix_r2p}\"\n\n    def test_bps_recurrence_relation(self):\n        \"\"\"Verify prefix sum recurrence: prefix_p[i] = prefix_p[i-1] + counts[i-1].\"\"\"\n        values = [5, 15, 25, 35, 45]\n        counts = [3, 7, 11, 2, 9]\n        d = 5\n        result = build_prefix_sums(d, values, counts)\n        for i in range(1, d + 1):\n            assert result.prefix_p[i] == result.prefix_p[i - 1] + counts[i - 1], \\\n                f\"prefix_p recurrence failed at i={i}\"\n            assert result.prefix_rp[i] == result.prefix_rp[i - 1] + values[i - 1] * counts[i - 1], \\\n                f\"prefix_rp recurrence failed at i={i}\"\n            assert result.prefix_r2p[i] == result.prefix_r2p[i - 1] + values[i - 1] ** 2 * counts[i - 1], \\\n                f\"prefix_r2p recurrence failed at i={i}\"\n\n\n# ============================================================\n# Layer 1: Unit tests for compute_cost\n# ============================================================\n\nclass TestComputeCost:\n    \"\"\"Unit tests for compute_cost.\"\"\"\n\n    def test_cc_single_element_returns_zero(self):\n        \"\"\"compute_cost for single element interval returns 0 (representative equals value).\"\"\"\n        # value=10, count=5\n        result = compute_cost(0, 0, [0, 5], [0, 50], [0, 500])\n        assert result == 0, f\"Single element cost should be 0, got {result}\"\n\n    def test_cc_single_element_value_zero(self):\n        \"\"\"compute_cost for single element with value 0 returns 0.\"\"\"\n        result = compute_cost(0, 0, [0, 100], [0, 0], [0, 0])\n        assert result == 0, f\"Expected 0, got {result}\"\n\n    def test_cc_single_element_value_255(self):\n        \"\"\"compute_cost for single element with value 255 returns 0.\"\"\"\n        # value=255, count=50: prefix_rp[1]=255*50=12750, prefix_r2p[1]=255^2*50=3251250\n        result = compute_cost(0, 0, [0, 50], [0, 12750], [0, 3251250])\n        assert result == 0, f\"Expected 0, got {result}\"\n\n    def test_cc_two_elements_symmetric(self):\n        \"\"\"compute_cost for two-element interval: values=[0,10] counts=[1,1]. Mean=5, SSE=50.\"\"\"\n        result = compute_cost(0, 1, [0, 1, 2], [0, 0, 10], [0, 0, 100])\n        assert result == 50, f\"Expected 50, got {result}\"\n\n    def test_cc_weighted_floor_ceil_tie(self):\n        \"\"\"compute_cost with weighted counts where floor and ceil give same SSE.\"\"\"\n        # values=[0,10], counts=[1,3]. S=30, P=4, mean=7.5\n        # v=7: 1*49+3*9=76; v=8: 1*64+3*4=76\n        result = compute_cost(0, 1, [0, 1, 4], [0, 0, 30], [0, 0, 300])\n        assert result == 76, f\"Expected 76, got {result}\"\n\n    def test_cc_full_interval_nonneg(self):\n        \"\"\"compute_cost over full interval returns non-negative integer.\"\"\"\n        result = compute_cost(0, 2, [0, 1, 2, 3], [0, 0, 100, 355], [0, 0, 10000, 75025])\n        assert result >= 0, f\"Cost should be non-negative, got {result}\"\n        assert isinstance(result, int), f\"Cost should be int, got {type(result)}\"\n\n    def test_cc_error_invalid_interval_a_gt_b(self):\n        \"\"\"compute_cost raises error when a > b.\"\"\"\n        with pytest.raises(Exception):\n            compute_cost(2, 1, [0, 1, 2, 3], [0, 0, 100, 355], [0, 0, 10000, 75025])\n\n    def test_cc_error_invalid_interval_b_ge_d(self):\n        \"\"\"compute_cost raises error when b >= d (prefix arrays have length d+1=4, so d=3, b=3 is invalid).\"\"\"\n        with pytest.raises(Exception):\n            compute_cost(0, 3, [0, 1, 2, 3], [0, 0, 100, 355], [0, 0, 10000, 75025])\n\n    def test_cc_nonneg_invariant(self):\n        \"\"\"compute_cost always returns non-negative value.\"\"\"\n        # values=[50,100,150], counts=[10,20,30]\n        pp = [0, 10, 30, 60]\n        prp = [0, 500, 2500, 7000]\n        pr2p = [0, 25000, 125000, 475000]\n        # Recompute correct prefix sums:\n        # prefix_rp: 0, 50*10=500, 500+100*20=2500, 2500+150*30=7000 ✓\n        # prefix_r2p: 0, 2500*10=25000, 25000+10000*20=225000... wait\n        # Actually: 50^2*10=25000, 100^2*20=200000, 150^2*30=675000\n        # prefix_r2p = [0, 25000, 225000, 900000]\n        pr2p_correct = [0, 25000, 225000, 900000]\n        result = compute_cost(0, 2, pp, prp, pr2p_correct)\n        assert result >= 0, f\"Cost should be non-negative, got {result}\"\n\n    def test_cc_subinterval(self):\n        \"\"\"compute_cost on a subinterval (not starting at 0).\"\"\"\n        # values=[0, 10, 20], counts=[1, 1, 1]\n        # prefix_p = [0, 1, 2, 3]\n        # prefix_rp = [0, 0, 10, 30]\n        # prefix_r2p = [0, 0, 100, 500]\n        # Interval [1, 2]: values 10, 20 counts 1,1. Mean=15, SSE=25+25=50\n        result = compute_cost(1, 2, [0, 1, 2, 3], [0, 0, 10, 30], [0, 0, 100, 500])\n        assert result == 50, f\"Expected 50 for subinterval [1,2], got {result}\"\n\n\n# ============================================================\n# Layer 2: Integration tests for solve\n# ============================================================\n\nclass TestSolve:\n    \"\"\"Integration tests for solve.\"\"\"\n\n    def test_solve_d1_k1(self):\n        \"\"\"solve with d=1, k=1 returns 0.\"\"\"\n        result = solve(1, 1, [128], [100])\n        assert result == 0, f\"Expected 0, got {result}\"\n\n    def test_solve_k_eq_d(self):\n        \"\"\"solve with k=d returns 0 (each value maps to itself).\"\"\"\n        result = solve(3, 3, [10, 50, 200], [5, 10, 3])\n        assert result == 0, f\"Expected 0, got {result}\"\n\n    def test_solve_k_gt_d(self):\n        \"\"\"solve with k>d returns 0.\"\"\"\n        result = solve(2, 5, [0, 255], [1, 1])\n        assert result == 0, f\"Expected 0, got {result}\"\n\n    def test_solve_d2_k1(self):\n        \"\"\"solve d=2 k=1: values=[0,10] counts=[1,1]. Mean=5, SSE=50.\"\"\"\n        result = solve(2, 1, [0, 10], [1, 1])\n        assert result == 50, f\"Expected 50, got {result}\"\n\n    def test_solve_d4_k2_two_clusters(self):\n        \"\"\"solve d=4 k=2: values=[0,1,100,101] counts=[1,1,1,1]. Optimal: split into {0,1} and {100,101}, cost=1+1=2.\"\"\"\n        result = solve(4, 2, [0, 1, 100, 101], [1, 1, 1, 1])\n        assert result == 2, f\"Expected 2, got {result}\"\n\n    def test_solve_d3_k2(self):\n        \"\"\"solve d=3 k=2: values=[0,1,255] counts=[1,1,1].\"\"\"\n        result = solve(3, 2, [0, 1, 255], [1, 1, 1])\n        # Best split: {0,1} rep 0 or 1 (cost 1) + {255} rep 255 (cost 0) = 1\n        # Or {0} rep 0 + {1,255} with some rep. The first option gives cost 1.\n        assert result >= 0, f\"Expected non-negative, got {result}\"\n        assert isinstance(result, int), f\"Expected int, got {type(result)}\"\n        # The minimum should be 1 (group {0,1} with rep=0 cost=1, or rep=1 cost=1; group {255} cost=0)\n        assert result <= 1, f\"Expected at most 1, got {result}\"\n\n    def test_solve_d3_k1_full_range(self):\n        \"\"\"solve d=3 k=1: values=[0,100,255] counts=[1,1,1]. All mapped to single rep.\"\"\"\n        result = solve(3, 1, [0, 100, 255], [1, 1, 1])\n        assert result >= 0\n        assert isinstance(result, int)\n        # Brute-force: try all v in [0, 255], pick min of sum((val-v)^2 for val in [0,100,255])\n        min_sse = min(sum((val - v) ** 2 for val in [0, 100, 255]) for v in range(256))\n        assert result == min_sse, f\"Expected {min_sse}, got {result}\"\n\n    def test_solve_error_empty_values(self):\n        \"\"\"solve raises error when d>0 but values is empty.\"\"\"\n        with pytest.raises(Exception):\n            solve(3, 2, [], [])\n\n    def test_solve_error_mismatched_lengths(self):\n        \"\"\"solve raises error when len(values) != d.\"\"\"\n        with pytest.raises(Exception):\n            solve(3, 2, [1, 2], [1, 2])\n\n    def test_solve_nonnegative(self):\n        \"\"\"solve always returns a non-negative integer.\"\"\"\n        result = solve(3, 2, [0, 128, 255], [10, 20, 30])\n        assert result >= 0, f\"Expected non-negative, got {result}\"\n        assert isinstance(result, int), f\"Expected int, got {type(result)}\"\n\n    def test_solve_exact_integer(self):\n        \"\"\"solve returns an exact integer, not a float.\"\"\"\n        result = solve(2, 1, [0, 255], [1, 1])\n        assert isinstance(result, int), f\"Expected int, got {type(result)}\"\n        assert result >= 0\n\n    def test_solve_monotonicity_in_k(self):\n        \"\"\"solve is monotonically non-increasing as k increases.\"\"\"\n        values = [10, 50, 100, 150, 200]\n        counts = [3, 7, 2, 5, 4]\n        d = 5\n        results = [solve(d, k, values, counts) for k in range(1, d + 1)]\n        for i in range(len(results) - 1):\n            assert results[i] >= results[i + 1], \\\n                f\"Monotonicity violated: solve(k={i + 1})={results[i]} < solve(k={i + 2})={results[i + 1]}\"\n\n    def test_solve_k_eq_d_always_zero(self):\n        \"\"\"For k >= d, the answer is always 0.\"\"\"\n        for d, values, counts in [\n            (1, [0], [1]),\n            (2, [0, 255], [100, 200]),\n            (4, [10, 20, 30, 40], [1, 1, 1, 1]),\n        ]:\n            result = solve(d, d, values, counts)\n            assert result == 0, f\"Expected 0 for d=k={d}, got {result}\"\n\n    def test_solve_large_counts_integer_arithmetic(self):\n        \"\"\"solve handles large counts and produces exact integer results.\"\"\"\n        result = solve(3, 2, [1, 127, 254], [1000000, 1000000, 1000000])\n        assert isinstance(result, int), f\"Expected int, got {type(result)}\"\n        assert result >= 0\n\n\n# ============================================================\n# Layer 3: End-to-end tests for main\n# ============================================================\n\nclass TestMain:\n    \"\"\"End-to-end tests for main().\"\"\"\n\n    def test_main_happy_simple(self):\n        \"\"\"main reads stdin and writes correct result for d=1 k=1.\"\"\"\n        input_data = \"1 1\\n128 100\\n\"\n        with patch('sys.stdin', io.StringIO(input_data)):\n            captured = io.StringIO()\n            with patch('sys.stdout', captured):\n                main()\n        output = captured.getvalue()\n        assert output.strip() == '0', f\"Expected '0', got '{output.strip()}'\"\n\n    def test_main_happy_format(self):\n        \"\"\"main output has no trailing spaces, ends with single newline.\"\"\"\n        input_data = \"2 1\\n0 1\\n10 1\\n\"\n        with patch('sys.stdin', io.StringIO(input_data)):\n            captured = io.StringIO()\n            with patch('sys.stdout', captured):\n                main()\n        output = captured.getvalue()\n        assert output == '50\\n', f\"Expected '50\\\\n', got {repr(output)}\"\n\n    def test_main_happy_k_eq_d(self):\n        \"\"\"main prints 0 when k equals d.\"\"\"\n        input_data = \"3 3\\n10 5\\n50 10\\n200 3\\n\"\n        with patch('sys.stdin', io.StringIO(input_data)):\n            captured = io.StringIO()\n            with patch('sys.stdout', captured):\n                main()\n        output = captured.getvalue()\n        assert output.strip() == '0', f\"Expected '0', got '{output.strip()}'\"\n\n    def test_main_d4_k2(self):\n        \"\"\"main with d=4, k=2, two clusters.\"\"\"\n        input_data = \"4 2\\n0 1\\n1 1\\n100 1\\n101 1\\n\"\n        with patch('sys.stdin', io.StringIO(input_data)):\n            captured = io.StringIO()\n            with patch('sys.stdout', captured):\n                main()\n        output = captured.getvalue()\n        assert output.strip() == '2', f\"Expected '2', got '{output.strip()}'\"\n\n    def test_main_error_empty_input(self):\n        \"\"\"main raises error on empty stdin.\"\"\"\n        with patch('sys.stdin', io.StringIO(\"\")):\n            with pytest.raises(Exception):\n                main()\n\n    def test_main_error_malformed_input(self):\n        \"\"\"main raises error on malformed input (non-integer tokens).\"\"\"\n        with patch('sys.stdin', io.StringIO(\"abc def\\n\")):\n            with pytest.raises(Exception):\n                main()\n\n\n# ============================================================\n# Layer 4: Stress / Property tests\n# ============================================================\n\nclass TestStressAndProperties:\n    \"\"\"Stress tests and property-based tests using brute-force oracle.\"\"\"\n\n    @staticmethod\n    def brute_force_solve(d, k, values, counts):\n        \"\"\"\n        Brute-force oracle: try all ways to partition d sorted values into\n        at most k contiguous groups, each with optimal integer representative.\n        \"\"\"\n        if k >= d:\n            return 0\n\n        def cost_single_group(vals, cnts):\n            \"\"\"Min SSE for one group mapped to best integer in [0, 255].\"\"\"\n            best = float('inf')\n            # Compute weighted mean and try floor/ceil\n            total_p = sum(cnts)\n            if total_p == 0:\n                return 0\n            total_rp = sum(v * c for v, c in zip(vals, cnts))\n            mean = total_rp / total_p\n            candidates = set()\n            candidates.add(max(0, min(255, int(mean))))\n            candidates.add(max(0, min(255, int(mean) + 1)))\n            for v in candidates:\n                sse = sum(c * (val - v) ** 2 for val, c in zip(vals, cnts))\n                best = min(best, sse)\n            return best\n\n        # DP approach matching the contract but brute-force computed costs\n        INF = float('inf')\n        # dp[m][i] = min SSE using m groups for first i values\n        dp = [[INF] * (d + 1) for _ in range(k + 1)]\n        for m in range(k + 1):\n            dp[m][0] = 0\n\n        for m in range(1, k + 1):\n            for i in range(1, d + 1):\n                for j in range(0, i):\n                    # Group [j, i-1] (0-indexed into values)\n                    group_vals = values[j:i]\n                    group_cnts = counts[j:i]\n                    c = cost_single_group(group_vals, group_cnts)\n                    prev = dp[m - 1][j] if m >= 2 else (dp[0][j])\n                    if prev + c < dp[m][i]:\n                        dp[m][i] = prev + c\n\n        return dp[k][d]\n\n    def test_stress_brute_force(self):\n        \"\"\"Compare solve against brute-force oracle for small random inputs.\"\"\"\n        rng = random.Random(42)\n        num_tests = 50\n        for test_idx in range(num_tests):\n            d = rng.randint(1, 6)\n            k = rng.randint(1, d)\n            all_vals = rng.sample(range(256), d)\n            all_vals.sort()\n            cnts = [rng.randint(1, 100) for _ in range(d)]\n\n            expected = self.brute_force_solve(d, k, all_vals, cnts)\n            actual = solve(d, k, all_vals, cnts)\n\n            assert actual == expected, (\n                f\"Test {test_idx}: d={d}, k={k}, values={all_vals}, counts={cnts}: \"\n                f\"expected {expected}, got {actual}\"\n            )\n\n    def test_monotonicity_random(self):\n        \"\"\"For random inputs, verify solve(d, k, ...) >= solve(d, k+1, ...).\"\"\"\n        rng = random.Random(123)\n        for _ in range(20):\n            d = rng.randint(2, 8)\n            all_vals = sorted(rng.sample(range(256), d))\n            cnts = [rng.randint(1, 50) for _ in range(d)]\n\n            prev_result = None\n            for k in range(1, d + 1):\n                result = solve(d, k, all_vals, cnts)\n                if prev_result is not None:\n                    assert result <= prev_result, (\n                        f\"Monotonicity violated: d={d}, values={all_vals}, counts={cnts}, \"\n                        f\"solve(k={k - 1})={prev_result}, solve(k={k})={result}\"\n                    )\n                prev_result = result\n\n            # k=d should give 0\n            assert solve(d, d, all_vals, cnts) == 0, (\n                f\"k=d should give 0: d={d}, values={all_vals}, counts={cnts}\"\n            )\n\n    def test_large_counts_stress(self):\n        \"\"\"Exercise big-integer arithmetic paths with large pixel counts.\"\"\"\n        values = [0, 128, 255]\n        counts = [10**9, 10**9, 10**9]\n        d = 3\n        k = 2\n        result = solve(d, k, values, counts)\n        assert isinstance(result, int), f\"Expected int, got {type(result)}\"\n        assert result >= 0, f\"Expected non-negative, got {result}\"\n        # With k=2, best split: {0, 128} or {128, 255} or {0} and {128, 255}\n        # Verify k=3 gives 0\n        assert solve(d, 3, values, counts) == 0\n\n    def test_all_same_values_adjacent(self):\n        \"\"\"When all values are consecutive integers, verify correct behavior.\"\"\"\n        d = 5\n        values = [10, 11, 12, 13, 14]\n        counts = [1, 1, 1, 1, 1]\n        # k=1: mean=12, SSE = (10-12)^2+(11-12)^2+(12-12)^2+(13-12)^2+(14-12)^2 = 4+1+0+1+4=10\n        result = solve(d, 1, values, counts)\n        assert result == 10, f\"Expected 10, got {result}\"\n        # k=2: e.g. {10,11} rep=10 or 11 cost=1, {12,13,14} rep=13 cost=2 => total=3\n        #   or {10,11,12} rep=11 cost=2, {13,14} rep=13 or 14 cost=1 => total=3\n        result_k2 = solve(d, 2, values, counts)\n        assert result_k2 <= 10, f\"k=2 should be <= k=1 result\"\n        assert result_k2 >= 0\n\n    def test_single_value_large_count(self):\n        \"\"\"Single value with very large count gives 0.\"\"\"\n        result = solve(1, 1, [127], [10**15])\n        assert result == 0, f\"Expected 0, got {result}\"\n\n    def test_two_extreme_values(self):\n        \"\"\"Two extreme values (0 and 255) with k=1.\"\"\"\n        result = solve(2, 1, [0, 255], [1, 1])\n        # Mean = 127.5, try v=127: 127^2 + 128^2 = 16129 + 16384 = 32513\n        # try v=128: 128^2 + 127^2 = same = 32513\n        assert result == 32513, f\"Expected 32513, got {result}\"\n\n\n# ============================================================\n# Additional invariant tests\n# ============================================================\n\nclass TestInvariants:\n    \"\"\"Tests for contract invariants.\"\"\"\n\n    def test_dp_base_zero_via_solve(self):\n        \"\"\"DP base case: dp[m][0]==0 verified via solve returning 0 when k>=d.\"\"\"\n        assert solve(4, 4, [10, 20, 30, 40], [1, 1, 1, 1]) == 0\n\n    def test_single_rep_base_case(self):\n        \"\"\"dp[1][i] == compute_cost(0, i-1): verify solve with k=1 matches compute_cost over full range.\"\"\"\n        values = [0, 100, 255]\n        counts = [1, 1, 1]\n        d = 3\n        ps = build_prefix_sums(d, values, counts)\n        cc = compute_cost(0, d - 1, ps.prefix_p, ps.prefix_rp, ps.prefix_r2p)\n        sv = solve(d, 1, values, counts)\n        assert sv == cc, f\"solve(k=1)={sv} should equal compute_cost(0,{d - 1})={cc}\"\n\n    def test_compute_cost_consistency_with_prefix_sums(self):\n        \"\"\"Verify compute_cost uses prefix sums from build_prefix_sums correctly.\"\"\"\n        values = [10, 20, 30]\n        counts = [5, 3, 7]\n        d = 3\n        ps = build_prefix_sums(d, values, counts)\n\n        # Single elements should be 0\n        for i in range(d):\n            c = compute_cost(i, i, ps.prefix_p, ps.prefix_rp, ps.prefix_r2p)\n            assert c == 0, f\"Single element cost at index {i} should be 0, got {c}\"\n\n    def test_more_values_never_increases_sse(self):\n        \"\"\"dp[m][i] <= dp[m-1][i]: more allowed values never increases the minimum SSE.\"\"\"\n        values = [0, 50, 100, 150, 200, 250]\n        counts = [10, 20, 30, 40, 50, 60]\n        d = 6\n        results = [solve(d, k, values, counts) for k in range(1, d + 1)]\n        for i in range(len(results) - 1):\n            assert results[i] >= results[i + 1], \\\n                f\"More values should not increase SSE: k={i + 1} gave {results[i]}, k={i + 2} gave {results[i + 1]}\"\n\n    def test_final_answer_nonneg_integer(self):\n        \"\"\"The final answer dp[k][d] is a non-negative integer.\"\"\"\n        result = solve(5, 3, [10, 50, 100, 150, 200], [1, 2, 3, 4, 5])\n        assert isinstance(result, int), f\"Expected int, got {type(result)}\"\n        assert result >= 0, f\"Expected non-negative, got {result}\"\n"
+}

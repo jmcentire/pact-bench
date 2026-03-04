@@ -1,0 +1,560 @@
+{
+  "component_id": "fibonacci_words",
+  "name": "Fibonacci Words Solution",
+  "description": "Implement a complete solution for the Fibonacci Words problem.\n\nThe program reads test cases from stdin until EOF. Each test case consists of two lines: an integer n (0 ≤ n ≤ 100) and a bit pattern p (up to 100,000 chars of '0' and '1'). For each test case, output how many times p occurs (with overlapping) in F(n), the n-th Fibonacci word defined by F(0)='0', F(1)='1', F(k)=F(k-1)+F(k-2) for k≥2.\n\nKey algorithm: KMP for overlapping pattern matching combined with a DP recurrence tracking count, prefix, suffix, and length per Fibonacci level. For F(k)=F(k-1)+F(k-2), count(k)=count(k-1)+count(k-2)+cross_matches where cross_matches are new occurrences spanning the concatenation boundary. Python arbitrary-precision integers handle arbitrarily large counts.",
+  "version": 1,
+  "types": [
+    {
+      "name": "FibState",
+      "kind": "struct",
+      "fields": [
+        {
+          "name": "count",
+          "type_ref": "int",
+          "required": true,
+          "default": "",
+          "description": "Number of overlapping occurrences of the pattern in F(k). Non-negative, arbitrary precision.",
+          "validators": [
+            {
+              "kind": "range",
+              "expression": "count >= 0",
+              "error_message": "Occurrence count must be non-negative"
+            }
+          ]
+        },
+        {
+          "name": "prefix",
+          "type_ref": "str",
+          "required": true,
+          "default": "",
+          "description": "The first min(len(F(k)), len(pattern)-1) characters of F(k). Used for cross-boundary matching when F(k) appears as the right part of a concatenation. Contains only '0' and '1'.",
+          "validators": [
+            {
+              "kind": "regex",
+              "expression": "^[01]*$",
+              "error_message": "Prefix must consist only of '0' and '1' characters"
+            }
+          ]
+        },
+        {
+          "name": "suffix",
+          "type_ref": "str",
+          "required": true,
+          "default": "",
+          "description": "The last min(len(F(k)), len(pattern)-1) characters of F(k). Used for cross-boundary matching when F(k) appears as the left part of a concatenation. Contains only '0' and '1'.",
+          "validators": [
+            {
+              "kind": "regex",
+              "expression": "^[01]*$",
+              "error_message": "Suffix must consist only of '0' and '1' characters"
+            }
+          ]
+        },
+        {
+          "name": "length",
+          "type_ref": "int",
+          "required": true,
+          "default": "",
+          "description": "The length of F(k), capped at 2 * len(pattern) for practical purposes. Once length exceeds this threshold, the exact value is irrelevant since prefix and suffix no longer overlap. Must be >= 1.",
+          "validators": [
+            {
+              "kind": "range",
+              "expression": "length >= 1",
+              "error_message": "Fibonacci word length must be at least 1"
+            }
+          ]
+        }
+      ],
+      "item_type": "",
+      "variants": [],
+      "inner_types": [],
+      "description": "DP state for a single Fibonacci word level. Represents the accumulated occurrence count, the prefix and suffix fragments needed for cross-boundary matching, and the (capped) length of the Fibonacci word at that level."
+    },
+    {
+      "name": "FailureTable",
+      "kind": "list",
+      "fields": [],
+      "item_type": "int",
+      "variants": [],
+      "inner_types": [],
+      "description": "The KMP failure (partial match / prefix) table. A list of non-negative integers of the same length as the pattern, where failure[i] is the length of the longest proper prefix of pattern[0..i] that is also a suffix."
+    },
+    {
+      "name": "TestCase",
+      "kind": "struct",
+      "fields": [
+        {
+          "name": "n",
+          "type_ref": "int",
+          "required": true,
+          "default": "",
+          "description": "Fibonacci word index, 0 ≤ n ≤ 100.",
+          "validators": [
+            {
+              "kind": "range",
+              "expression": "0 <= n <= 100",
+              "error_message": "n must be between 0 and 100 inclusive"
+            }
+          ]
+        },
+        {
+          "name": "pattern",
+          "type_ref": "str",
+          "required": true,
+          "default": "",
+          "description": "Bit pattern to search for, consisting of '0' and '1' characters, length 1 to 100000.",
+          "validators": [
+            {
+              "kind": "length",
+              "expression": "1 <= len(pattern) <= 100000",
+              "error_message": "Pattern length must be between 1 and 100000"
+            },
+            {
+              "kind": "regex",
+              "expression": "^[01]+$",
+              "error_message": "Pattern must consist only of '0' and '1' characters"
+            }
+          ]
+        }
+      ],
+      "item_type": "",
+      "variants": [],
+      "inner_types": [],
+      "description": "A single parsed test case consisting of the Fibonacci word index and the pattern to search for."
+    }
+  ],
+  "functions": [
+    {
+      "name": "build_failure_table",
+      "description": "Computes the KMP failure (prefix) function for the given pattern. failure[i] equals the length of the longest proper prefix of pattern[0..i] that is also a suffix of pattern[0..i]. This table is built once per test case and reused across all KMP searches for that pattern.",
+      "inputs": [
+        {
+          "name": "pattern",
+          "type_ref": "str",
+          "required": true,
+          "default": "",
+          "description": "The search pattern consisting of '0' and '1' characters. Must have length >= 1.",
+          "validators": [
+            {
+              "kind": "length",
+              "expression": "len(pattern) >= 1",
+              "error_message": "Pattern must be non-empty"
+            },
+            {
+              "kind": "regex",
+              "expression": "^[01]+$",
+              "error_message": "Pattern must consist only of '0' and '1' characters"
+            }
+          ]
+        }
+      ],
+      "output_type": "FailureTable",
+      "error_cases": [
+        {
+          "name": "empty_pattern",
+          "condition": "len(pattern) == 0",
+          "error_type": "ValueError",
+          "error_data": {
+            "message": "Pattern must be non-empty for failure table construction"
+          }
+        }
+      ],
+      "preconditions": [
+        "len(pattern) >= 1",
+        "all characters in pattern are '0' or '1'"
+      ],
+      "postconditions": [
+        "len(result) == len(pattern)",
+        "result[0] == 0",
+        "for all i in 0..len(pattern)-1: 0 <= result[i] <= i",
+        "for all i in 0..len(pattern)-1: pattern[0:result[i]] == pattern[i-result[i]+1:i+1]"
+      ],
+      "idempotent": true,
+      "side_effects": [],
+      "structured_side_effects": [
+        {
+          "kind": "none",
+          "target": "",
+          "description": "Pure function with no side effects"
+        }
+      ],
+      "performance_budget": {
+        "p95_latency_ms": 50,
+        "max_memory_mb": 10,
+        "complexity": "O(m) where m = len(pattern)"
+      }
+    },
+    {
+      "name": "kmp_count_overlapping",
+      "description": "Counts all overlapping occurrences of pattern in text using the KMP algorithm with the precomputed failure table. After finding a match at position i, the search continues from the state indicated by failure[m-1] (where m = len(pattern)) to allow overlapping matches. Returns 0 immediately if len(text) < len(pattern).",
+      "inputs": [
+        {
+          "name": "text",
+          "type_ref": "str",
+          "required": true,
+          "default": "",
+          "description": "The text to search within. May be empty or shorter than the pattern.",
+          "validators": [
+            {
+              "kind": "regex",
+              "expression": "^[01]*$",
+              "error_message": "Text must consist only of '0' and '1' characters"
+            }
+          ]
+        },
+        {
+          "name": "pattern",
+          "type_ref": "str",
+          "required": true,
+          "default": "",
+          "description": "The search pattern. Must be non-empty.",
+          "validators": [
+            {
+              "kind": "length",
+              "expression": "len(pattern) >= 1",
+              "error_message": "Pattern must be non-empty"
+            }
+          ]
+        },
+        {
+          "name": "failure",
+          "type_ref": "FailureTable",
+          "required": true,
+          "default": "",
+          "description": "Precomputed KMP failure table for the pattern. Must have been built by build_failure_table(pattern).",
+          "validators": []
+        }
+      ],
+      "output_type": "int",
+      "error_cases": [
+        {
+          "name": "empty_pattern",
+          "condition": "len(pattern) == 0",
+          "error_type": "ValueError",
+          "error_data": {
+            "message": "Pattern must be non-empty"
+          }
+        },
+        {
+          "name": "failure_table_mismatch",
+          "condition": "len(failure) != len(pattern)",
+          "error_type": "ValueError",
+          "error_data": {
+            "message": "Failure table length must match pattern length"
+          }
+        }
+      ],
+      "preconditions": [
+        "len(pattern) >= 1",
+        "len(failure) == len(pattern)",
+        "failure was computed by build_failure_table(pattern)"
+      ],
+      "postconditions": [
+        "result >= 0",
+        "if len(text) < len(pattern) then result == 0",
+        "result <= max(0, len(text) - len(pattern) + 1)",
+        "result equals the number of indices i such that text[i:i+len(pattern)] == pattern"
+      ],
+      "idempotent": true,
+      "side_effects": [],
+      "structured_side_effects": [
+        {
+          "kind": "none",
+          "target": "",
+          "description": "Pure function with no side effects"
+        }
+      ],
+      "performance_budget": {
+        "p95_latency_ms": 100,
+        "max_memory_mb": 10,
+        "complexity": "O(n + m) where n = len(text), m = len(pattern)"
+      }
+    },
+    {
+      "name": "compute_cross_matches",
+      "description": "Computes the number of new pattern occurrences that span the concatenation boundary when F(k-1) and F(k-2) are joined to form F(k). Specifically: kmp_count_overlapping(suffix_prev + prefix_prev2, pattern, failure) - kmp_count_overlapping(suffix_prev, pattern, failure) - kmp_count_overlapping(prefix_prev2, pattern, failure). This isolates only the matches that genuinely cross the boundary and have not already been counted in either half. Pure convenience wrapper around kmp_count_overlapping.",
+      "inputs": [
+        {
+          "name": "suffix_prev",
+          "type_ref": "str",
+          "required": true,
+          "default": "",
+          "description": "Suffix of F(k-1): the last min(len(F(k-1)), len(pattern)-1) characters. May be empty if pattern has length 1.",
+          "validators": [
+            {
+              "kind": "regex",
+              "expression": "^[01]*$",
+              "error_message": "Suffix must consist only of '0' and '1' characters"
+            },
+            {
+              "kind": "length",
+              "expression": "len(suffix_prev) <= 99999",
+              "error_message": "Suffix length must be at most len(pattern)-1 which is at most 99999"
+            }
+          ]
+        },
+        {
+          "name": "prefix_prev2",
+          "type_ref": "str",
+          "required": true,
+          "default": "",
+          "description": "Prefix of F(k-2): the first min(len(F(k-2)), len(pattern)-1) characters. May be empty if pattern has length 1.",
+          "validators": [
+            {
+              "kind": "regex",
+              "expression": "^[01]*$",
+              "error_message": "Prefix must consist only of '0' and '1' characters"
+            },
+            {
+              "kind": "length",
+              "expression": "len(prefix_prev2) <= 99999",
+              "error_message": "Prefix length must be at most len(pattern)-1 which is at most 99999"
+            }
+          ]
+        },
+        {
+          "name": "pattern",
+          "type_ref": "str",
+          "required": true,
+          "default": "",
+          "description": "The search pattern. Must be non-empty.",
+          "validators": [
+            {
+              "kind": "length",
+              "expression": "len(pattern) >= 1",
+              "error_message": "Pattern must be non-empty"
+            }
+          ]
+        },
+        {
+          "name": "failure",
+          "type_ref": "FailureTable",
+          "required": true,
+          "default": "",
+          "description": "Precomputed KMP failure table for the pattern.",
+          "validators": []
+        }
+      ],
+      "output_type": "int",
+      "error_cases": [
+        {
+          "name": "empty_pattern",
+          "condition": "len(pattern) == 0",
+          "error_type": "ValueError",
+          "error_data": {
+            "message": "Pattern must be non-empty"
+          }
+        },
+        {
+          "name": "failure_table_mismatch",
+          "condition": "len(failure) != len(pattern)",
+          "error_type": "ValueError",
+          "error_data": {
+            "message": "Failure table length must match pattern length"
+          }
+        }
+      ],
+      "preconditions": [
+        "len(pattern) >= 1",
+        "len(failure) == len(pattern)",
+        "len(suffix_prev) <= len(pattern) - 1",
+        "len(prefix_prev2) <= len(pattern) - 1",
+        "failure was computed by build_failure_table(pattern)"
+      ],
+      "postconditions": [
+        "result >= 0",
+        "result == kmp_count_overlapping(suffix_prev + prefix_prev2, pattern, failure) - kmp_count_overlapping(suffix_prev, pattern, failure) - kmp_count_overlapping(prefix_prev2, pattern, failure)"
+      ],
+      "idempotent": true,
+      "side_effects": [],
+      "structured_side_effects": [
+        {
+          "kind": "none",
+          "target": "",
+          "description": "Pure function with no side effects"
+        }
+      ],
+      "performance_budget": {
+        "p95_latency_ms": 100,
+        "max_memory_mb": 10,
+        "complexity": "O(m) where m = len(pattern), since suffix and prefix are each at most len(pattern)-1 chars"
+      }
+    },
+    {
+      "name": "solve",
+      "description": "Main solver for a single test case. Given the Fibonacci word index n and a pattern, returns the number of overlapping occurrences of pattern in F(n). Algorithm: (1) Build KMP failure table once. (2) Initialize base cases F(0)='0', F(1)='1' as FibState values. (3) Iterate from k=2 to n, computing count(k) = count(k-1) + count(k-2) + cross_matches. (4) Update prefix(k) and suffix(k) from the concatenation. Handles edge cases: if pattern is longer than F(n), returns 0; for n=0 and n=1, directly matches against the single-character strings.",
+      "inputs": [
+        {
+          "name": "n",
+          "type_ref": "int",
+          "required": true,
+          "default": "",
+          "description": "Fibonacci word index. Must satisfy 0 <= n <= 100.",
+          "validators": [
+            {
+              "kind": "range",
+              "expression": "0 <= n <= 100",
+              "error_message": "n must be between 0 and 100 inclusive"
+            }
+          ]
+        },
+        {
+          "name": "pattern",
+          "type_ref": "str",
+          "required": true,
+          "default": "",
+          "description": "Bit pattern to search for. Non-empty, consisting of '0' and '1', length 1 to 100000.",
+          "validators": [
+            {
+              "kind": "length",
+              "expression": "1 <= len(pattern) <= 100000",
+              "error_message": "Pattern length must be between 1 and 100000"
+            },
+            {
+              "kind": "regex",
+              "expression": "^[01]+$",
+              "error_message": "Pattern must consist only of '0' and '1' characters"
+            }
+          ]
+        }
+      ],
+      "output_type": "int",
+      "error_cases": [
+        {
+          "name": "n_out_of_range",
+          "condition": "n < 0 or n > 100",
+          "error_type": "ValueError",
+          "error_data": {
+            "message": "n must be between 0 and 100 inclusive"
+          }
+        },
+        {
+          "name": "empty_pattern",
+          "condition": "len(pattern) == 0",
+          "error_type": "ValueError",
+          "error_data": {
+            "message": "Pattern must be non-empty"
+          }
+        },
+        {
+          "name": "pattern_too_long",
+          "condition": "len(pattern) > 100000",
+          "error_type": "ValueError",
+          "error_data": {
+            "message": "Pattern length must not exceed 100000"
+          }
+        },
+        {
+          "name": "invalid_pattern_chars",
+          "condition": "pattern contains characters other than '0' and '1'",
+          "error_type": "ValueError",
+          "error_data": {
+            "message": "Pattern must consist only of '0' and '1' characters"
+          }
+        }
+      ],
+      "preconditions": [
+        "0 <= n <= 100",
+        "1 <= len(pattern) <= 100000",
+        "pattern consists only of '0' and '1'"
+      ],
+      "postconditions": [
+        "result >= 0",
+        "result equals the number of overlapping occurrences of pattern in F(n)",
+        "for n=0: result == (1 if pattern == '0' else 0)",
+        "for n=1: result == (1 if pattern == '1' else 0)"
+      ],
+      "idempotent": true,
+      "side_effects": [],
+      "structured_side_effects": [
+        {
+          "kind": "none",
+          "target": "",
+          "description": "Pure function with no side effects — all I/O is in main()"
+        }
+      ],
+      "performance_budget": {
+        "p95_latency_ms": 5000,
+        "max_memory_mb": 50,
+        "complexity": "O(n * m) where n = Fibonacci index (up to 100), m = len(pattern) (up to 100000)"
+      }
+    },
+    {
+      "name": "main",
+      "description": "Entry point. Reads all input from stdin until EOF, parsing test cases as pairs of lines (integer n, then pattern string). For each test case numbered starting at 1, calls solve(n, pattern) and prints 'Case X: Y' to stdout where X is the 1-based case number and Y is the occurrence count. Each output line is terminated by a newline. Handles EOF gracefully via try/except or equivalent.",
+      "inputs": [],
+      "output_type": "None",
+      "error_cases": [
+        {
+          "name": "eof_between_lines",
+          "condition": "EOF encountered after reading n but before reading pattern",
+          "error_type": "EOFError",
+          "error_data": {
+            "message": "Unexpected EOF: expected pattern line after n"
+          }
+        },
+        {
+          "name": "invalid_n_format",
+          "condition": "First line of a test case cannot be parsed as an integer",
+          "error_type": "ValueError",
+          "error_data": {
+            "message": "Could not parse n as an integer"
+          }
+        }
+      ],
+      "preconditions": [
+        "stdin contains zero or more valid test cases",
+        "each test case is two consecutive lines: first line is an integer 0..100, second line is a non-empty bit string of length 1..100000"
+      ],
+      "postconditions": [
+        "for each test case i (1-indexed), exactly one line 'Case {i}: {count}' is written to stdout",
+        "output lines are in the same order as input test cases",
+        "each output line is terminated by a newline character",
+        "no extra output is produced"
+      ],
+      "idempotent": false,
+      "side_effects": [
+        "Reads all available input from stdin",
+        "Writes formatted results to stdout"
+      ],
+      "structured_side_effects": [
+        {
+          "kind": "reads_file",
+          "target": "stdin",
+          "description": "Reads test cases from standard input until EOF"
+        },
+        {
+          "kind": "writes_file",
+          "target": "stdout",
+          "description": "Writes 'Case X: Y' result lines to standard output"
+        }
+      ],
+      "performance_budget": {
+        "p95_latency_ms": 30000,
+        "max_memory_mb": 50,
+        "complexity": "O(T * n * m) where T = number of test cases, n = max Fibonacci index, m = max pattern length"
+      }
+    }
+  ],
+  "dependencies": [],
+  "dependency_contracts": {},
+  "invariants": [
+    "F(0) is defined as '0' and F(1) is defined as '1'",
+    "For k >= 2, F(k) = F(k-1) + F(k-2) (string concatenation)",
+    "The KMP failure table is built exactly once per test case and shared across all KMP invocations for that test case",
+    "Prefix and suffix strings stored in FibState have length at most len(pattern) - 1",
+    "FibState.length is capped at 2 * len(pattern); values beyond this threshold are treated as equivalent (sufficiently large)",
+    "count(k) = count(k-1) + count(k-2) + cross_matches for k >= 2",
+    "cross_matches = kmp_count(suffix(k-1) + prefix(k-2), p) - kmp_count(suffix(k-1), p) - kmp_count(prefix(k-2), p)",
+    "All pattern matching uses KMP with overlapping support — no regex or str.count()",
+    "solve() is a pure function with no I/O side effects",
+    "Output case numbering is 1-based and sequential",
+    "Python arbitrary-precision integers are used for counts; no overflow is possible"
+  ],
+  "requires": [
+    "python>=3.10",
+    "standard_library_only",
+    "reads_stdin",
+    "writes_stdout"
+  ]
+}

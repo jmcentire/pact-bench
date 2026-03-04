@@ -1,0 +1,29 @@
+{
+  "risks": [
+    "With n up to 10^6 and capacities up to 10^9, intermediate sums can reach ~10^15. Python handles big integers natively so no overflow risk, but this is worth noting for correctness.",
+    "The greedy strategy must be chosen carefully. The key insight is the order in which drives are reformatted matters significantly. A wrong greedy ordering (e.g., sorting by old capacity, or by new capacity alone) will produce incorrect results. The correct approach likely involves sorting drives by the difference (b - a) or by old capacity in a specific way to minimize the extra space needed, potentially using a binary search on the answer.",
+    "Performance risk: n=10^6 requires an efficient algorithm. A brute-force or simulation approach with poor complexity will TLE. Reading input efficiently (sys.stdin) is important at this scale.",
+    "Binary search on the answer combined with a greedy feasibility check is the likely approach. The feasibility check must correctly simulate whether a given extra capacity suffices — getting the greedy ordering wrong inside the feasibility check is the primary correctness risk.",
+    "The greedy ordering for the feasibility check: given extra space S, you should process drives in an order that maximizes available free space at each step. Drives where b > a (capacity increases after reformat) should generally be processed first (smallest a first among those), and drives where b ≤ a should be processed last (largest b first, or similar). Getting this ordering wrong is the #1 implementation risk."
+  ],
+  "ambiguities": [
+    "The problem says capacities satisfy 1 ≤ a, b ≤ 10^9 but doesn't explicitly state whether the extra drive capacity must be an integer number of gigabytes or can be fractional. Given all inputs are integers, the answer is almost certainly an integer, but this is unstated.",
+    "The problem says 'buy an extra hard drive' but the output is 'total extra capacity' — it's unclear whether you're buying exactly one drive of a certain size or whether you could conceptually buy fractional/multiple drives. The algorithm treats it as a single pool of extra capacity, which is fine.",
+    "No explicit time/memory constraints are given beyond n ≤ 10^6 and the implicit expectation of passing the test harness. We must infer that an O(n log n) solution is expected."
+  ],
+  "questions": [
+    "Are there any time or memory limits for the solution beyond what's implied by the test harness?",
+    "Is the test harness the sole acceptance criterion, or are there additional hidden test cases?",
+    "Should the solution handle malformed input gracefully, or can we assume input always matches the specification exactly?"
+  ],
+  "assumptions": [
+    "The answer is always a non-negative integer (since all capacities are integers and data is measured in whole gigabytes).",
+    "The extra drive capacity of 0 should be output if no extra space is needed (e.g., if some drive already has 0 data — but per constraints a ≥ 1, so this edge case is 'all drives can be reformatted using space freed by other drives').",
+    "We assume an O(n log n) solution is sufficient — likely binary search on the answer with a greedy feasibility check, or a direct greedy with sorting.",
+    "Input is well-formed and matches the specification exactly.",
+    "We will use sys.stdin for fast I/O to handle n=10^6 within reasonable time.",
+    "The optimal strategy is: binary search on extra capacity S, and for feasibility, greedily reformat drives in an order that processes drives with the smallest 'a' (old capacity) first among those where b ≥ a, then drives with largest 'b' (new capacity) first among those where b < a — or more precisely, sort to always pick the drive whose old capacity fits in current free space and yields maximum new free space. Actually, the simpler known approach: given S extra space, repeatedly pick the drive with smallest a that fits in available free space (available = S initially), reformat it, then available += b. The order that works: sort drives where b >= a by a ascending (reformat cheap ones first to gain space), then drives where b < a by... This needs careful analysis."
+  ],
+  "user_answers": {},
+  "approved": true
+}

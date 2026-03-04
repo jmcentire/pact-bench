@@ -1,0 +1,22 @@
+[
+  {
+    "ambiguity": "",
+    "decision": "Allowed values are any integer in [0,255], not restricted to input values",
+    "rationale": "The problem says 'at most k integers from this range [0..255]'. Sample 3 confirms this: with values {0,25,50,255} and k=2, the optimal representatives are not from the input set (e.g., ~12 or 13 and 255), yielding SSE=37500000."
+  },
+  {
+    "ambiguity": "",
+    "decision": "Use contiguous group partitioning DP",
+    "rationale": "When values are sorted and each pixel maps to its nearest representative, optimal clusters are always contiguous intervals. This allows a standard interval DP approach."
+  },
+  {
+    "ambiguity": "",
+    "decision": "For each contiguous group, check floor and ceil of weighted mean as candidate representative",
+    "rationale": "The optimal real-valued representative is the weighted mean. Since we need an integer, the best integer representative is either floor or ceil of the mean. We compute both and pick the one with lower cost."
+  },
+  {
+    "ambiguity": "",
+    "decision": "Single module implementation",
+    "rationale": "The problem is a self-contained competitive programming problem solvable with ~100-200 lines of Python. All logic (parsing, precomputation, DP, output) shares the same data and is naturally implemented together."
+  }
+]

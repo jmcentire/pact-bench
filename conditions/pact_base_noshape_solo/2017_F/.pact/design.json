@@ -1,0 +1,577 @@
+{
+  "project_id": "2017_F",
+  "title": "Design: 2017_F",
+  "summary": "",
+  "decomposition_tree": {
+    "root_id": "posterize_solution",
+    "nodes": {
+      "posterize_solution": {
+        "component_id": "posterize_solution",
+        "name": "Posterize Solution",
+        "description": "Implement a complete solution for the Posterize problem. The solution reads d distinct red values with their pixel counts and a parameter k, then computes the minimum sum of squared errors when replacing all red intensities with at most k allowed integer values from [0, 255].\n\nAlgorithm:\n1. Parse input: d, k, and d lines of (red_value, pixel_count) pairs sorted by red value.\n2. If k >= d, output 0 immediately.\n3. Precompute cost(i, j): the minimum SSE when all distinct values at sorted indices i..j are represented by a single optimal integer in [0, 255]. For each contiguous group, compute the weighted mean, try floor and ceil (clamped to [0, 255]), and pick whichever gives lower SSE. The allowed values are ANY integer in [0, 255], not just input values.\n4. Use DP over k partitions of the d sorted values: dp[m][i] = minimum SSE using m allowed values for the first i distinct red values. Transition: dp[m][i] = min over j < i of (dp[m-1][j] + cost(j, i-1)). Base case: dp[1][i] = cost(0, i-1).\n5. Output dp[k][d] as a single integer.\n\nKey implementation details:\n- Use integer arithmetic throughout to avoid floating-point precision issues.\n- For the optimal representative of a cluster with values r_a..r_b having counts p_a..p_b: compute weighted sum S = sum(r_i * p_i) and total count P = sum(p_i). The optimal integer is near S/P. Try floor(S/P) and ceil(S/P), compute SSE for each, take the minimum. SSE for representative v = sum(p_i * (r_i - v)^2).\n- Precompute prefix sums of p_i, r_i*p_i, and r_i^2*p_i to enable O(1) cost computation for any interval given a candidate v.\n- Overall complexity: O(d^2 * k) for the DP, with O(1) per cost evaluation using prefix sums.\n- The solution file should be named solution.py, read from stdin, write to stdout.",
+        "depth": 0,
+        "parent_id": "",
+        "children": [],
+        "contract": {
+          "component_id": "posterize_solution",
+          "name": "Posterize Solution",
+          "description": "Implement a complete solution for the Posterize problem. The solution reads d distinct red values with their pixel counts and a parameter k, then computes the minimum sum of squared errors when replacing all red intensities with at most k allowed integer values from [0, 255]. Uses integer arithmetic throughout, prefix sums for O(1) interval cost computation, and a 2D DP over k partitions of d sorted values. Single-file Python 3.10+ module reading from stdin and writing to stdout.",
+          "version": 1,
+          "types": [
+            {
+              "name": "int",
+              "kind": "primitive",
+              "fields": [],
+              "item_type": "",
+              "variants": [],
+              "inner_types": [],
+              "description": "Python integer, arbitrary precision. Used for all arithmetic to avoid floating-point issues."
+            },
+            {
+              "name": "float",
+              "kind": "primitive",
+              "fields": [],
+              "item_type": "",
+              "variants": [],
+              "inner_types": [],
+              "description": "Python float. Used only as float('inf') sentinel in DP initialization."
+            },
+            {
+              "name": "str",
+              "kind": "primitive",
+              "fields": [],
+              "item_type": "",
+              "variants": [],
+              "inner_types": [],
+              "description": "Python string type."
+            },
+            {
+              "name": "bool",
+              "kind": "primitive",
+              "fields": [],
+              "item_type": "",
+              "variants": [],
+              "inner_types": [],
+              "description": "Python boolean type."
+            },
+            {
+              "name": "None",
+              "kind": "primitive",
+              "fields": [],
+              "item_type": "",
+              "variants": [],
+              "inner_types": [],
+              "description": "Python None type."
+            },
+            {
+              "name": "IntList",
+              "kind": "list",
+              "fields": [],
+              "item_type": "int",
+              "variants": [],
+              "inner_types": [],
+              "description": "A list of integers. Used for values, counts, and prefix sum arrays."
+            },
+            {
+              "name": "DPCell",
+              "kind": "union",
+              "fields": [],
+              "item_type": "",
+              "variants": [],
+              "inner_types": [
+                "int",
+                "float"
+              ],
+              "description": "A DP table cell: either an int (computed SSE) or float('inf') (unreachable sentinel)."
+            },
+            {
+              "name": "DPRow",
+              "kind": "list",
+              "fields": [],
+              "item_type": "DPCell",
+              "variants": [],
+              "inner_types": [],
+              "description": "A single row of the DP table, indexed by number of distinct values covered (0..d)."
+            },
+            {
+              "name": "DPTable",
+              "kind": "list",
+              "fields": [],
+              "item_type": "DPRow",
+              "variants": [],
+              "inner_types": [],
+              "description": "The full DP table: dp[m][i] = minimum SSE using m allowed values for the first i distinct red values. Indexed m in 0..k, i in 0..d."
+            },
+            {
+              "name": "PrefixSums",
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "prefix_p",
+                  "type_ref": "IntList",
+                  "required": true,
+                  "default": "",
+                  "description": "Prefix sums of pixel counts. prefix_p[i] = sum(counts[0..i-1]). prefix_p[0] = 0.",
+                  "validators": []
+                },
+                {
+                  "name": "prefix_rp",
+                  "type_ref": "IntList",
+                  "required": true,
+                  "default": "",
+                  "description": "Prefix sums of (red_value * pixel_count). prefix_rp[i] = sum(values[j]*counts[j] for j in 0..i-1). prefix_rp[0] = 0.",
+                  "validators": []
+                },
+                {
+                  "name": "prefix_r2p",
+                  "type_ref": "IntList",
+                  "required": true,
+                  "default": "",
+                  "description": "Prefix sums of (red_value^2 * pixel_count). prefix_r2p[i] = sum(values[j]^2*counts[j] for j in 0..i-1). prefix_r2p[0] = 0.",
+                  "validators": []
+                }
+              ],
+              "item_type": "",
+              "variants": [],
+              "inner_types": [],
+              "description": "Three prefix sum arrays of length d+1 enabling O(1) interval queries for cost computation."
+            },
+            {
+              "name": "ParsedInput",
+              "kind": "struct",
+              "fields": [
+                {
+                  "name": "d",
+                  "type_ref": "int",
+                  "required": true,
+                  "default": "",
+                  "description": "Number of distinct red values present in the image.",
+                  "validators": []
+                },
+                {
+                  "name": "k",
+                  "type_ref": "int",
+                  "required": true,
+                  "default": "",
+                  "description": "Maximum number of allowed integer values in [0, 255] to use as replacements.",
+                  "validators": []
+                },
+                {
+                  "name": "values",
+                  "type_ref": "IntList",
+                  "required": true,
+                  "default": "",
+                  "description": "Sorted list of d distinct red values, each in [0, 255].",
+                  "validators": []
+                },
+                {
+                  "name": "counts",
+                  "type_ref": "IntList",
+                  "required": true,
+                  "default": "",
+                  "description": "List of d pixel counts corresponding to each red value. Each count >= 1.",
+                  "validators": []
+                }
+              ],
+              "item_type": "",
+              "variants": [],
+              "inner_types": [],
+              "description": "The fully parsed input for the Posterize problem."
+            }
+          ],
+          "functions": [
+            {
+              "name": "main",
+              "description": "Entry point. Reads the entire input from stdin, parses it, calls solve(), and prints the result as a single integer to stdout. Invoked when the module is run as __main__.",
+              "inputs": [],
+              "output_type": "None",
+              "error_cases": [
+                {
+                  "name": "empty_input",
+                  "condition": "stdin is empty or contains no tokens",
+                  "error_type": "IndexError",
+                  "error_data": {
+                    "detail": "Insufficient tokens when parsing input"
+                  }
+                },
+                {
+                  "name": "malformed_input",
+                  "condition": "Tokens cannot be parsed as integers",
+                  "error_type": "ValueError",
+                  "error_data": {
+                    "detail": "Non-integer token encountered during parsing"
+                  }
+                }
+              ],
+              "preconditions": [
+                "stdin contains well-formed input: first line is 'd k', followed by d lines each containing 'red_value pixel_count', sorted by red_value ascending",
+                "1 <= d <= 256",
+                "1 <= k <= d",
+                "All red values are distinct integers in [0, 255]",
+                "All pixel counts are positive integers"
+              ],
+              "postconditions": [
+                "Exactly one line is written to stdout containing the minimum SSE as a non-negative integer",
+                "No trailing spaces; single trailing newline from print()"
+              ],
+              "idempotent": true,
+              "side_effects": [
+                "Reads from stdin via sys.stdin.read()",
+                "Writes result to stdout via print()"
+              ],
+              "structured_side_effects": [
+                {
+                  "kind": "reads_file",
+                  "target": "sys.stdin",
+                  "description": "Reads entire stdin content as a single string, then splits into tokens"
+                },
+                {
+                  "kind": "writes_file",
+                  "target": "sys.stdout",
+                  "description": "Prints the minimum SSE result as a single integer line"
+                }
+              ],
+              "performance_budget": null
+            },
+            {
+              "name": "solve",
+              "description": "Core algorithm. Given d distinct red values (sorted ascending) with their pixel counts and parameter k, computes the minimum sum of squared errors when replacing all red intensities with at most k allowed integer values from [0, 255]. Returns 0 immediately if k >= d. Otherwise builds prefix sum arrays, defines compute_cost for O(1) interval SSE, and runs 2D DP: dp[m][i] = min SSE using m allowed values for the first i distinct red values.",
+              "inputs": [
+                {
+                  "name": "d",
+                  "type_ref": "int",
+                  "required": true,
+                  "default": "",
+                  "description": "Number of distinct red values.",
+                  "validators": [
+                    {
+                      "kind": "range",
+                      "expression": "1 <= d <= 256",
+                      "error_message": "d must be between 1 and 256 inclusive"
+                    }
+                  ]
+                },
+                {
+                  "name": "k",
+                  "type_ref": "int",
+                  "required": true,
+                  "default": "",
+                  "description": "Maximum number of allowed replacement values.",
+                  "validators": [
+                    {
+                      "kind": "range",
+                      "expression": "1 <= k <= 256",
+                      "error_message": "k must be between 1 and 256 inclusive"
+                    }
+                  ]
+                },
+                {
+                  "name": "values",
+                  "type_ref": "IntList",
+                  "required": true,
+                  "default": "",
+                  "description": "Sorted list of d distinct red values, each in [0, 255].",
+                  "validators": [
+                    {
+                      "kind": "length",
+                      "expression": "len(values) == d",
+                      "error_message": "values length must equal d"
+                    },
+                    {
+                      "kind": "custom",
+                      "expression": "all(0 <= v <= 255 for v in values)",
+                      "error_message": "All red values must be in [0, 255]"
+                    },
+                    {
+                      "kind": "custom",
+                      "expression": "values == sorted(set(values))",
+                      "error_message": "Values must be sorted ascending and distinct"
+                    }
+                  ]
+                },
+                {
+                  "name": "counts",
+                  "type_ref": "IntList",
+                  "required": true,
+                  "default": "",
+                  "description": "Pixel counts for each distinct red value.",
+                  "validators": [
+                    {
+                      "kind": "length",
+                      "expression": "len(counts) == d",
+                      "error_message": "counts length must equal d"
+                    },
+                    {
+                      "kind": "custom",
+                      "expression": "all(c >= 1 for c in counts)",
+                      "error_message": "All pixel counts must be at least 1"
+                    }
+                  ]
+                }
+              ],
+              "output_type": "int",
+              "error_cases": [
+                {
+                  "name": "empty_values",
+                  "condition": "d > 0 but values or counts is empty",
+                  "error_type": "ValueError",
+                  "error_data": {
+                    "detail": "values and counts must each have length d"
+                  }
+                },
+                {
+                  "name": "mismatched_lengths",
+                  "condition": "len(values) != d or len(counts) != d",
+                  "error_type": "ValueError",
+                  "error_data": {
+                    "detail": "Length of values and counts must match d"
+                  }
+                }
+              ],
+              "preconditions": [
+                "values is sorted in strictly ascending order",
+                "len(values) == len(counts) == d",
+                "All values in [0, 255], all counts >= 1",
+                "1 <= k <= 256, 1 <= d <= 256"
+              ],
+              "postconditions": [
+                "Return value >= 0",
+                "If k >= d, return value == 0",
+                "Return value equals the minimum possible sum of squared errors over all choices of at most k allowed integer values from [0, 255]",
+                "Return value is an exact integer (no floating-point approximation)"
+              ],
+              "idempotent": true,
+              "side_effects": [],
+              "structured_side_effects": [
+                {
+                  "kind": "none",
+                  "target": "",
+                  "description": "Pure computation, no side effects"
+                }
+              ],
+              "performance_budget": {
+                "p95_latency_ms": 1000,
+                "max_memory_mb": 64,
+                "complexity": "O(d^2 * k)"
+              }
+            },
+            {
+              "name": "build_prefix_sums",
+              "description": "Constructs three prefix sum arrays from the sorted values and counts arrays. prefix_p[i] = sum(counts[0..i-1]), prefix_rp[i] = sum(values[j]*counts[j] for j in 0..i-1), prefix_r2p[i] = sum(values[j]^2*counts[j] for j in 0..i-1). All arrays have length d+1 with index 0 being 0.",
+              "inputs": [
+                {
+                  "name": "d",
+                  "type_ref": "int",
+                  "required": true,
+                  "default": "",
+                  "description": "Number of distinct red values.",
+                  "validators": [
+                    {
+                      "kind": "range",
+                      "expression": "d >= 1",
+                      "error_message": "d must be at least 1"
+                    }
+                  ]
+                },
+                {
+                  "name": "values",
+                  "type_ref": "IntList",
+                  "required": true,
+                  "default": "",
+                  "description": "Sorted distinct red values of length d.",
+                  "validators": []
+                },
+                {
+                  "name": "counts",
+                  "type_ref": "IntList",
+                  "required": true,
+                  "default": "",
+                  "description": "Pixel counts of length d.",
+                  "validators": []
+                }
+              ],
+              "output_type": "PrefixSums",
+              "error_cases": [],
+              "preconditions": [
+                "len(values) == len(counts) == d",
+                "d >= 1"
+              ],
+              "postconditions": [
+                "All three arrays in the result have length d + 1",
+                "All three arrays have index 0 equal to 0",
+                "prefix_p[i] = prefix_p[i-1] + counts[i-1] for 1 <= i <= d",
+                "prefix_rp[i] = prefix_rp[i-1] + values[i-1] * counts[i-1] for 1 <= i <= d",
+                "prefix_r2p[i] = prefix_r2p[i-1] + values[i-1]^2 * counts[i-1] for 1 <= i <= d"
+              ],
+              "idempotent": true,
+              "side_effects": [],
+              "structured_side_effects": [
+                {
+                  "kind": "none",
+                  "target": "",
+                  "description": "Pure computation"
+                }
+              ],
+              "performance_budget": {
+                "p95_latency_ms": null,
+                "max_memory_mb": null,
+                "complexity": "O(d)"
+              }
+            },
+            {
+              "name": "compute_cost",
+              "description": "Computes the minimum SSE for a contiguous interval of sorted distinct red values [a, b] (inclusive indices into the values array) when all pixels in that interval are represented by a single optimal integer in [0, 255]. Uses prefix sum arrays for O(1) computation. The optimal representative is found by computing the weighted mean S/P (where S = sum of r_i*p_i, P = sum of p_i over the interval), trying floor(S/P) and ceil(S/P) clamped to [0, 255], and returning the SSE for whichever is lower. SSE for representative v = sum_r2p - 2*v*sum_rp + v^2*sum_p.",
+              "inputs": [
+                {
+                  "name": "a",
+                  "type_ref": "int",
+                  "required": true,
+                  "default": "",
+                  "description": "Start index of the interval (inclusive, 0-based into values array).",
+                  "validators": [
+                    {
+                      "kind": "range",
+                      "expression": "0 <= a",
+                      "error_message": "a must be non-negative"
+                    }
+                  ]
+                },
+                {
+                  "name": "b",
+                  "type_ref": "int",
+                  "required": true,
+                  "default": "",
+                  "description": "End index of the interval (inclusive, 0-based into values array).",
+                  "validators": [
+                    {
+                      "kind": "range",
+                      "expression": "b < d",
+                      "error_message": "b must be less than d"
+                    },
+                    {
+                      "kind": "custom",
+                      "expression": "a <= b",
+                      "error_message": "a must not exceed b"
+                    }
+                  ]
+                },
+                {
+                  "name": "prefix_p",
+                  "type_ref": "IntList",
+                  "required": true,
+                  "default": "",
+                  "description": "Prefix sums of pixel counts, length d+1.",
+                  "validators": []
+                },
+                {
+                  "name": "prefix_rp",
+                  "type_ref": "IntList",
+                  "required": true,
+                  "default": "",
+                  "description": "Prefix sums of (red_value * pixel_count), length d+1.",
+                  "validators": []
+                },
+                {
+                  "name": "prefix_r2p",
+                  "type_ref": "IntList",
+                  "required": true,
+                  "default": "",
+                  "description": "Prefix sums of (red_value^2 * pixel_count), length d+1.",
+                  "validators": []
+                }
+              ],
+              "output_type": "int",
+              "error_cases": [
+                {
+                  "name": "invalid_interval",
+                  "condition": "a > b or b >= d",
+                  "error_type": "IndexError",
+                  "error_data": {
+                    "detail": "Interval indices out of bounds or inverted"
+                  }
+                },
+                {
+                  "name": "zero_total_count",
+                  "condition": "sum_p for interval [a, b] is zero (should not occur given valid input)",
+                  "error_type": "ZeroDivisionError",
+                  "error_data": {
+                    "detail": "Total pixel count in interval is zero, cannot compute weighted mean"
+                  }
+                }
+              ],
+              "preconditions": [
+                "0 <= a <= b < d",
+                "All prefix arrays have length d + 1",
+                "Prefix arrays are consistent with the underlying values and counts"
+              ],
+              "postconditions": [
+                "Return value >= 0",
+                "Return value equals min over v in [0,255] of sum(counts[i] * (values[i] - v)^2 for i in a..b)",
+                "Only floor(S/P) and ceil(S/P) are evaluated as candidate representatives (these are provably optimal among integers)",
+                "Return value is computed using integer arithmetic only"
+              ],
+              "idempotent": true,
+              "side_effects": [],
+              "structured_side_effects": [
+                {
+                  "kind": "none",
+                  "target": "",
+                  "description": "Pure computation using prefix sum lookups"
+                }
+              ],
+              "performance_budget": {
+                "p95_latency_ms": null,
+                "max_memory_mb": null,
+                "complexity": "O(1)"
+              }
+            }
+          ],
+          "dependencies": [],
+          "dependency_contracts": {},
+          "invariants": [
+            "All arithmetic for SSE computation uses Python integers; no floating-point arithmetic is used except for the float('inf') sentinel in DP initialization",
+            "Allowed replacement values are any integer in [0, 255], not restricted to input red values",
+            "The values array is always sorted in strictly ascending order throughout all computations",
+            "Prefix sum arrays are immutable after construction and have length exactly d + 1",
+            "dp[m][0] == 0 for all m in [1, k]: zero distinct values require zero error",
+            "dp[1][i] == compute_cost(0, i-1) for all i in [1, d]: base case uses single representative for first i values",
+            "dp[m][i] <= dp[m-1][i] for all valid m, i: more allowed values never increases the minimum SSE",
+            "The final answer dp[k][d] is a non-negative integer",
+            "For k >= d, the answer is always 0 (each distinct value maps to itself)",
+            "The compute_cost function for a single element (a == b) returns 0 when the element's value is in [0, 255] (the representative equals the value itself)",
+            "SSE formula for representative v: sum_r2p - 2*v*sum_rp + v^2*sum_p, where sums are over the interval [a, b]"
+          ],
+          "requires": [
+            "Python 3.10+ with type annotations",
+            "Standard library only (sys)",
+            "Reads from stdin, writes to stdout",
+            "Solution filename is solution.py",
+            "Entry point guarded with if __name__ == '__main__'"
+          ]
+        },
+        "implementation_status": "contracted",
+        "test_results": null
+      }
+    }
+  },
+  "engineering_decisions": [
+    {
+      "ambiguity": "",
+      "decision": "Allowed values can be any integer in [0, 255], not restricted to input values",
+      "rationale": "The problem says 'at most k integers from this range [0-255]'. Sample 3 confirms this: with input values {0, 25, 50, 255} and k=2, the answer 37500000 is achieved by choosing representatives that are not all input values (e.g., 13 and 255 or similar). If restricted to input values, a different answer would result."
+    },
+    {
+      "ambiguity": "",
+      "decision": "Use integer arithmetic with floor/ceil of weighted mean for optimal representative",
+      "rationale": "Since allowed values must be integers, the optimal representative for a cluster minimizing weighted SSE is the nearest integer to the weighted mean. We try both floor and ceil and pick the better one. This avoids floating-point issues and guarantees correctness."
+    },
+    {
+      "ambiguity": "",
+      "decision": "Solution filename is solution.py",
+      "rationale": "The SOPs and test harness reference suggest this naming convention: `python test_harness.py solution.py`"
+    }
+  ],
+  "failure_history": [],
+  "lessons_learned": [],
+  "version": 1
+}

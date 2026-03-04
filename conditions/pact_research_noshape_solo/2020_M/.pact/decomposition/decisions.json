@@ -1,0 +1,22 @@
+[
+  {
+    "ambiguity": "",
+    "decision": "Use iterative search from n=1 upward rather than binary search",
+    "rationale": "The achievable trailing digit counts form a contiguous range {0,1,...,max_n} due to monotonicity. Iterating upward and stopping at first failure is simpler and equally efficient since max n is bounded by ~10000 digits of a."
+  },
+  {
+    "ambiguity": "",
+    "decision": "Use Python's built-in pow(base, -1, mod) for modular inverse",
+    "rationale": "Available in Python 3.8+ (we target 3.10+), avoids implementing extended GCD manually, and handles arbitrary precision natively."
+  },
+  {
+    "ambiguity": "",
+    "decision": "Handle d=0 as a special case of the general congruence (r=0)",
+    "rationale": "When d=0 the repdigit value is 0, so the congruence becomes k*b \u2261 0 mod 10^n. The general algorithm handles this but it's worth noting as a conceptual edge case."
+  },
+  {
+    "ambiguity": "",
+    "decision": "Output 0 if no multiple of b has trailing digit d",
+    "rationale": "Per the assumptions from the interview, when no valid k exists for even n=1, the answer is 0."
+  }
+]

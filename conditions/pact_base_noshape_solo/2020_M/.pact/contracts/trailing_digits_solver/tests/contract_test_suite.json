@@ -1,0 +1,665 @@
+{
+  "component_id": "trailing_digits_solver",
+  "contract_version": 1,
+  "test_cases": [
+    {
+      "id": "parse_input_happy_basic",
+      "description": "Parse a valid line with three space-separated integers into ProblemInput with correct b, d, a fields",
+      "function": "parse_input",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "line": "7 4 1000"
+      },
+      "input_description": "",
+      "expected_output_description": "ProblemInput with b=7, d=4, a=1000",
+      "expected_error": "",
+      "assertions": [
+        "result.b == 7",
+        "result.d == 4",
+        "result.a == 1000"
+      ]
+    },
+    {
+      "id": "parse_input_happy_large_a",
+      "description": "Parse a valid line where a is a very large number (thousands of digits)",
+      "function": "parse_input",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "line": "999999999 9 "
+      },
+      "input_description": "b=999999999, d=9, a=10^100 (a large number)",
+      "expected_output_description": "ProblemInput with correct large integer a",
+      "expected_error": "",
+      "assertions": [
+        "result.b == 999999999",
+        "result.d == 9",
+        "result.a == 10**100"
+      ]
+    },
+    {
+      "id": "parse_input_happy_d_zero",
+      "description": "Parse input where d=0, which is a valid digit",
+      "function": "parse_input",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "line": "5 0 100"
+      },
+      "input_description": "",
+      "expected_output_description": "ProblemInput with b=5, d=0, a=100",
+      "expected_error": "",
+      "assertions": [
+        "result.b == 5",
+        "result.d == 0",
+        "result.a == 100"
+      ]
+    },
+    {
+      "id": "parse_input_happy_extra_whitespace",
+      "description": "Parse input with extra leading/trailing/internal whitespace — split() handles this",
+      "function": "parse_input",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "line": "  7   4   1000  "
+      },
+      "input_description": "",
+      "expected_output_description": "ProblemInput with b=7, d=4, a=1000",
+      "expected_error": "",
+      "assertions": [
+        "result.b == 7",
+        "result.d == 4",
+        "result.a == 1000"
+      ]
+    },
+    {
+      "id": "parse_input_error_too_few_tokens",
+      "description": "Error when line contains fewer than 3 tokens",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "line": "7 4"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "wrong_token_count",
+      "assertions": []
+    },
+    {
+      "id": "parse_input_error_too_many_tokens",
+      "description": "Error when line contains more than 3 tokens",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "line": "7 4 1000 extra"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "wrong_token_count",
+      "assertions": []
+    },
+    {
+      "id": "parse_input_error_empty_line",
+      "description": "Error when line is empty string",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "line": ""
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "wrong_token_count",
+      "assertions": []
+    },
+    {
+      "id": "parse_input_error_single_token",
+      "description": "Error when line has only one token",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "line": "42"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "wrong_token_count",
+      "assertions": []
+    },
+    {
+      "id": "parse_input_error_non_integer_letter",
+      "description": "Error when one token is a non-integer string",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "line": "7 abc 1000"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "non_integer_token",
+      "assertions": []
+    },
+    {
+      "id": "parse_input_error_non_integer_float",
+      "description": "Error when one token is a float string",
+      "function": "parse_input",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "line": "7 4.5 1000"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "non_integer_token",
+      "assertions": []
+    },
+    {
+      "id": "solve_happy_basic_example",
+      "description": "Basic example: b=7, d=4, a=1000 — 7*12=84 ends in 4 (n=1), 7*492=3444 exceeds 1000, so check if n=2 or n=3 possible",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "b": "7",
+        "d": "4",
+        "a": "1000"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "result >= 0",
+        "result <= len(str(1000))"
+      ]
+    },
+    {
+      "id": "solve_happy_b1_d5_a55555",
+      "description": "b=1 means every number is a multiple; max trailing 5s in [1..55555] is 55555 itself with 5 trailing 5s",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "b": "1",
+        "d": "5",
+        "a": "55555"
+      },
+      "input_description": "",
+      "expected_output_description": "5, since 55555 has five trailing 5s and is a multiple of 1",
+      "expected_error": "",
+      "assertions": [
+        "result == 5"
+      ]
+    },
+    {
+      "id": "solve_happy_b1_d1_a11111",
+      "description": "b=1, d=1, a=11111 — the number 11111 itself has 5 trailing 1s",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "b": "1",
+        "d": "1",
+        "a": "11111"
+      },
+      "input_description": "",
+      "expected_output_description": "5",
+      "expected_error": "",
+      "assertions": [
+        "result == 5"
+      ]
+    },
+    {
+      "id": "solve_edge_d_zero_b10_a1000",
+      "description": "d=0 means we look for trailing zeros. 10*100=1000 has 3 trailing zeros, a=1000",
+      "function": "solve",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "b": "10",
+        "d": "0",
+        "a": "1000"
+      },
+      "input_description": "",
+      "expected_output_description": "3, since 1000 = 10*100 has 3 trailing zeros",
+      "expected_error": "",
+      "assertions": [
+        "result == 3"
+      ]
+    },
+    {
+      "id": "solve_edge_d_zero_b3_a100",
+      "description": "d=0, b=3: multiples of 3 up to 100. 30 has 1 trailing zero, 60 has 1, 90 has 1. No multiple of 3 <= 100 has 2+ trailing zeros except maybe 0, but k>=1. Actually 3*10=30, 3*20=60, 3*30=90. None has 2 trailing zeros => n=1",
+      "function": "solve",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "b": "3",
+        "d": "0",
+        "a": "100"
+      },
+      "input_description": "",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "result == 1"
+      ]
+    },
+    {
+      "id": "solve_edge_b_equals_a",
+      "description": "When b == a, the only multiple is b itself. Check if last digit of b equals d",
+      "function": "solve",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "b": "7",
+        "d": "7",
+        "a": "7"
+      },
+      "input_description": "",
+      "expected_output_description": "1, since 7 ends in 7",
+      "expected_error": "",
+      "assertions": [
+        "result == 1"
+      ]
+    },
+    {
+      "id": "solve_edge_b_greater_than_a",
+      "description": "When b > a, no positive multiple k*b (k>=1) fits within budget, answer is 0",
+      "function": "solve",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "b": "100",
+        "d": "5",
+        "a": "50"
+      },
+      "input_description": "",
+      "expected_output_description": "0",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "solve_edge_no_match_digit",
+      "description": "b=2, d=1, a=100: multiples of 2 are even, never end in 1, so answer is 0",
+      "function": "solve",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "b": "2",
+        "d": "1",
+        "a": "100"
+      },
+      "input_description": "",
+      "expected_output_description": "0, since even numbers never end in 1",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "solve_edge_no_match_digit_5_b2",
+      "description": "b=2, d=5, a=1000: multiples of 2 are even, never end in 5, so answer is 0",
+      "function": "solve",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "b": "2",
+        "d": "5",
+        "a": "1000"
+      },
+      "input_description": "",
+      "expected_output_description": "0",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "solve_edge_b1_d0_a1000",
+      "description": "b=1, d=0, a=1000: looking for max trailing zeros. 1000 has 3 trailing zeros. 1*1000=1000",
+      "function": "solve",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "b": "1",
+        "d": "0",
+        "a": "1000"
+      },
+      "input_description": "",
+      "expected_output_description": "3",
+      "expected_error": "",
+      "assertions": [
+        "result == 3"
+      ]
+    },
+    {
+      "id": "solve_edge_d_zero_b1_a10000",
+      "description": "b=1, d=0, a=10000: 10000 has 4 trailing zeros",
+      "function": "solve",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "b": "1",
+        "d": "0",
+        "a": "10000"
+      },
+      "input_description": "",
+      "expected_output_description": "4",
+      "expected_error": "",
+      "assertions": [
+        "result == 4"
+      ]
+    },
+    {
+      "id": "solve_happy_b3_d3_a333",
+      "description": "b=3, d=3: 3*1=3 (1 trailing 3), 3*11=33 (2 trailing 3s), 3*111=333 (3 trailing 3s). a=333 so answer is 3",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "b": "3",
+        "d": "3",
+        "a": "333"
+      },
+      "input_description": "",
+      "expected_output_description": "3",
+      "expected_error": "",
+      "assertions": [
+        "result == 3"
+      ]
+    },
+    {
+      "id": "solve_happy_b3_d3_a332",
+      "description": "b=3, d=3, a=332: 3*111=333 > 332, so 3 trailing 3s not achievable. 3*11=33 <=332, so answer is 2",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "b": "3",
+        "d": "3",
+        "a": "332"
+      },
+      "input_description": "",
+      "expected_output_description": "2",
+      "expected_error": "",
+      "assertions": [
+        "result == 2"
+      ]
+    },
+    {
+      "id": "solve_happy_b9_d9_a99",
+      "description": "b=9, d=9: 9*1=9 (1 trailing 9), 9*11=99 (2 trailing 9s). a=99, so answer is 2",
+      "function": "solve",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "b": "9",
+        "d": "9",
+        "a": "99"
+      },
+      "input_description": "",
+      "expected_output_description": "2",
+      "expected_error": "",
+      "assertions": [
+        "result == 2"
+      ]
+    },
+    {
+      "id": "solve_edge_b5_d5_a55",
+      "description": "b=5, d=5: 5*1=5 (1 trailing 5), 5*11=55 (2 trailing 5s). a=55 so answer is 2",
+      "function": "solve",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "b": "5",
+        "d": "5",
+        "a": "55"
+      },
+      "input_description": "",
+      "expected_output_description": "2",
+      "expected_error": "",
+      "assertions": [
+        "result == 2"
+      ]
+    },
+    {
+      "id": "solve_edge_b5_d0_a100",
+      "description": "b=5, d=0: looking for trailing zeros in multiples of 5. 5*2=10 (1 zero), 5*20=100 (2 zeros). a=100, answer=2",
+      "function": "solve",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "b": "5",
+        "d": "0",
+        "a": "100"
+      },
+      "input_description": "",
+      "expected_output_description": "2",
+      "expected_error": "",
+      "assertions": [
+        "result == 2"
+      ]
+    },
+    {
+      "id": "solve_invariant_result_range",
+      "description": "Invariant: result is always in [0, len(str(a))] for various inputs",
+      "function": "solve",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "Multiple test cases with varying b, d, a values",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "0 <= result <= len(str(a)) for all tested inputs"
+      ]
+    },
+    {
+      "id": "solve_invariant_verification",
+      "description": "Invariant: when result n > 0, verify there exists k such that k*b <= a and last n digits of k*b are all d",
+      "function": "solve",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {},
+      "input_description": "Multiple test cases; for each, verify the claimed trailing digits",
+      "expected_output_description": "",
+      "expected_error": "",
+      "assertions": [
+        "If n > 0, a valid k*b exists with correct trailing digits"
+      ]
+    },
+    {
+      "id": "solve_large_a",
+      "description": "Test with very large a (10^50) to ensure big integer arithmetic works correctly",
+      "function": "solve",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "b": "1",
+        "d": "7",
+        "a": "str(10**50)"
+      },
+      "input_description": "",
+      "expected_output_description": "For b=1, the repdigit 777...7 (n digits) must be <= a. 10^50 has 51 digits, repdigit of 50 sevens is < 10^50, so answer is 50",
+      "expected_error": "",
+      "assertions": [
+        "result == 50"
+      ]
+    },
+    {
+      "id": "solve_edge_a_equals_1_b_equals_1",
+      "description": "b=1, a=1: only multiple is 1. Check each d",
+      "function": "solve",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "b": "1",
+        "d": "1",
+        "a": "1"
+      },
+      "input_description": "",
+      "expected_output_description": "1, since 1 ends in 1",
+      "expected_error": "",
+      "assertions": [
+        "result == 1"
+      ]
+    },
+    {
+      "id": "solve_edge_a1_b1_d2",
+      "description": "b=1, a=1, d=2: only multiple is 1 which doesn't end in 2. Answer is 0",
+      "function": "solve",
+      "category": "edge_case",
+      "setup_description": "",
+      "mock_dependencies": {},
+      "input_values": {
+        "b": "1",
+        "d": "2",
+        "a": "1"
+      },
+      "input_description": "",
+      "expected_output_description": "0",
+      "expected_error": "",
+      "assertions": [
+        "result == 0"
+      ]
+    },
+    {
+      "id": "main_happy_path",
+      "description": "End-to-end test: stdin='3 3 333', expected stdout='3\\n'",
+      "function": "main",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {
+        "sys.stdin": "io.StringIO('3 3 333\\n')"
+      },
+      "input_values": {},
+      "input_description": "stdin contains '3 3 333'",
+      "expected_output_description": "stdout is '3\\n'",
+      "expected_error": "",
+      "assertions": [
+        "captured stdout == '3\\n'"
+      ]
+    },
+    {
+      "id": "main_happy_b1_d5_a55555",
+      "description": "End-to-end: stdin='1 5 55555', expected stdout='5\\n'",
+      "function": "main",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {
+        "sys.stdin": "io.StringIO('1 5 55555\\n')"
+      },
+      "input_values": {},
+      "input_description": "stdin contains '1 5 55555'",
+      "expected_output_description": "stdout is '5\\n'",
+      "expected_error": "",
+      "assertions": [
+        "captured stdout == '5\\n'"
+      ]
+    },
+    {
+      "id": "main_happy_no_match",
+      "description": "End-to-end: stdin='2 1 100', expected stdout='0\\n' (even numbers never end in 1)",
+      "function": "main",
+      "category": "happy_path",
+      "setup_description": "",
+      "mock_dependencies": {
+        "sys.stdin": "io.StringIO('2 1 100\\n')"
+      },
+      "input_values": {},
+      "input_description": "stdin contains '2 1 100'",
+      "expected_output_description": "stdout is '0\\n'",
+      "expected_error": "",
+      "assertions": [
+        "captured stdout == '0\\n'"
+      ]
+    },
+    {
+      "id": "main_error_empty_stdin",
+      "description": "Error case: empty stdin should raise or handle empty_stdin error",
+      "function": "main",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {
+        "sys.stdin": "io.StringIO('')"
+      },
+      "input_values": {},
+      "input_description": "stdin is empty",
+      "expected_output_description": "",
+      "expected_error": "empty_stdin",
+      "assertions": []
+    },
+    {
+      "id": "main_error_malformed_input",
+      "description": "Error case: malformed input (only 2 numbers) should raise or propagate error",
+      "function": "main",
+      "category": "error_case",
+      "setup_description": "",
+      "mock_dependencies": {
+        "sys.stdin": "io.StringIO('7 4\\n')"
+      },
+      "input_values": {},
+      "input_description": "stdin contains '7 4'",
+      "expected_output_description": "",
+      "expected_error": "malformed_input",
+      "assertions": []
+    },
+    {
+      "id": "main_output_format_newline",
+      "description": "Verify output ends with exactly one newline (Python print default)",
+      "function": "main",
+      "category": "invariant",
+      "setup_description": "",
+      "mock_dependencies": {
+        "sys.stdin": "io.StringIO('9 9 99\\n')"
+      },
+      "input_values": {},
+      "input_description": "stdin contains '9 9 99'",
+      "expected_output_description": "stdout ends with \\n and contains only digits before it",
+      "expected_error": "",
+      "assertions": [
+        "output ends with exactly one newline",
+        "output stripped is a non-negative integer string"
+      ]
+    }
+  ],
+  "test_language": "python",
+  "generated_code": "\"\"\"\nContract test suite for trailing_digits_solver.\n\nTests are organized into three classes matching the three contract functions:\n- TestParseInput: parsing logic\n- TestSolve: core algorithm\n- TestMain: end-to-end stdin/stdout\n\"\"\"\n\nimport io\nimport sys\nimport pytest\nfrom unittest.mock import patch\nfrom math import gcd\n\n# Import the component under test\nfrom src.trailing_digits_solver import parse_input, solve, main\n\n\n# ─── Helper: build the repdigit T_n = d repeated n times ───\ndef repdigit(d, n):\n    \"\"\"Return the integer formed by repeating digit d exactly n times. repdigit(4,3)==444.\"\"\"\n    if n == 0:\n        return 0\n    return d * ((10**n - 1) // 9)\n\n\n# ═══════════════════════════════════════════════════════════════\n# TestParseInput\n# ═══════════════════════════════════════════════════════════════\nclass TestParseInput:\n    \"\"\"Tests for parse_input(line) -> ProblemInput.\"\"\"\n\n    # ── happy paths ──────────────────────────────────────────\n    def test_parse_basic(self):\n        result = parse_input(\"7 4 1000\")\n        assert result.b == 7, f\"Expected b=7, got {result.b}\"\n        assert result.d == 4, f\"Expected d=4, got {result.d}\"\n        assert result.a == 1000, f\"Expected a=1000, got {result.a}\"\n\n    def test_parse_large_a(self):\n        large_a = 10**100\n        line = f\"999999999 9 {large_a}\"\n        result = parse_input(line)\n        assert result.b == 999999999\n        assert result.d == 9\n        assert result.a == large_a, \"a should be a large Python int\"\n\n    def test_parse_d_zero(self):\n        result = parse_input(\"5 0 100\")\n        assert result.b == 5\n        assert result.d == 0\n        assert result.a == 100\n\n    def test_parse_min_values(self):\n        result = parse_input(\"1 0 1\")\n        assert result.b == 1\n        assert result.d == 0\n        assert result.a == 1\n\n    def test_parse_max_b_max_d(self):\n        result = parse_input(\"1000000000 9 1000000000\")\n        assert result.b == 1000000000\n        assert result.d == 9\n        assert result.a == 1000000000\n\n    # ── edge: whitespace handling ────────────────────────────\n    def test_parse_extra_whitespace(self):\n        result = parse_input(\"  7   4   1000  \")\n        assert result.b == 7\n        assert result.d == 4\n        assert result.a == 1000\n\n    def test_parse_tabs_and_spaces(self):\n        result = parse_input(\"\\t7\\t4\\t1000\\t\")\n        assert result.b == 7\n        assert result.d == 4\n        assert result.a == 1000\n\n    # ── error: wrong_token_count ─────────────────────────────\n    @pytest.mark.parametrize(\"line,desc\", [\n        (\"\", \"empty string\"),\n        (\"42\", \"single token\"),\n        (\"7 4\", \"two tokens\"),\n        (\"7 4 1000 extra\", \"four tokens\"),\n        (\"1 2 3 4 5\", \"five tokens\"),\n    ])\n    def test_parse_wrong_token_count(self, line, desc):\n        with pytest.raises(Exception, match=r\".*\"):\n            parse_input(line)\n\n    # ── error: non_integer_token ─────────────────────────────\n    @pytest.mark.parametrize(\"line,desc\", [\n        (\"7 abc 1000\", \"letters in d\"),\n        (\"hello 4 1000\", \"letters in b\"),\n        (\"7 4 world\", \"letters in a\"),\n        (\"7 4.5 1000\", \"float in d\"),\n        (\"7.0 4 1000\", \"float in b\"),\n        (\"7 4 10.0\", \"float in a\"),\n    ])\n    def test_parse_non_integer_token(self, line, desc):\n        with pytest.raises(Exception, match=r\".*\"):\n            parse_input(line)\n\n\n# ═══════════════════════════════════════════════════════════════\n# TestSolve\n# ═══════════════════════════════════════════════════════════════\nclass TestSolve:\n    \"\"\"Tests for solve(b, d, a) -> int.\"\"\"\n\n    # ── happy paths / known answers ──────────────────────────\n    def test_b1_d5_a55555(self):\n        \"\"\"b=1: every integer is a multiple. 55555 has 5 trailing 5s.\"\"\"\n        assert solve(1, 5, 55555) == 5\n\n    def test_b1_d1_a11111(self):\n        assert solve(1, 1, 11111) == 5\n\n    def test_b3_d3_a333(self):\n        \"\"\"3*111=333 has 3 trailing 3s.\"\"\"\n        assert solve(3, 3, 333) == 3\n\n    def test_b3_d3_a332(self):\n        \"\"\"333 > 332 so n=3 not achievable; 33=3*11 is ok => n=2.\"\"\"\n        assert solve(3, 3, 332) == 2\n\n    def test_b9_d9_a99(self):\n        \"\"\"9*11=99 has 2 trailing 9s.\"\"\"\n        assert solve(9, 9, 99) == 2\n\n    def test_b9_d9_a98(self):\n        \"\"\"99 > 98, so n=2 not achievable; 9 is ok => n=1.\"\"\"\n        assert solve(9, 9, 98) == 1\n\n    # ── d == 0 cases ─────────────────────────────────────────\n    def test_d0_b10_a1000(self):\n        \"\"\"1000 = 10*100 has 3 trailing zeros.\"\"\"\n        assert solve(10, 0, 1000) == 3\n\n    def test_d0_b3_a100(self):\n        \"\"\"Multiples of 3 <= 100: 30,60,90 have 1 trailing zero each. No 2-zero multiple <=100 exists (300>100). Answer=1.\"\"\"\n        assert solve(3, 0, 100) == 1\n\n    def test_d0_b5_a100(self):\n        \"\"\"5*20=100 has 2 trailing zeros.\"\"\"\n        assert solve(5, 0, 100) == 2\n\n    def test_d0_b1_a1000(self):\n        \"\"\"b=1, d=0: 1000 has 3 trailing zeros.\"\"\"\n        assert solve(1, 0, 1000) == 3\n\n    def test_d0_b1_a10000(self):\n        assert solve(1, 0, 10000) == 4\n\n    # ── no match cases ───────────────────────────────────────\n    def test_even_b_odd_d(self):\n        \"\"\"Even multiples never end in an odd digit.\"\"\"\n        assert solve(2, 1, 100) == 0\n        assert solve(2, 3, 100) == 0\n        assert solve(2, 5, 1000) == 0\n        assert solve(2, 7, 10000) == 0\n        assert solve(2, 9, 100000) == 0\n\n    def test_b5_d3(self):\n        \"\"\"Multiples of 5 end in 0 or 5; never 3.\"\"\"\n        assert solve(5, 3, 10000) == 0\n\n    # ── b > a ────────────────────────────────────────────────\n    def test_b_greater_than_a(self):\n        assert solve(100, 5, 50) == 0\n\n    def test_b_much_greater_than_a(self):\n        assert solve(1000000000, 1, 1) == 0\n\n    # ── b == a ───────────────────────────────────────────────\n    def test_b_equals_a_match(self):\n        \"\"\"Only multiple is b itself. 7 ends in 7.\"\"\"\n        assert solve(7, 7, 7) == 1\n\n    def test_b_equals_a_no_match(self):\n        \"\"\"Only multiple is 7, which doesn't end in 3.\"\"\"\n        assert solve(7, 3, 7) == 0\n\n    # ── a == 1 ───────────────────────────────────────────────\n    def test_a1_b1_d1(self):\n        \"\"\"Only multiple is 1, which ends in 1.\"\"\"\n        assert solve(1, 1, 1) == 1\n\n    def test_a1_b1_d2(self):\n        \"\"\"Only multiple is 1, which doesn't end in 2.\"\"\"\n        assert solve(1, 2, 1) == 0\n\n    def test_a1_b1_d0(self):\n        \"\"\"Only multiple is 1, which doesn't end in 0.\"\"\"\n        assert solve(1, 0, 1) == 0\n\n    # ── b == 1 (all numbers are multiples) ───────────────────\n    def test_b1_d4_a4444(self):\n        \"\"\"4444 has 4 trailing 4s, and 44444 > 4444.\"\"\"\n        assert solve(1, 4, 4444) == 4\n\n    def test_b1_d4_a44444(self):\n        assert solve(1, 4, 44444) == 5\n\n    def test_b1_d4_a44443(self):\n        \"\"\"44444 > 44443, so n=5 not achievable; 4444 <= 44443 => n=4.\"\"\"\n        assert solve(1, 4, 44443) == 4\n\n    # ── large a (big integer arithmetic) ─────────────────────\n    def test_large_a_b1_d7(self):\n        \"\"\"b=1, d=7, a=10^50: repdigit 777...7 (50 digits) < 10^50 so answer=50.\"\"\"\n        assert solve(1, 7, 10**50) == 50\n\n    def test_large_a_b1_d7_exact_repdigit(self):\n        \"\"\"a is exactly the 50-digit repdigit of 7s.\"\"\"\n        a = repdigit(7, 50)\n        assert solve(1, 7, a) == 50\n\n    def test_large_a_b1_d7_one_less(self):\n        \"\"\"a = repdigit(7,50) - 1: the 50-digit repdigit doesn't fit.\"\"\"\n        a = repdigit(7, 50) - 1\n        result = solve(1, 7, a)\n        assert result == 49, f\"Expected 49 trailing 7s, got {result}\"\n\n    # ── postcondition: result range invariant ────────────────\n    @pytest.mark.parametrize(\"b,d,a\", [\n        (1, 0, 1),\n        (1, 5, 55555),\n        (2, 1, 100),\n        (7, 4, 1000),\n        (3, 3, 333),\n        (10, 0, 1000),\n        (100, 5, 50),\n        (999999999, 9, 10**20),\n        (1, 9, 10**100),\n    ])\n    def test_result_in_valid_range(self, b, d, a):\n        result = solve(b, d, a)\n        max_digits = len(str(a))\n        assert 0 <= result <= max_digits, (\n            f\"solve({b}, {d}, {a}) = {result} not in [0, {max_digits}]\"\n        )\n\n    # ── postcondition: verify trailing digits when n > 0 ────\n    @pytest.mark.parametrize(\"b,d,a\", [\n        (1, 5, 55555),\n        (3, 3, 333),\n        (9, 9, 99),\n        (1, 7, 10**50),\n        (10, 0, 1000),\n        (5, 0, 100),\n        (7, 7, 7),\n        (1, 4, 4444),\n        (3, 0, 100),\n        (1, 1, 1),\n    ])\n    def test_verify_existence_of_valid_multiple(self, b, d, a):\n        \"\"\"If solve returns n > 0, verify a valid k*b exists with correct trailing digits.\"\"\"\n        n = solve(b, d, a)\n        if n == 0:\n            # Verify no multiple of b in [b, a] has last digit == d\n            # (Checking all is infeasible for large a, so just spot-check first few)\n            count = min(a // b, 1000)\n            for k in range(1, count + 1):\n                last_digit = (k * b) % 10\n                assert last_digit != d, (\n                    f\"solve({b},{d},{a})=0 but {k}*{b}={k*b} ends in {d}\"\n                )\n            return\n\n        target = repdigit(d, n)\n        M = 10**n\n        # Find smallest k such that k*b ≡ target (mod M)\n        g = gcd(b, M)\n        assert target % g == 0, \"Target should be divisible by gcd(b, M)\"\n        b_red = b // g\n        M_red = M // g\n        t_red = target // g\n        k0 = (t_red * pow(b_red, -1, M_red)) % M_red\n        if k0 == 0:\n            k0 = M_red\n        val = k0 * b\n        assert val <= a, (\n            f\"solve({b},{d},{a})={n} but smallest k*b={val} > a={a}\"\n        )\n        assert val % M == target, (\n            f\"solve({b},{d},{a})={n} but {val} mod {M} = {val % M} != {target}\"\n        )\n\n    # ── postcondition: n+1 is not achievable ─────────────────\n    @pytest.mark.parametrize(\"b,d,a\", [\n        (3, 3, 332),\n        (9, 9, 98),\n        (1, 4, 44443),\n        (5, 5, 55),\n    ])\n    def test_next_level_not_achievable(self, b, d, a):\n        \"\"\"Verify that n+1 trailing digits is NOT achievable.\"\"\"\n        n = solve(b, d, a)\n        next_n = n + 1\n        if next_n > len(str(a)):\n            return  # trivially not achievable\n        target = repdigit(d, next_n)\n        M = 10**next_n\n        g = gcd(b, M)\n        if target % g != 0:\n            return  # not solvable at all — correct\n        b_red = b // g\n        M_red = M // g\n        t_red = target // g\n        k0 = (t_red * pow(b_red, -1, M_red)) % M_red\n        if k0 == 0:\n            k0 = M_red\n        val = k0 * b\n        assert val > a, (\n            f\"solve({b},{d},{a})={n} but n+1={next_n} IS achievable: {k0}*{b}={val} <= {a}\"\n        )\n\n    # ── invariant: answer monotonically reachable ────────────\n    def test_all_smaller_n_achievable_when_n_achieved(self):\n        \"\"\"If n trailing d's are achievable, then n-1 trailing d's should also be achievable\n        (because the same k*b has the right last n-1 digits too). This means solve should\n        return the maximum n, and we verify n >= 1 implies n-1 would also work.\"\"\"\n        b, d, a = 3, 3, 333\n        n = solve(b, d, a)\n        assert n == 3\n        # Verify that smaller values are also achievable\n        for sub_n in range(1, n):\n            target = repdigit(d, sub_n)\n            M = 10**sub_n\n            g = gcd(b, M)\n            assert target % g == 0\n            b_red = b // g\n            M_red = M // g\n            t_red = target // g\n            k0 = (t_red * pow(b_red, -1, M_red)) % M_red\n            if k0 == 0:\n                k0 = M_red\n            assert k0 * b <= a, (\n                f\"sub_n={sub_n} should be achievable but smallest k*b={k0*b} > {a}\"\n            )\n\n    # ── invariant: all intermediate values are ints ──────────\n    def test_return_type_is_int(self):\n        result = solve(7, 4, 1000)\n        assert isinstance(result, int), f\"Expected int, got {type(result)}\"\n\n    # ── special: d=0, T_n always 0 ───────────────────────────\n    def test_d0_repdigit_is_zero(self):\n        \"\"\"When d=0, repdigit is always 0 for any n, meaning we seek divisibility by 10^n.\"\"\"\n        for n in range(0, 10):\n            assert repdigit(0, n) == 0\n\n\n# ═══════════════════════════════════════════════════════════════\n# TestMain\n# ═══════════════════════════════════════════════════════════════\nclass TestMain:\n    \"\"\"End-to-end tests for main(), patching stdin and capturing stdout.\"\"\"\n\n    def _run_main(self, stdin_text):\n        \"\"\"Helper: run main() with given stdin text, return captured stdout.\"\"\"\n        captured = io.StringIO()\n        with patch(\"sys.stdin\", io.StringIO(stdin_text)), \\\n             patch(\"sys.stdout\", captured):\n            main()\n        return captured.getvalue()\n\n    # ── happy paths ──────────────────────────────────────────\n    def test_main_b3_d3_a333(self):\n        output = self._run_main(\"3 3 333\\n\")\n        assert output == \"3\\n\", f\"Expected '3\\\\n', got {output!r}\"\n\n    def test_main_b1_d5_a55555(self):\n        output = self._run_main(\"1 5 55555\\n\")\n        assert output == \"5\\n\", f\"Expected '5\\\\n', got {output!r}\"\n\n    def test_main_no_match(self):\n        output = self._run_main(\"2 1 100\\n\")\n        assert output == \"0\\n\", f\"Expected '0\\\\n', got {output!r}\"\n\n    def test_main_b9_d9_a99(self):\n        output = self._run_main(\"9 9 99\\n\")\n        assert output == \"2\\n\", f\"Expected '2\\\\n', got {output!r}\"\n\n    def test_main_d0(self):\n        output = self._run_main(\"10 0 1000\\n\")\n        assert output == \"3\\n\", f\"Expected '3\\\\n', got {output!r}\"\n\n    # ── output format ────────────────────────────────────────\n    def test_output_ends_with_single_newline(self):\n        output = self._run_main(\"9 9 99\\n\")\n        assert output.endswith(\"\\n\"), \"Output should end with newline\"\n        assert not output.endswith(\"\\n\\n\"), \"Output should not end with double newline\"\n        stripped = output.strip()\n        assert stripped.isdigit(), f\"Output should be a non-negative integer, got {stripped!r}\"\n\n    def test_output_is_single_line(self):\n        output = self._run_main(\"3 3 333\\n\")\n        lines = output.splitlines()\n        assert len(lines) == 1, f\"Expected exactly 1 line of output, got {len(lines)}\"\n\n    # ── error: empty stdin ───────────────────────────────────\n    def test_empty_stdin_raises(self):\n        with pytest.raises(Exception):\n            self._run_main(\"\")\n\n    # ── error: malformed input ───────────────────────────────\n    def test_malformed_input_two_tokens(self):\n        with pytest.raises(Exception):\n            self._run_main(\"7 4\\n\")\n\n    def test_malformed_input_non_integer(self):\n        with pytest.raises(Exception):\n            self._run_main(\"7 abc 1000\\n\")\n\n    def test_malformed_input_four_tokens(self):\n        with pytest.raises(Exception):\n            self._run_main(\"7 4 1000 extra\\n\")\n"
+}

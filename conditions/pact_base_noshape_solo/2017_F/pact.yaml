@@ -1,0 +1,10 @@
+budget: 25.0
+parallel_components: false
+competitive_implementations: false
+competitive_agents: 2
+max_implementation_attempts: 5
+language: python
+model: claude-sonnet-4-20250514
+shaping: false
+health_thresholds:
+  output_planning_ratio_critical: 0.0

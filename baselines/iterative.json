@@ -1,0 +1,84 @@
+{
+  "run": 1,
+  "model": "claude-opus-4-6",
+  "condition": "iterative (test feedback)",
+  "max_iterations": 5,
+  "total_passed": 196,
+  "total_tests": 212,
+  "overall_pass_rate": 0.925,
+  "total_cost_usd": 1.2571,
+  "total_time_seconds": 174.5,
+  "problems": [
+    {
+      "problem_id": "2016_L",
+      "title": "Swap Space",
+      "passed": 29,
+      "total": 29,
+      "pass_rate": 1.0,
+      "iterations": 1,
+      "cost_usd": 0.0917,
+      "time_seconds": 17.5,
+      "input_tokens": 712,
+      "output_tokens": 1080,
+      "failures": []
+    },
+    {
+      "problem_id": "2016_E",
+      "title": "Forever Young",
+      "passed": 60,
+      "total": 60,
+      "pass_rate": 1.0,
+      "iterations": 3,
+      "cost_usd": 0.3477,
+      "time_seconds": 48.0,
+      "input_tokens": 5622,
+      "output_tokens": 3511,
+      "failures": []
+    },
+    {
+      "problem_id": "2012_D",
+      "title": "Fibonacci Words",
+      "passed": 35,
+      "total": 35,
+      "pass_rate": 1.0,
+      "iterations": 1,
+      "cost_usd": 0.1172,
+      "time_seconds": 18.8,
+      "input_tokens": 616,
+      "output_tokens": 1439,
+      "failures": []
+    },
+    {
+      "problem_id": "2017_F",
+      "title": "Posterize",
+      "passed": 41,
+      "total": 41,
+      "pass_rate": 1.0,
+      "iterations": 1,
+      "cost_usd": 0.1088,
+      "time_seconds": 17.2,
+      "input_tokens": 749,
+      "output_tokens": 1301,
+      "failures": []
+    },
+    {
+      "problem_id": "2020_M",
+      "title": "Trailing Digits",
+      "passed": 31,
+      "total": 47,
+      "pass_rate": 0.66,
+      "iterations": 5,
+      "cost_usd": 0.5917,
+      "time_seconds": 73.0,
+      "input_tokens": 14247,
+      "output_tokens": 5040,
+      "failures": [
+        "tc_8: expected '3', got ''",
+        "tc_9: expected '9994', got ''",
+        "tc_12: expected '10000', got ''",
+        "tc_13: expected '1', got ''",
+        "tc_15: expected '9999', got ''"
+      ]
+    }
+  ]
+}

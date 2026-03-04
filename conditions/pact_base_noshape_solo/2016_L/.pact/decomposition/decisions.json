@@ -1,0 +1,17 @@
+[
+  {
+    "ambiguity": "",
+    "decision": "Greedy ordering strategy",
+    "rationale": "Drives where b >= a (gainers) are processed first, sorted by ascending a, since they require minimal initial space and yield net positive free space. Drives where b < a (losers) are processed second, sorted by descending b, to preserve maximum free space for subsequent losers. This is the known optimal greedy for this classic problem."
+  },
+  {
+    "ambiguity": "",
+    "decision": "Direct computation instead of binary search",
+    "rationale": "Given the fixed greedy ordering, the minimum extra space can be computed in a single O(n) pass by tracking the running free space and finding the maximum deficit. This avoids the extra log factor from binary search and is simpler to implement."
+  },
+  {
+    "ambiguity": "",
+    "decision": "Use sys.stdin for fast I/O",
+    "rationale": "With n up to 10^6, using sys.stdin.read() and splitting is significantly faster than line-by-line input() calls in Python."
+  }
+]

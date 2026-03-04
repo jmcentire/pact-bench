@@ -1,0 +1,17 @@
+[
+  {
+    "ambiguity": "",
+    "decision": "Use KMP algorithm for overlapping pattern matching",
+    "rationale": "str.count() skips overlapping matches. KMP provides O(n+m) overlapping match counting which is efficient for patterns up to 100K chars."
+  },
+  {
+    "ambiguity": "",
+    "decision": "Store prefix/suffix strings of length min(len(F(k)), len(p)-1) at each DP level",
+    "rationale": "Cross-boundary matches can only start within len(p)-1 characters of the junction. Storing these bounded-length strings keeps memory manageable even for n=100."
+  },
+  {
+    "ambiguity": "",
+    "decision": "Build F(n) directly for small n where the full string fits in memory",
+    "rationale": "For small n (where len(F(n)) < 2*len(p)), it's simpler and correct to just build the string and count directly. Switch to DP when strings grow beyond this threshold."
+  }
+]

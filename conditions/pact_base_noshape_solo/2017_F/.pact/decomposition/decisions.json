@@ -1,0 +1,17 @@
+[
+  {
+    "ambiguity": "",
+    "decision": "Allowed values can be any integer in [0, 255], not restricted to input values",
+    "rationale": "The problem says 'at most k integers from this range [0-255]'. Sample 3 confirms this: with input values {0, 25, 50, 255} and k=2, the answer 37500000 is achieved by choosing representatives that are not all input values (e.g., 13 and 255 or similar). If restricted to input values, a different answer would result."
+  },
+  {
+    "ambiguity": "",
+    "decision": "Use integer arithmetic with floor/ceil of weighted mean for optimal representative",
+    "rationale": "Since allowed values must be integers, the optimal representative for a cluster minimizing weighted SSE is the nearest integer to the weighted mean. We try both floor and ceil and pick the better one. This avoids floating-point issues and guarantees correctness."
+  },
+  {
+    "ambiguity": "",
+    "decision": "Solution filename is solution.py",
+    "rationale": "The SOPs and test harness reference suggest this naming convention: `python test_harness.py solution.py`"
+  }
+]
