@@ -1,5 +1,7 @@
 # Pact Benchmark: ICPC World Finals
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18856991.svg)](https://doi.org/10.5281/zenodo.18856991)
+
 Benchmark comparing [Pact](https://github.com/jmcentire/pact) against Claude Code on 5 ICPC World Finals competitive programming problems (212 test cases).
 
 ## Results
