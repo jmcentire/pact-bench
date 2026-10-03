@@ -2,8 +2,7 @@
 # Run Pact (RESEARCH — with research changes) on a single ICPC problem.
 # Usage: bash run_pact_problem.sh <condition_dir/problem_id>
 
-source ~/.profile 2>/dev/null
-export ANTHROPIC_API_KEY="$JMC_ANTHROPIC_API_KEY"
+source "$(cd "$(dirname "$0")" && pwd)/_env.sh"
 
 DIR="$1"
 if [ -z "$DIR" ] || [ ! -d "$DIR" ]; then
