@@ -9,8 +9,7 @@
 #   all        — run everything (default)
 
 set -e
-source ~/.profile 2>/dev/null
-export ANTHROPIC_API_KEY="$JMC_ANTHROPIC_API_KEY"
+source "$(cd "$(dirname "$0")" && pwd)/_env.sh"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"

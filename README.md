@@ -50,6 +50,10 @@ python scripts/run_iterative.py
 
 ### Reproduce Pact runs
 
+The shell scripts read the key from `ANTHROPIC_API_KEY`. To pull it from a different env var,
+copy `scripts/bench.env.example` to `scripts/bench.env` (gitignored) and set
+`PACT_BENCH_API_KEY_ENV` to a comma-separated list of variable names to try in order.
+
 ```bash
 # Requires pact installed: pip install pact-agents
 # Setup condition directories

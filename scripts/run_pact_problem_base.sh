@@ -3,8 +3,7 @@
 # Uses PYTHONPATH to load pact from /tmp/pact-base worktree.
 # Usage: bash run_pact_problem_base.sh <condition_dir/problem_id>
 
-source ~/.profile 2>/dev/null
-export ANTHROPIC_API_KEY="$JMC_ANTHROPIC_API_KEY"
+source "$(cd "$(dirname "$0")" && pwd)/_env.sh"
 export PYTHONPATH="/tmp/pact-base/src:$PYTHONPATH"
 
 DIR="$1"

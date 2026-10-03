@@ -3,3 +3,6 @@ __pycache__/
 *.pyo
 testdata/*.json
 !testdata/*.json.gz
+
+# Local credential config (see scripts/bench.env.example)
+scripts/bench.env
